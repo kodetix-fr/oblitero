@@ -60,14 +60,14 @@ export async function launchExtension() {
   }
 }
 
-// One page per entry of `pages`: { size, text }. The text is drawn in the upper left corner.
+// One page per entry of `pages`: { size, text }. The text (a line, or an array of lines) is drawn in the upper left corner.
 export async function writePdf(dir, name, pages, { title } = {}) {
   const document = await PDFDocument.create();
   if (title) document.setTitle(title);
   const font = await document.embedFont(StandardFonts.Helvetica);
   for (const { size, text } of pages) {
     const page = document.addPage([size, size]);
-    if (text) page.drawText(text, { x: 20, y: size - 50, size: 24, font });
+    [].concat(text || []).forEach((line, i) => page.drawText(line, { x: 20, y: size - 50 - i * 30, size: 18, font }));
   }
   const path = join(dir, name);
   writeFileSync(path, await document.save({ useObjectStreams: false }));

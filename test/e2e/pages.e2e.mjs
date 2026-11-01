@@ -43,7 +43,7 @@ test('open a PDF: every page gets a card and a rendered thumbnail', async () => 
   );
 });
 
-test('select, shift-select, rotate, delete and move', async () => {
+test('select, shift-select, rotate, hide and move', async () => {
   assert.equal(await page.locator('#rotate-right').isDisabled(), true);
   await card(1).click();
   await card(3).click({ modifiers: ['Shift'] });
@@ -51,15 +51,16 @@ test('select, shift-select, rotate, delete and move', async () => {
 
   await page.locator('#select-none').click();
   await card(1).click();
-  await page.locator('#delete').click();
-  assert.equal(await page.locator('#grid li').count(), 2);
+  await page.locator('#hide').click();
+  assert.equal(await page.locator('#grid li').count(), 3);
+  assert.equal(await page.locator('#grid li[data-hidden]').count(), 1);
 
   await page.locator('#select-all').click();
   await page.locator('#rotate-right').click();
   await page.locator('#select-none').click();
-  await card(1).click();
+  await card(2).click();
   await page.locator('#move-later').click();
-  assert.equal(await page.locator('#grid li').count(), 2);
+  assert.equal(await page.locator('#grid li').count(), 3);
 });
 
 test('download keeps the edited order and rotation; extract and split work', async () => {
@@ -70,12 +71,13 @@ test('download keeps the edited order and rotation; extract and split work', asy
   assert.deepEqual(edited.getPages().map((p) => p.getRotation().angle), [90, 90]);
 
   await page.locator('#select-none').click();
-  await card(2).click();
+  await card(3).click();
   const [one] = await Promise.all([page.waitForEvent('download'), page.locator('#download-selected').click()]);
   const extracted = await save(one, 'extracted.pdf');
   assert.deepEqual(extracted.getPages().map((p) => p.getWidth()), [300]);
 
-  const [zip] = await Promise.all([page.waitForEvent('download'), page.locator('#split').click()]);
+  await page.locator('#cut-every').click();
+  const [zip] = await Promise.all([page.waitForEvent('download'), page.locator('#download-parts').click()]);
   assert.equal(zip.suggestedFilename(), 'doc-split.zip');
   const archive = readFileSync(await zip.path());
   const entries = [];
@@ -90,6 +92,24 @@ test('a file that is not a PDF is refused without changing the document', async 
   const path = join(app.dir, 'not.pdf');
   (await import('node:fs')).writeFileSync(path, 'not a pdf');
   await page.setInputFiles('#pages-file', path);
-  await page.getByText('Cannot read not.pdf').waitFor();
-  assert.equal(await page.locator('#grid li').count(), 2);
+  await page.waitForFunction(() => document.getElementById('pages-status').textContent.includes('Cannot read not.pdf'));
+  assert.equal(await page.locator('#grid li').count(), 3);
+});
+
+test('opening a second PDF replaces the first and draws its thumbnails', async () => {
+  const path = await writePdf(app.dir, 'second.pdf', [
+    { size: 200, text: 'A' },
+    { size: 200, text: 'B' },
+    { size: 200, text: 'C' },
+    { size: 200, text: 'D' },
+  ]);
+  await page.setInputFiles('#pages-file', path);
+  await page.waitForFunction(() => document.querySelectorAll('#grid li').length === 4);
+  assert.equal(await page.locator('#pages-status').innerText(), '');
+  await page.waitForFunction(() =>
+    Array.from(document.querySelectorAll('#grid canvas')).every((canvas) => {
+      const { data } = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
+      return data.some((value, i) => i % 4 === 0 && value < 100);
+    }),
+  );
 });

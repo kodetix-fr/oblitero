@@ -5,7 +5,7 @@ const NO_HTML = 'Forbidden: interprets HTML (file names flow through the UI). Us
 const HTML_SINKS = ['innerHTML', 'outerHTML', 'insertAdjacentHTML', 'createContextualFragment', 'setHTMLUnsafe', 'parseHTMLUnsafe'];
 
 const WORKER = ['sw.js'];
-const NODE = ['**/*.test.js', 'eslint.config.js', 'test/**/*.mjs'];
+const NODE = ['**/*.test.js', 'eslint.config.js', 'test/**/*.mjs', 'scripts/**/*.mjs'];
 
 export default [
   { ignores: ['vendor/', 'dist/', 'node_modules/', 'coverage/'] },

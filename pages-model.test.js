@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createPages, movePages, rangeIds, removePages, rotatePages, rotateRect } from './pages-model.js';
+import { blankPage, createPages, cutEvery, duplicate, insertEntries, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, rotatePages, rotateRect, showAll, toggleCuts, toggleHidden, visible } from './pages-model.js';
 
 const ids = (pages) => pages.map((page) => page.id);
 const close = (actual, expected) => {
@@ -34,8 +34,29 @@ test('rotatePages turns the selected pages and their rectangles only', () => {
   assert.deepEqual(rotatePages(pages, new Set([2]), -90)[2].rotation, 270);
 });
 
-test('removePages drops the selected pages', () => {
-  assert.deepEqual(ids(removePages(createPages(4), new Set([0, 2]))), [1, 3]);
+test('toggleHidden hides the pages, and shows them again only when all of them are hidden', () => {
+  const pages = createPages(4);
+  const hidden = toggleHidden(pages, new Set([0, 2]));
+  assert.deepEqual(hidden.map((page) => page.hidden), [true, false, true, false]);
+  assert.equal(hidden[1], pages[1]);
+  assert.deepEqual(hidden.map((page) => page.hidden), toggleHidden(pages, new Set([0, 2])).map((page) => page.hidden));
+  assert.deepEqual(toggleHidden(hidden, new Set([0, 1])).map((page) => page.hidden), [true, true, true, false]);
+  assert.deepEqual(toggleHidden(hidden, new Set([0, 2])).map((page) => page.hidden), [false, false, false, false]);
+  assert.equal(toggleHidden(pages, new Set([9])), pages);
+});
+
+test('showAll shows every page again, and changes nothing when none is hidden', () => {
+  const pages = createPages(3);
+  assert.equal(showAll(pages), pages);
+  assert.deepEqual(showAll(toggleHidden(pages, new Set([0, 1]))).map((page) => page.hidden), [false, false, false]);
+  assert.deepEqual(ids(visible(toggleHidden(pages, new Set([1])))), [0, 2]);
+});
+
+test('exportParts leaves the hidden pages out and drops a part that has no page left', () => {
+  const pages = toggleHidden(createPages(6), new Set([1, 2, 3]));
+  assert.deepEqual(exportParts(pages, new Set()).map((part) => ids(part)), [[0, 4, 5]]);
+  assert.deepEqual(exportParts(pages, new Set([2, 3])).map((part) => ids(part)), [[0], [4, 5]]);
+  assert.deepEqual(exportParts(pages, new Set([0, 1, 3])).map((part) => ids(part)), [[0], [4, 5]]);
 });
 
 test('movePages moves a block as one and stops at the edges', () => {
@@ -53,4 +74,82 @@ test('rangeIds covers the pages between two ids, in either direction', () => {
   assert.deepEqual(rangeIds(pages, 1, 3), [1, 2, 3]);
   assert.deepEqual(rangeIds(pages, 3, 1), [1, 2, 3]);
   assert.deepEqual(rangeIds(pages, 2, 9), []);
+});
+
+test('place moves a page, or a selection, before or after a target', () => {
+  const pages = createPages(5);
+  assert.deepEqual(ids(place(pages, new Set([0]), 3, true)), [1, 2, 3, 0, 4]);
+  assert.deepEqual(ids(place(pages, new Set([0]), 3, false)), [1, 2, 0, 3, 4]);
+  assert.deepEqual(ids(place(pages, new Set([4]), 1, false)), [0, 4, 1, 2, 3]);
+  assert.deepEqual(ids(place(pages, new Set([1, 3]), 4, true)), [0, 2, 4, 1, 3]);
+  assert.deepEqual(ids(place(pages, new Set([3, 1]), 0, false)), [1, 3, 0, 2, 4]);
+});
+
+test('place does nothing when the target is moved itself or unknown', () => {
+  const pages = createPages(3);
+  assert.equal(place(pages, new Set([1, 2]), 2, false), pages);
+  assert.equal(place(pages, new Set([1]), 9, true), pages);
+});
+
+test('partsOf splits the pages after each cut, and ignores a cut after the last page', () => {
+  const pages = createPages(5);
+  assert.deepEqual(partsOf(pages, new Set()).map((part) => ids(part)), [[0, 1, 2, 3, 4]]);
+  assert.deepEqual(partsOf(pages, new Set([1, 3])).map((part) => ids(part)), [[0, 1], [2, 3], [4]]);
+  assert.deepEqual(partsOf(pages, new Set([4])).map((part) => ids(part)), [[0, 1, 2, 3, 4]]);
+});
+
+test('cutEvery cuts after every N pages, never after the last one', () => {
+  const pages = createPages(6);
+  assert.deepEqual([...cutEvery(pages, 2)], [1, 3]);
+  assert.deepEqual([...cutEvery(pages, 3)], [2]);
+  assert.deepEqual([...cutEvery(pages, 1)], [0, 1, 2, 3, 4]);
+  assert.deepEqual([...cutEvery(pages, 6)], []);
+});
+
+test('keepCuts drops the cuts of removed pages and the one after the last page', () => {
+  const pages = createPages(4).slice(1);
+  assert.deepEqual([...keepCuts(pages, new Set([0, 2, 3]))], [2]);
+});
+
+test('toggleCuts adds a cut after each page, or removes them when all have one', () => {
+  const pages = createPages(4);
+  assert.deepEqual([...toggleCuts(pages, new Set(), new Set([0, 2]))], [0, 2]);
+  assert.deepEqual([...toggleCuts(pages, new Set([0, 2]), new Set([0, 2]))], []);
+  assert.deepEqual([...toggleCuts(pages, new Set([0]), new Set([0, 2]))].sort(), [0, 2]);
+  const same = new Set([1]);
+  assert.equal(toggleCuts(pages, same, new Set([3])), same);
+});
+
+test('createPages numbers the pages of a file, from the id it is given', () => {
+  const pages = createPages(2, { file: 3, firstId: 10 });
+  assert.deepEqual(pages.map((page) => [page.id, page.file, page.source]), [[10, 3, 0], [11, 3, 1]]);
+});
+
+test('insertEntries puts pages before or after a target, or at the end', () => {
+  const pages = createPages(3);
+  const added = [blankPage(7, 100, 100), blankPage(8, 100, 100)];
+  assert.deepEqual(ids(insertEntries(pages, added, 1, false)), [0, 7, 8, 1, 2]);
+  assert.deepEqual(ids(insertEntries(pages, added, 1, true)), [0, 1, 7, 8, 2]);
+  assert.deepEqual(ids(insertEntries(pages, added, null, true)), [0, 1, 2, 7, 8]);
+  assert.equal(added[0].file, null);
+  assert.deepEqual(added[0].blank, { width: 100, height: 100 });
+});
+
+test('duplicate puts a copy after each selected page, with new ids and its own redactions', () => {
+  const pages = createPages(3).map((page) => ({ ...page, redactions: page.id === 1 ? [{ x: 0, y: 0, w: 0.1, h: 0.1 }] : [] }));
+  const result = duplicate(pages, new Set([0, 1]), 5);
+  assert.deepEqual(ids(result.pages), [0, 5, 1, 6, 2]);
+  assert.equal(result.nextId, 7);
+  assert.equal(result.pages[3].source, 1);
+  assert.notEqual(result.pages[3].redactions[0], pages[1].redactions[0]);
+  assert.deepEqual(result.pages[3].redactions, pages[1].redactions);
+});
+
+test('parseRange reads numbers, ranges and open ranges, and refuses anything else', () => {
+  assert.deepEqual(parseRange('1-3, 7, 10-', 12), [0, 1, 2, 6, 9, 10, 11]);
+  assert.deepEqual(parseRange('-4', 10), [0, 1, 2, 3]);
+  assert.deepEqual(parseRange('5', 3), []);
+  assert.deepEqual(parseRange(' 2 , 2-3 ', 5), [1, 2]);
+  assert.deepEqual(parseRange('', 5), []);
+  for (const bad of ['a', '3-1', '0', '1--2', '1;2', '-']) assert.equal(parseRange(bad, 5), null, bad);
 });

@@ -1,72 +1,328 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" translate="no">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google" content="notranslate">
   <title>Oblitero</title>
+  <link rel="icon" href="icons/icon32.png">
   <link rel="stylesheet" href="app.css">
 </head>
 <body>
-  <main>
-    <h1>Oblitero</h1>
-    <div role="tablist" aria-label="Tools">
-      <button type="button" role="tab" id="tab-merge" aria-controls="panel-merge" aria-selected="true">Merge</button>
-      <button type="button" role="tab" id="tab-pages" aria-controls="panel-pages" aria-selected="false" tabindex="-1">Pages</button>
+  <!-- Icons: one sprite, used as <svg class="ic"><use href="#i-name"/></svg>. 24 px grid, 1.75 stroke (app.css). -->
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-logo" viewBox="8 8 112 112">
+      <rect x="8" y="8" width="112" height="112" rx="28" fill="#2563eb"/>
+      <path d="M40 26h34l22 22v54a6 6 0 0 1-6 6H40a6 6 0 0 1-6-6V32a6 6 0 0 1 6-6z" fill="#ffffff"/>
+      <path d="M74 26v16a6 6 0 0 0 6 6h16z" fill="#bfdbfe"/>
+      <rect x="44" y="52" width="26" height="7" rx="3.5" fill="#9db0d6"/>
+      <rect x="44" y="67" width="42" height="13" rx="4" fill="#0e1522"/>
+      <rect x="44" y="88" width="30" height="7" rx="3.5" fill="#9db0d6"/>
+    </symbol>
+    <symbol id="i-merge" viewBox="0 0 24 24"><path d="M12 4l8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4M4 16l8 4 8-4"/></symbol>
+    <symbol id="i-pages" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.6"/><rect x="13" y="4" width="7" height="7" rx="1.6"/><rect x="4" y="13" width="7" height="7" rx="1.6"/><rect x="13" y="13" width="7" height="7" rx="1.6"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l.8 12.5h9.4L17.5 7M10 11v5M14 11v5"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14"/></symbol>
+    <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></symbol>
+    <symbol id="i-rot-left" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.3-5.7M4 4.5V9h4.5"/></symbol>
+    <symbol id="i-rot-right" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4.5V9h-4.5"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></symbol>
+    <symbol id="i-left" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-grip" viewBox="0 0 24 24"><g fill="currentColor" stroke="none"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></g></symbol>
+    <symbol id="i-redact" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2.6"/><path d="M7.5 12h9" stroke-width="4.5"/></symbol>
+    <symbol id="i-select" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12.2l2.8 2.8L16 9.5"/></symbol>
+    <symbol id="i-deselect" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M7 3.5h6.5L18.5 8.5v11a1.5 1.5 0 0 1-1.5 1.5H7a1.5 1.5 0 0 1-1.5-1.5V5A1.5 1.5 0 0 1 7 3.5z"/><path d="M13.5 3.5v5h5"/></symbol>
+    <symbol id="i-redo" viewBox="0 0 24 24"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></symbol>
+    <symbol id="i-cut" viewBox="0 0 24 24"><circle cx="6.5" cy="6.8" r="2.7"/><circle cx="6.5" cy="17.2" r="2.7"/><path d="M8.7 8.4L20 18M8.7 15.6L20 6"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M3.5 3.5l17 17"/><path d="M10.4 5.7A9 9 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a15.5 15.5 0 0 1-3 3.8M6.5 7.2A15.5 15.5 0 0 0 2.5 12S6 18.5 12 18.5c1.5 0 2.8-.3 4-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></symbol>
+    <symbol id="i-file-plus" viewBox="0 0 24 24"><path d="M7 3.5h6.5L18.5 8.5v11a1.5 1.5 0 0 1-1.5 1.5H7a1.5 1.5 0 0 1-1.5-1.5V5A1.5 1.5 0 0 1 7 3.5z"/><path d="M13.5 3.5v5h5M12 11.5v6M9 14.5h6"/></symbol>
+    <symbol id="i-blank" viewBox="0 0 24 24"><rect x="6" y="3.5" width="12" height="17" rx="1.6" stroke-dasharray="3 2.4"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7.5a2 2 0 0 0 2 2h2.5"/></symbol>
+    <symbol id="i-text" viewBox="0 0 24 24"><path d="M5.5 7V5.5h13V7M12 5.5v13M9 18.5h6"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M5 17l4.5-4.5 3 3 2.5-2.5L19 17"/></symbol>
+    <symbol id="i-compress" viewBox="0 0 24 24"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17.2v.1"/></symbol>
+  </svg>
+
+  <header class="appbar">
+    <div class="brand">
+      <svg class="logo" aria-hidden="true"><use href="#i-logo"/></svg>
+      <h1>Oblitero</h1>
     </div>
+    <p class="tagline">PDF tools that never leave your computer</p>
+  </header>
 
-    <section role="tabpanel" id="panel-merge" aria-labelledby="tab-merge">
-      <label class="picker">
-        <span>Choose PDF files to merge, or drop them anywhere on this page</span>
-        <input type="file" id="files" accept="application/pdf" multiple>
-      </label>
-      <ol id="list"></ol>
-      <p id="status" role="status"></p>
-      <button type="button" id="merge" disabled>Merge</button>
-    </section>
+  <nav class="rail" role="tablist" aria-orientation="vertical" aria-label="Tools">
+    <button type="button" class="tool" role="tab" id="tab-merge" aria-controls="panel-merge" aria-selected="true">
+      <svg class="ic" aria-hidden="true"><use href="#i-merge"/></svg><span>Merge</span>
+    </button>
+    <button type="button" class="tool" role="tab" id="tab-pages" aria-controls="panel-pages" aria-selected="false" tabindex="-1">
+      <svg class="ic" aria-hidden="true"><use href="#i-pages"/></svg><span>Pages</span>
+    </button>
+    <button type="button" class="tool" role="tab" id="tab-images" aria-controls="panel-images" aria-selected="false" tabindex="-1">
+      <svg class="ic" aria-hidden="true"><use href="#i-image"/></svg><span>Images</span>
+    </button>
+    <button type="button" class="tool" role="tab" id="tab-compress" aria-controls="panel-compress" aria-selected="false" tabindex="-1">
+      <svg class="ic" aria-hidden="true"><use href="#i-compress"/></svg><span>Compress</span>
+    </button>
+  </nav>
 
-    <section role="tabpanel" id="panel-pages" aria-labelledby="tab-pages" hidden>
-      <label class="picker">
-        <span>Choose a PDF to reorder, rotate, split or redact, or drop it anywhere on this page</span>
-        <input type="file" id="pages-file" accept="application/pdf">
-      </label>
-      <p id="pages-status" role="status"></p>
-      <div id="pages-tools" hidden>
-        <div class="toolbar" role="toolbar" aria-label="Selected pages">
-          <button type="button" id="select-all">Select all</button>
-          <button type="button" id="select-none">Select none</button>
-          <button type="button" id="rotate-left">Rotate left</button>
-          <button type="button" id="rotate-right">Rotate right</button>
-          <button type="button" id="move-earlier">Move earlier</button>
-          <button type="button" id="move-later">Move later</button>
-          <button type="button" id="delete">Delete</button>
-          <button type="button" id="redact">Redact</button>
+  <main class="main">
+    <section role="tabpanel" id="panel-merge" class="panel" aria-labelledby="tab-merge" data-empty>
+      <div class="props">
+        <button type="button" class="btn" id="add-files"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>Add files</button>
+        <button type="button" class="btn ghost" id="clear-files"><svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg>Clear</button>
+        <span class="sep"></span>
+        <span id="merge-summary" class="summary"></span>
+        <button type="button" class="btn primary" id="merge" disabled><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg>Merge</button>
+      </div>
+      <div class="stage">
+        <div class="state">
+          <svg class="state-ic" aria-hidden="true"><use href="#i-logo"/></svg>
+          <h2 class="state-title">Merge PDF files</h2>
+          <p class="state-hint">Drop PDF files anywhere on this page, or choose them. They are read here and never sent anywhere.</p>
+          <button type="button" class="btn primary state-action" id="choose-merge"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>Choose PDF files</button>
+          <p id="merge-note" role="status" class="state-note"></p>
         </div>
-        <p class="hint">Click a page to select it, Shift+click to select a range.</p>
-        <ol id="grid" class="grid"></ol>
-        <div class="toolbar">
-          <button type="button" id="download-all" class="primary">Download PDF</button>
-          <button type="button" id="download-selected">Download selected pages</button>
-          <label class="inline">Split every <input type="number" id="split-size" min="1" value="1"> pages</label>
-          <button type="button" id="split">Download ZIP</button>
+        <div class="content">
+          <ol id="list" class="files"></ol>
+          <section id="preview" hidden>
+            <h3 id="preview-title" class="preview-title"></h3>
+            <div id="preview-strip" class="strip" aria-hidden="true"></div>
+          </section>
         </div>
       </div>
+      <div class="status"><span id="status" role="status"></span></div>
+      <input type="file" id="files" accept="application/pdf" multiple hidden>
+    </section>
+
+    <section role="tabpanel" id="panel-pages" class="panel" aria-labelledby="tab-pages" data-empty hidden>
+      <div class="bars">
+      <div class="props" role="toolbar" aria-label="Pages">
+        <button type="button" class="btn sm icon-only" id="undo" aria-label="Undo" title="Undo (Ctrl+Z)"><svg class="ic" aria-hidden="true"><use href="#i-undo"/></svg></button>
+        <button type="button" class="btn sm icon-only" id="redo" aria-label="Redo" title="Redo (Shift+Ctrl+Z)"><svg class="ic" aria-hidden="true"><use href="#i-redo"/></svg></button>
+        <span class="vsep"></span>
+        <button type="button" class="btn sm icon-only" id="select-all" aria-label="Select all" title="Select all (Ctrl+A)"><svg class="ic" aria-hidden="true"><use href="#i-select"/></svg></button>
+        <button type="button" class="btn sm icon-only" id="select-none" aria-label="Select none" title="Select none (Esc)"><svg class="ic" aria-hidden="true"><use href="#i-deselect"/></svg></button>
+        <span class="vsep"></span>
+        <button type="button" class="btn sm icon-only" id="rotate-left" aria-label="Rotate left" title="Rotate left (Shift+R)"><svg class="ic" aria-hidden="true"><use href="#i-rot-left"/></svg></button>
+        <button type="button" class="btn sm icon-only" id="rotate-right" aria-label="Rotate right" title="Rotate right (R)"><svg class="ic" aria-hidden="true"><use href="#i-rot-right"/></svg></button>
+        <span class="vsep"></span>
+        <button type="button" class="btn sm icon-only" id="move-earlier" aria-label="Move earlier" title="Move earlier (Alt+Left)"><svg class="ic" aria-hidden="true"><use href="#i-left"/></svg></button>
+        <button type="button" class="btn sm icon-only" id="move-later" aria-label="Move later" title="Move later (Alt+Right)"><svg class="ic" aria-hidden="true"><use href="#i-right"/></svg></button>
+        <span class="vsep"></span>
+        <button type="button" class="btn sm icon-only" id="insert-pdf" aria-label="Insert a PDF" title="Insert the pages of another PDF after the selection"><svg class="ic" aria-hidden="true"><use href="#i-file-plus"/></svg></button>
+        <button type="button" class="btn sm icon-only" id="add-blank" aria-label="Add a blank page" title="Add a blank page after the selection"><svg class="ic" aria-hidden="true"><use href="#i-blank"/></svg></button>
+        <button type="button" class="btn sm icon-only" id="duplicate" aria-label="Duplicate" title="Duplicate the selected pages"><svg class="ic" aria-hidden="true"><use href="#i-copy"/></svg></button>
+        <span class="vsep"></span>
+        <button type="button" class="btn sm" id="hide" title="Hide the selected pages from the result (Del)"><svg class="ic" aria-hidden="true"><use id="hide-icon" href="#i-eye-off"/></svg><span id="hide-label">Hide</span></button>
+        <button type="button" class="btn sm" id="cut" title="Cut after the selected pages (C)"><svg class="ic" aria-hidden="true"><use href="#i-cut"/></svg>Cut</button>
+        <button type="button" class="btn sm" id="redact" title="Hide an area: black it out, and destroy what is under it in the downloaded PDF"><svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg>Redact</button>
+        <span class="sep"></span>
+        <button type="button" class="btn" id="download-selected" title="Download the selected pages as one PDF"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg>Selection</button>
+        <button type="button" class="btn primary" id="download-all"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg>Download PDF</button>
+      </div>
+      <div class="subbar">
+        <label class="field">Select <input type="text" id="select-range" placeholder="1-3, 7, 10-" aria-label="Pages to select, for example 1-3, 7, 10-" spellcheck="false"></label>
+        <button type="button" class="btn sm" id="select-odd">Odd</button>
+        <button type="button" class="btn sm" id="select-even">Even</button>
+        <span class="vsep"></span>
+        <button type="button" class="btn sm" id="hide-blank" title="Hide the pages that hold no ink, such as the blank backs of a scan"><svg class="ic" aria-hidden="true"><use href="#i-eye-off"/></svg>Hide blank pages</button>
+        <button type="button" class="btn sm" id="export-images" title="Save the pages as PNG or JPEG pictures (the selection, or all the pages)"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg>Export images</button>
+        <button type="button" class="btn sm" id="find" title="Find e-mail addresses, phone numbers, IBAN, card numbers or words in the text, and cover them"><svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg>Find and redact</button>
+        <button type="button" class="btn sm" id="stamps" title="Number the pages and add a watermark to what you download"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg>Numbers and watermark</button>
+        <button type="button" class="btn sm" id="extract-text" title="Write the text of the pages to a .txt file (the selection, or all the pages)"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg>Extract text</button>
+      </div>
+      </div>
+      <div class="stage">
+        <div class="state">
+          <svg class="state-ic" aria-hidden="true"><use href="#i-logo"/></svg>
+          <h2 class="state-title">Organize, split and redact a PDF</h2>
+          <p class="state-hint">Drop a PDF anywhere on this page, or choose one. Reorder, rotate or delete pages, cut the file into parts, and black out what must not be shared.</p>
+          <button type="button" class="btn primary state-action" id="choose-pages"><svg class="ic" aria-hidden="true"><use href="#i-file"/></svg>Choose a PDF</button>
+          <p id="pages-note" role="status" class="state-note"></p>
+        </div>
+        <div class="content">
+          <ol id="grid" class="grid"></ol>
+        </div>
+      </div>
+      <div class="status">
+        <button type="button" class="btn sm ghost" id="open-pages" title="Open another PDF in place of this one"><svg class="ic" aria-hidden="true"><use href="#i-file"/></svg>Open PDF</button>
+        <span id="pages-name" class="doc-name"></span>
+        <span id="selection-summary"></span>
+        <span id="pages-status" role="status"></span>
+        <label class="field">Size <input type="range" id="zoom" min="90" max="260" value="150" aria-label="Size of the thumbnails"></label>
+        <span class="sep"></span>
+        <button type="button" class="btn sm ghost" id="show-hidden" hidden><svg class="ic" aria-hidden="true"><use href="#i-eye"/></svg><span id="show-hidden-label">Show hidden</span></button>
+        <button type="button" class="btn sm ghost" id="clear-cuts" hidden>Remove cuts</button>
+        <button type="button" class="btn sm" id="cut-every"><svg class="ic" aria-hidden="true"><use href="#i-cut"/></svg>Cut every</button>
+        <input type="number" id="split-size" min="1" value="1" aria-label="Pages per part">
+        <span>pages</span>
+        <button type="button" class="btn sm" id="download-parts" disabled><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg><span id="parts-label">Download ZIP</span></button>
+      </div>
+      <input type="file" id="pages-file" accept="application/pdf" hidden>
+      <input type="file" id="insert-file" accept="application/pdf" multiple hidden>
+    </section>
+
+    <section role="tabpanel" id="panel-images" class="panel" aria-labelledby="tab-images" data-empty hidden>
+      <div class="props">
+        <button type="button" class="btn" id="add-images"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>Add images</button>
+        <button type="button" class="btn ghost" id="clear-images"><svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg>Clear</button>
+        <span class="vsep"></span>
+        <label class="field">Page <select id="images-size" aria-label="Page size"></select></label>
+        <label class="field"><select id="images-margin" aria-label="Margin"></select></label>
+        <span class="sep"></span>
+        <span id="images-summary" class="summary"></span>
+        <button type="button" class="btn" id="images-open" disabled><svg class="ic" aria-hidden="true"><use href="#i-pages"/></svg>Open in Pages</button>
+        <button type="button" class="btn primary" id="images-download" disabled><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg>Download PDF</button>
+      </div>
+      <div class="stage">
+        <div class="state">
+          <svg class="state-ic" aria-hidden="true"><use href="#i-logo"/></svg>
+          <h2 class="state-title">Images to PDF</h2>
+          <p class="state-hint">Drop photos or screenshots anywhere on this page, or choose them. Each image becomes a page, in the order you give them.</p>
+          <button type="button" class="btn primary state-action" id="choose-images"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>Choose images</button>
+          <p id="images-note" role="status" class="state-note"></p>
+        </div>
+        <div class="content">
+          <ol id="image-list" class="files"></ol>
+        </div>
+      </div>
+      <div class="status"><span id="images-status" role="status"></span></div>
+      <input type="file" id="image-files" accept="image/*" multiple hidden>
+    </section>
+
+    <section role="tabpanel" id="panel-compress" class="panel" aria-labelledby="tab-compress" data-empty hidden>
+      <div class="props">
+        <button type="button" class="btn ghost" id="open-compress"><svg class="ic" aria-hidden="true"><use href="#i-file"/></svg>Open PDF</button>
+        <span class="sep"></span>
+        <button type="button" class="btn primary" id="compress-download" disabled><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg>Download compressed PDF</button>
+      </div>
+      <div class="stage">
+        <div class="state">
+          <svg class="state-ic" aria-hidden="true"><use href="#i-logo"/></svg>
+          <h2 class="state-title">Compress a PDF</h2>
+          <p class="state-hint">Drop a PDF anywhere on this page, or choose one. The photos inside are re-encoded here, on your computer, and you see the size before you download.</p>
+          <button type="button" class="btn primary state-action" id="choose-compress"><svg class="ic" aria-hidden="true"><use href="#i-file"/></svg>Choose a PDF</button>
+          <p id="compress-note" role="status" class="state-note"></p>
+        </div>
+        <div class="content">
+          <div class="panel-card">
+            <div class="compress-file"><svg class="ic" aria-hidden="true"><use href="#i-file"/></svg><span id="compress-name" class="name"></span><span id="compress-size" class="summary"></span></div>
+            <div class="seg" role="radiogroup" aria-label="Compression level" id="compress-levels"></div>
+            <p id="compress-describe" class="hint"></p>
+            <div class="meter" aria-hidden="true"><span id="compress-bar"></span></div>
+            <p id="compress-result" role="status" class="compress-result"></p>
+          </div>
+        </div>
+      </div>
+      <div class="status"><span id="compress-status" role="status"></span></div>
+      <input type="file" id="compress-file" accept="application/pdf" hidden>
     </section>
   </main>
 
   <dialog id="redact-dialog" aria-labelledby="redact-title">
-    <h2 id="redact-title">Redact page</h2>
-    <p class="hint">Drag on the page to cover what must disappear. The covered content is destroyed in the downloaded PDF: the whole page becomes a picture.</p>
-    <div id="redact-stage" class="stage">
-      <canvas id="redact-canvas"></canvas>
-      <div id="redact-layer"></div>
+    <div class="dlg-head">
+      <svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg>
+      <h2 id="redact-title">Redact page</h2>
+      <span class="sep"></span>
+      <span id="redact-count" class="summary"></span>
     </div>
-    <div class="toolbar">
-      <button type="button" id="redact-undo">Undo</button>
-      <button type="button" id="redact-clear">Clear</button>
-      <button type="button" id="redact-cancel">Cancel</button>
-      <button type="button" id="redact-done" class="primary">Done</button>
+    <p class="hint">Drag on the page to cover what must disappear. With the keyboard, focus the page: arrows move the crosshair (Shift for bigger steps), Enter starts a rectangle and Enter again places it; Tab goes through the rectangles, which move with the arrows, resize with Shift and the arrows, and go with Delete. In the downloaded PDF the whole page becomes a picture, so the covered content no longer exists.</p>
+    <span id="redact-live" class="vh" role="status"></span>
+    <div class="dlg-stage">
+      <div id="redact-stage" class="sheet-stage">
+        <canvas id="redact-canvas"></canvas>
+        <div id="redact-layer" tabindex="0" role="group" aria-label="Page. Arrow keys move the crosshair, Enter starts a rectangle and Enter again places it, Tab goes to the rectangles."></div>
+      </div>
+    </div>
+    <div class="dlg-foot">
+      <button type="button" class="btn" id="redact-undo"><svg class="ic" aria-hidden="true"><use href="#i-undo"/></svg>Undo</button>
+      <button type="button" class="btn ghost" id="redact-clear"><svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg>Clear</button>
+      <span class="sep"></span>
+      <button type="button" class="btn" id="redact-cancel">Cancel</button>
+      <button type="button" class="btn primary" id="redact-done"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Done</button>
     </div>
   </dialog>
+
+  <dialog id="stamp-dialog" aria-labelledby="stamp-title">
+    <div class="dlg-head">
+      <svg class="ic" aria-hidden="true"><use href="#i-text"/></svg>
+      <h2 id="stamp-title">Page numbers and watermark</h2>
+    </div>
+    <div class="dlg-body">
+      <fieldset>
+        <legend><label><input type="checkbox" id="numbers-on"> Page numbers</label></legend>
+        <label class="field">Position <select id="numbers-position"></select></label>
+        <label class="field">Format <select id="numbers-format"></select></label>
+        <label class="field">First number <input type="number" id="numbers-first" min="0" value="1"></label>
+        <label class="field">Size <input type="number" id="numbers-size" min="6" max="48" value="10"></label>
+        <label class="field wide"><input type="checkbox" id="numbers-skip"> Leave the first page without a number</label>
+      </fieldset>
+      <fieldset>
+        <legend><label><input type="checkbox" id="watermark-on"> Watermark</label></legend>
+        <label class="field wide">Text <input type="text" id="watermark-text" value="DRAFT" maxlength="60" spellcheck="false"></label>
+        <label class="field">Size <input type="number" id="watermark-size" min="12" max="200" value="72"></label>
+        <label class="field">Angle <input type="number" id="watermark-angle" min="-90" max="90" value="45"></label>
+        <label class="field wide">Opacity <input type="range" id="watermark-opacity" min="5" max="80" value="25"></label>
+      </fieldset>
+      <p id="stamp-error" role="alert" class="hint"></p>
+    </div>
+    <div class="dlg-foot">
+      <button type="button" class="btn ghost" id="stamp-clear">Remove both</button>
+      <span class="sep"></span>
+      <button type="button" class="btn" id="stamp-cancel">Cancel</button>
+      <button type="button" class="btn primary" id="stamp-apply"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Apply</button>
+    </div>
+  </dialog>
+
+  <dialog id="export-dialog" aria-labelledby="export-title">
+    <div class="dlg-head">
+      <svg class="ic" aria-hidden="true"><use href="#i-image"/></svg>
+      <h2 id="export-title">Export the pages as images</h2>
+    </div>
+    <div class="dlg-body">
+      <label class="field">Format <select id="export-format"><option value="image/png">PNG</option><option value="image/jpeg">JPEG</option></select></label>
+      <label class="field">Resolution <select id="export-dpi"><option value="72">72 dpi (screen)</option><option value="150" selected>150 dpi</option><option value="300">300 dpi (print)</option></select></label>
+      <p class="hint" id="export-note"></p>
+    </div>
+    <div class="dlg-foot">
+      <span class="sep"></span>
+      <button type="button" class="btn" id="export-cancel">Cancel</button>
+      <button type="button" class="btn primary" id="export-go"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg>Export</button>
+    </div>
+  </dialog>
+
+  <dialog id="find-dialog" aria-labelledby="find-title">
+    <div class="dlg-head">
+      <svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg>
+      <h2 id="find-title">Find text and redact it</h2>
+      <span class="sep"></span>
+      <span id="find-count" class="summary"></span>
+    </div>
+    <div class="dlg-body">
+      <fieldset class="presets" id="find-presets"><legend>Look for</legend></fieldset>
+      <label class="field wide">Words <input type="text" id="find-words" placeholder="Jean Dupont, Acme" spellcheck="false" aria-label="Words to find, separated by commas"></label>
+      <div><button type="button" class="btn" id="find-run"><svg class="ic" aria-hidden="true"><use href="#i-select"/></svg>Search the pages</button></div>
+      <ul id="find-results" class="results" aria-label="Matches"></ul>
+      <p id="find-note" role="status" class="hint"></p>
+    </div>
+    <div class="dlg-foot">
+      <button type="button" class="btn ghost" id="find-toggle">Select none</button>
+      <span class="sep"></span>
+      <button type="button" class="btn" id="find-cancel">Cancel</button>
+      <button type="button" class="btn primary" id="find-apply" disabled><svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg><span id="find-apply-label">Redact</span></button>
+    </div>
+  </dialog>
+
+  <div id="dropHint" role="presentation" hidden><p></p></div>
 
   <script type="module" src="app.js"></script>
 </body>

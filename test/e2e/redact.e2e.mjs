@@ -123,3 +123,46 @@ test('cancelling the editor keeps the previous redactions', async () => {
   await page.locator('#redact-cancel').click();
   assert.equal(await page.locator('#grid .box').count(), 1);
 });
+
+test('a rectangle can be placed, moved, resized and removed with the keyboard alone', async () => {
+  await openEditor();
+  const layer = page.locator('#redact-layer');
+  await page.locator('#redact-clear').click();
+  await layer.focus();
+  const rectangles = () => layer.locator('.box:not(.draft)');
+
+  await page.keyboard.press('Enter');
+  assert.match(await page.locator('#redact-live').innerText(), /Rectangle started/);
+  for (let i = 0; i < 20; i++) await page.keyboard.press('ArrowRight');
+  for (let i = 0; i < 10; i++) await page.keyboard.press('ArrowDown');
+  assert.equal(await layer.locator('.box.draft').count(), 1);
+  await page.keyboard.press('Enter');
+  assert.equal(await rectangles().count(), 1);
+  assert.match(await page.locator('#redact-live').innerText(), /Rectangle 1 added/);
+  assert.equal(await page.locator('#redact-count').innerText(), '1 rectangle');
+
+  const before = await rectangles().first().boundingBox();
+  assert.equal(await rectangles().first().evaluate((element) => element === document.activeElement), true);
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('Shift+ArrowRight');
+  const after = await rectangles().first().boundingBox();
+  assert.ok(after.x > before.x, 'it moved');
+  assert.ok(after.width > before.width, 'it grew');
+
+  await page.keyboard.press('Delete');
+  assert.equal(await rectangles().count(), 0);
+  assert.match(await page.locator('#redact-live').innerText(), /Rectangle removed/);
+
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#redact-dialog').isVisible(), true, 'Escape cancels the rectangle, not the dialog');
+  assert.equal(await layer.locator('.box.draft').count(), 0);
+
+  await page.keyboard.press('Enter');
+  for (let i = 0; i < 5; i++) await page.keyboard.press('Shift+ArrowRight');
+  for (let i = 0; i < 2; i++) await page.keyboard.press('Shift+ArrowDown');
+  await page.keyboard.press('Enter');
+  await page.locator('#redact-done').click();
+  await page.locator('#grid .badge').first().waitFor();
+  assert.equal(await page.locator('#grid .badge').first().innerText(), '1 redacted');
+});
