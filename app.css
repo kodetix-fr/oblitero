@@ -286,3 +286,42 @@ dialog::backdrop { background: var(--shade); }
 .crosshair::after { top: 9px; left: 0; width: 20px; height: 2px; }
 #redact-layer .box { cursor: crosshair; }
 #redact-layer .box:focus-visible { outline: 3px solid var(--ring); outline-offset: 1px; }
+
+/* ---------- sign and place ---------- */
+#sign-dialog { width: min(700px, calc(100vw - 32px)); }
+#sign-dialog[open] { grid-template-rows: auto minmax(0, 1fr) auto; }
+.sign-pane { display: grid; gap: 8px; }
+.sign-pane canvas { width: 100%; height: auto; border: 1px dashed var(--line-strong); border-radius: var(--r-s); background: #fff; touch-action: none; }
+#sign-pad { cursor: crosshair; }
+.sign-row { display: flex; align-items: center; gap: 12px; }
+.sign-row .hint { padding: 0; }
+#sign-error, #place-error { min-height: 1.2em; margin: 0; padding: 0; color: #b3261e; }
+#place-dialog { width: min(960px, calc(100vw - 32px)); }
+#place-dialog[open] { grid-template-rows: auto auto auto minmax(0, 1fr) auto; }
+.place-options { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 16px 0; }
+.place-options input[type="text"] { width: 260px; height: 28px; padding: 0 8px; border: 1px solid var(--field-line); border-radius: var(--r-s); background: var(--surface); }
+.place-options input[type="range"] { width: 130px; accent-color: var(--accent); }
+.scope { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.scope label { display: inline-flex; align-items: center; gap: 6px; }
+#place-layer { position: absolute; inset: 0; overflow: hidden; }
+.mark-draft { position: absolute; cursor: move; touch-action: none; outline: 1px dashed var(--accent); outline-offset: 2px; }
+.mark-draft:focus-visible { outline: 3px solid var(--ring); }
+.mark-draft img { display: block; width: 100%; height: 100%; pointer-events: none; user-select: none; }
+.mark-draft.text { color: #0f0f1a; font-family: Helvetica, Arial, sans-serif; line-height: 1; white-space: nowrap; user-select: none; }
+.mark-draft .handle { position: absolute; right: -6px; bottom: -6px; width: 12px; height: 12px; border-radius: 3px; background: var(--accent); cursor: nwse-resize; }
+.mark-img { position: absolute; pointer-events: none; }
+.mark-text { position: absolute; color: #0f0f1a; font-family: Helvetica, Arial, sans-serif; font-size: calc(var(--thumb-w) * var(--fit, 1) * var(--size)); line-height: 1; white-space: nowrap; pointer-events: none; }
+
+/* ---------- properties ---------- */
+#props-dialog { width: min(640px, calc(100vw - 32px)); }
+#props-dialog[open] { grid-template-rows: auto minmax(0, 1fr) auto; }
+#props-dialog .dlg-body { max-height: min(70vh, 640px); }
+#props-dialog fieldset { grid-template-columns: 1fr; }
+.section-title { margin: 0 0 8px; font-size: 13px; font-weight: 650; }
+.report { display: grid; gap: 10px; }
+.report-card { display: grid; gap: 6px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r-s); }
+.report-card h4 { margin: 0; overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.report-card dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 2px 14px; margin: 0; font-size: 12px; }
+.report-card dt { color: var(--muted); }
+.report-card dd { margin: 0; overflow-wrap: anywhere; }
+.report-card dd.none { color: var(--muted); }

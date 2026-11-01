@@ -1,4 +1,5 @@
 import { PDFDocument, degrees } from './vendor/pdf-lib.esm.min.js';
+import { drawMarks, newCache } from './marks.js';
 
 // `sources` are the bytes of the files the pages come from (an entry names its file by index). A page with redactions is
 // replaced by the picture burnPage returns, so nothing of its content survives; a blank page is an empty page. The output
@@ -10,9 +11,11 @@ export async function buildPdf(sources, entries, burnPage, finish) {
     if (!documents.has(file)) documents.set(file, await PDFDocument.load(sources[file]));
     return documents.get(file);
   };
-  const output = await PDFDocument.create();
+  const output = await PDFDocument.create({ updateMetadata: false });
   output.setProducer('Oblitero');
   output.setCreator('Oblitero');
+  output.setCreationDate(new Date());
+  output.setModificationDate(new Date());
 
   const copied = (entry) => entry.file !== null && entry.redactions.length === 0;
   const key = (entry) => `${entry.file}:${entry.source}`;
@@ -31,6 +34,7 @@ export async function buildPdf(sources, entries, burnPage, finish) {
     wanted.forEach((entry, i) => copies.set(key(entry), pages[i]));
   }
 
+  const marked = newCache();
   for (const entry of entries) {
     if (entry.blank) {
       output.addPage([entry.blank.width, entry.blank.height]).setRotation(degrees(entry.rotation));
@@ -45,6 +49,7 @@ export async function buildPdf(sources, entries, burnPage, finish) {
       page.setRotation(degrees((page.getRotation().angle + entry.rotation) % 360));
       output.addPage(page);
     }
+    await drawMarks(output, output.getPages().at(-1), entry.marks, marked);
   }
   await finish?.(output);
   return output.save();

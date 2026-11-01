@@ -47,6 +47,17 @@ Status: under construction, private until the first release.
   Each match is listed, can be switched off, and becomes a rectangle that covers
   the whole line of text it is in. Scanned pages have no text and are reported
   as not searched.
+- **Sign and add text**: sign with a drawn, typed or imported signature (an
+  imported scan gets a transparent paper), or put a line of text anywhere on a
+  page (a name, a date, a cross). Drag it where it belongs, or move it with the
+  arrow keys; apply it to one page, the selected pages or all of them. It is a
+  picture of a signature, not a digital signature with a certificate.
+- **Properties**: a report of what each file carries (title, author, dates, XMP,
+  embedded files, scripts, bookmarks, hidden layers, links, comments, form
+  fields), and the properties of the file you download, which you write
+  yourself. The download is a new document, so none of the document level data
+  of your files is copied; links and comments stay on the copied pages unless
+  you ask to remove them. The dates can be left out.
 - **Extract text**: the text of the shown pages (or of the selection) to a .txt
   file. A redacted page is written as `[redacted page]`.
 - **Export images**: the pages as PNG or JPEG at 72, 150 or 300 dpi, as a ZIP.
@@ -74,6 +85,9 @@ after the page, Ctrl/Cmd+Z and Shift+Ctrl/Cmd+Z undo and redo.
   in other encodings are kept as they are, so a PDF made of scanned PNG pages
   or of vector drawings may not shrink; the result says so. Bookmarks, forms and
   the rest of the structure are kept, and there is no PDF/A guarantee.
+- Text put on a page is limited to the same characters. Real form fields (the
+  boxes of an administrative form) are not detected yet: type into them with
+  Add text.
 - Page numbers and the watermark are drawn in the standard Helvetica: a
   character outside it is refused with a message.
 - Text extraction follows the order the file stores its text in, which is not
@@ -86,6 +100,18 @@ after the page, Ctrl/Cmd+Z and Shift+Ctrl/Cmd+Z undo and redo.
 The backlog is on the project board (milestones 0.1.0 and 0.2.0): signing and
 filling forms, finding text to redact, an interface in several languages,
 headers and footers, an image watermark, and more.
+
+## Performance
+
+Measured once on a development Mac (Apple silicon, Chromium 143), so only the
+order of magnitude matters. A 500-page text document opens and shows its first
+thumbnails in about a third of a second, with 17 MB of script memory. A scan of
+120 pages with one photo each (58 MB) opens in a quarter of a second, takes 2
+seconds to look for blank pages, 0.3 seconds to download, and 4 seconds to
+compress (Balanced); the memory peaks at about 240 MB during the download.
+Thumbnails are drawn only when they come into view. A 200 MB file has not been
+tried. `npm run bench` repeats the scan measurement (building the file takes
+about a second per page).
 
 ## Privacy
 

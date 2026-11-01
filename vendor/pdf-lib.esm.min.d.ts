@@ -1,4 +1,6 @@
 export const PDFDocument: any;
+export const PDFArray: any;
+export const PDFDict: any;
 export const PDFName: any;
 export const PDFNumber: any;
 export const PDFRawStream: any;

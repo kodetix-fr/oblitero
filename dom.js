@@ -1,6 +1,7 @@
 const SVG = 'http://www.w3.org/2000/svg';
 
 export const byId = (id) => /** @type {any} */ (document.getElementById(id));
+export const query = (selector) => /** @type {any} */ (document.querySelector(selector));
 
 export function icon(name) {
   const svg = document.createElementNS(SVG, 'svg');

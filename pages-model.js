@@ -1,10 +1,10 @@
 // A page of the document: where it comes from (`file`, and `source`, its index in that file) and what was done to it.
 export function createPages(count, { file = 0, firstId = 0 } = {}) {
-  return Array.from({ length: count }, (_, source) => ({ id: firstId + source, file, source, rotation: 0, redactions: [], hidden: false }));
+  return Array.from({ length: count }, (_, source) => ({ id: firstId + source, file, source, rotation: 0, redactions: [], marks: [], hidden: false }));
 }
 
 export function blankPage(id, width, height) {
-  return { id, file: null, source: null, blank: { width, height }, rotation: 0, redactions: [], hidden: false };
+  return { id, file: null, source: null, blank: { width, height }, rotation: 0, redactions: [], marks: [], hidden: false };
 }
 
 // Puts new entries right before or after the entry `targetId`, or at the end when there is no such entry.

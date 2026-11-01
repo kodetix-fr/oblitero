@@ -7,6 +7,11 @@ import { createHistory } from './history.js';
 import { openRedactor } from './redact-view.js';
 import { applyStamps } from './stamps.js';
 import { initFind } from './find-view.js';
+import { initSign } from './sign-view.js';
+import { initProperties } from './properties-view.js';
+import { DEFAULT_PROPERTIES, applyProperties } from './properties.js';
+import { placeMark } from './place-view.js';
+import { imageMark, textMark } from './marks.js';
 import { initStamps } from './stamp-view.js';
 import { byId, copyCanvas, icon, nearestEntry, sortable } from './dom.js';
 import { download } from './download.js';
@@ -47,6 +52,10 @@ export function initPages() {
     extractText: byId('extract-text'),
     stamps: byId('stamps'),
     find: byId('find'),
+    sign: byId('sign'),
+    properties: byId('properties'),
+    addText: byId('add-text'),
+    clearMarks: byId('clear-marks'),
     exportImages: byId('export-images'),
     undo: byId('undo'),
     redo: byId('redo'),
@@ -70,6 +79,10 @@ export function initPages() {
   let stamps = { numbers: null, watermark: null };
   const stampDialog = initStamps();
   const finder = initFind();
+  const signer = initSign();
+  const propertiesDialog = initProperties();
+  let properties = { ...DEFAULT_PROPERTIES };
+  let nextMark = 0;
   let documents = [];
   let nextId = 0;
   let pages = [];
@@ -88,6 +101,11 @@ export function initPages() {
   const setStatus = (text) => {
     status.textContent = text;
     note.textContent = text;
+  };
+  const urls = new WeakMap();
+  const markUrl = (png) => {
+    if (!urls.has(png)) urls.set(png, URL.createObjectURL(new Blob([png], { type: 'image/png' })));
+    return urls.get(png);
   };
   const thumbKey = (page) => `${generation}:${page.id}:${page.rotation}`;
   const plural = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`;
@@ -116,6 +134,7 @@ export function initPages() {
         : await pageSize(documents[thumb.file].doc, thumb.source, thumb.rotation);
       const fit = Math.min(THUMB_WIDTH / size.width, THUMB_HEIGHT / size.height);
       thumb.canvas.style.setProperty('--fit', String((size.width * fit) / THUMB_WIDTH));
+      thumb.canvas.parentElement?.style.setProperty('--fit', String((size.width * fit) / THUMB_WIDTH));
       if (thumb.blank) {
         thumb.canvas.width = Math.ceil(size.width * fit);
         thumb.canvas.height = Math.ceil(size.height * fit);
@@ -187,6 +206,19 @@ export function initPages() {
       Object.assign(box.style, { left: `${x * 100}%`, top: `${y * 100}%`, width: `${w * 100}%`, height: `${h * 100}%` });
       thumb.append(box);
     }
+    for (const mark of page.marks ?? []) {
+      if (mark.kind === 'image') {
+        const picture = Object.assign(document.createElement('img'), { className: 'mark-img', src: markUrl(mark.png), alt: '' });
+        Object.assign(picture.style, { left: `${mark.x * 100}%`, top: `${mark.y * 100}%`, width: `${mark.w * 100}%`, height: `${mark.h * 100}%` });
+        thumb.append(picture);
+      } else {
+        const text = Object.assign(document.createElement('span'), { className: 'mark-text', textContent: mark.text });
+        Object.assign(text.style, { left: `${mark.x * 100}%`, top: `${mark.y * 100}%` });
+        text.style.setProperty('--size', String(mark.size));
+        thumb.append(text);
+      }
+    }
+    thumb.style.setProperty('--fit', thumb.querySelector('canvas').style.getPropertyValue('--fit') || '1');
     const label = document.createElement('span');
     label.className = 'label';
     label.textContent = String(index + 1);
@@ -277,6 +309,11 @@ export function initPages() {
     controls.extractText.disabled = shown === 0;
     controls.stamps.disabled = shown === 0;
     controls.find.disabled = shown === 0;
+    controls.sign.disabled = shown === 0;
+    controls.properties.disabled = documents.length === 0;
+    controls.addText.disabled = shown === 0;
+    controls.clearMarks.disabled = false;
+    controls.clearMarks.hidden = !pages.some((page) => page.marks?.length);
     controls.exportImages.disabled = shown === 0;
     controls.downloadAll.disabled = shown === 0;
     hideLabel.textContent = allHidden ? 'Show' : 'Hide';
@@ -293,7 +330,7 @@ export function initPages() {
     const title = documents.length > 1 ? `${documents[0].name} and ${documents.length - 1} more` : (documents[0]?.name ?? '');
     name.textContent = title;
     name.title = title;
-    summary.textContent = `${none ? plural(pages.length, 'page') : `${selected.size} of ${pages.length} selected`}${hidden ? ` · ${hidden} hidden` : ''}${stamps.numbers ? ' · numbered' : ''}${stamps.watermark ? ' · watermark' : ''}${parts > 1 ? ` · ${parts} parts` : ''}`;
+    summary.textContent = `${none ? plural(pages.length, 'page') : `${selected.size} of ${pages.length} selected`}${hidden ? ` · ${hidden} hidden` : ''}${stamps.numbers ? ' · numbered' : ''}${stamps.watermark ? ' · watermark' : ''}${JSON.stringify(properties) === JSON.stringify(DEFAULT_PROPERTIES) ? '' : ' · properties'}${parts > 1 ? ` · ${parts} parts` : ''}`;
   }
 
   // ---------- state: every change goes through commit, so every change can be undone ----------
@@ -416,7 +453,11 @@ export function initPages() {
   async function hideBlankPages() {
     await run('Looking for blank pages...', async () => {
       const blank = new Set();
-      for (const page of pages) {
+      for (const [index, page] of pages.entries()) {
+        if (index % 8 === 0) {
+          setStatus(`Looking at page ${index + 1} of ${pages.length}...`);
+          await new Promise((resolve) => setTimeout(resolve));
+        }
         if (page.hidden) continue;
         if (page.blank || (page.redactions.length === 0 && (await inkOf(documents[page.file].doc, page.source)) < BLANK_INK)) blank.add(page.id);
       }
@@ -601,8 +642,18 @@ export function initPages() {
   // ---------- toolbar ----------
 
   const stem = () => documents[0].name.replace(/\.pdf$/i, '');
-  const asPdf = async (entries) =>
-    new Blob([await buildPdf(documents.map((document) => document.bytes), entries, (entry) => burnPage(documents[entry.file].doc, entry), (output) => applyStamps(output, stamps))], { type: 'application/pdf' });
+  const asPdf = async (entries) => {
+    const redacted = entries.filter((entry) => entry.redactions.length > 0).length;
+    let drawn = 0;
+    const burn = (entry) => {
+      setStatus(`Redacting page ${++drawn} of ${redacted}...`);
+      return burnPage(documents[entry.file].doc, entry);
+    };
+    return new Blob([await buildPdf(documents.map((document) => document.bytes), entries, burn, async (output) => {
+      await applyStamps(output, stamps);
+      applyProperties(output, properties);
+    })], { type: 'application/pdf' });
+  };
 
   async function run(label, work) {
     for (const control of Object.values(controls)) control.disabled = true;
@@ -641,6 +692,33 @@ export function initPages() {
   byId('export-go').addEventListener('click', () => {
     exportDialog.close();
     exportImages();
+  });
+  async function putMark(draft, notice) {
+    const target = lastSelected() ?? visible(pages)[0];
+    if (!target) return;
+    const placed = await placeMark({ doc: target.blank ? null : documents[target.file].doc, entry: target, draft, number: pages.indexOf(target) + 1, selectedCount: selected.size });
+    if (!placed) return;
+    const reach = placed.scope === 'all' ? new Set(visible(pages).map((page) => page.id)) : placed.scope === 'selection' ? new Set(selected) : new Set([target.id]);
+    const { mark } = placed;
+    const made = (id) => (mark.kind === 'image' ? imageMark(id, mark.png, mark.x, mark.y, mark.w, mark.h) : textMark(id, mark.text.trim(), mark.x, mark.y, mark.size));
+    commit({ pages: pages.map((page) => (reach.has(page.id) ? { ...page, marks: [...(page.marks ?? []), made(nextMark++)] } : page)) });
+    setStatus(`${notice} on ${plural(reach.size, 'page')}.`);
+  }
+  controls.properties.addEventListener('click', async () => {
+    const result = await propertiesDialog.open(documents, properties);
+    if (result) {
+      properties = result;
+      refresh();
+    }
+  });
+  controls.sign.addEventListener('click', async () => {
+    const signature = await signer.create();
+    if (signature) await putMark({ kind: 'image', png: signature.png, aspect: signature.aspect }, 'Signature placed');
+  });
+  controls.addText.addEventListener('click', () => putMark({ kind: 'text', text: 'Text', size: 0.025 }, 'Text placed'));
+  controls.clearMarks.addEventListener('click', () => {
+    const reach = selected.size ? selected : new Set(pages.map((page) => page.id));
+    commit({ pages: pages.map((page) => (reach.has(page.id) && page.marks?.length ? { ...page, marks: [] } : page)) });
   });
   controls.find.addEventListener('click', async () => {
     const candidates = visible(pages).filter((page) => !page.blank).map((page) => ({ page, number: pages.indexOf(page) + 1 }));

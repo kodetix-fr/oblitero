@@ -48,6 +48,8 @@
     <symbol id="i-text" viewBox="0 0 24 24"><path d="M5.5 7V5.5h13V7M12 5.5v13M9 18.5h6"/></symbol>
     <symbol id="i-image" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M5 17l4.5-4.5 3 3 2.5-2.5L19 17"/></symbol>
     <symbol id="i-compress" viewBox="0 0 24 24"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></symbol>
+    <symbol id="i-sign" viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17z"/><path d="M13.5 7.5l3 3M12 20h8"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8v.1"/></symbol>
     <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17.2v.1"/></symbol>
   </svg>
 
@@ -137,7 +139,11 @@
         <button type="button" class="btn sm" id="hide-blank" title="Hide the pages that hold no ink, such as the blank backs of a scan"><svg class="ic" aria-hidden="true"><use href="#i-eye-off"/></svg>Hide blank pages</button>
         <button type="button" class="btn sm" id="export-images" title="Save the pages as PNG or JPEG pictures (the selection, or all the pages)"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg>Export images</button>
         <button type="button" class="btn sm" id="find" title="Find e-mail addresses, phone numbers, IBAN, card numbers or words in the text, and cover them"><svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg>Find and redact</button>
+        <button type="button" class="btn sm" id="sign" title="Sign with a drawn, typed or imported signature"><svg class="ic" aria-hidden="true"><use href="#i-sign"/></svg>Sign</button>
+        <button type="button" class="btn sm" id="add-text" title="Put a line of text anywhere on a page: a name, a date, a cross"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg>Add text</button>
+        <button type="button" class="btn sm ghost" id="clear-marks" hidden title="Remove the signatures and texts of the selected pages, or of all the pages"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>Remove signatures and texts</button>
         <button type="button" class="btn sm" id="stamps" title="Number the pages and add a watermark to what you download"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg>Numbers and watermark</button>
+        <button type="button" class="btn sm" id="properties" title="See what the files carry, and write the properties of the file you download"><svg class="ic" aria-hidden="true"><use href="#i-info"/></svg>Properties</button>
         <button type="button" class="btn sm" id="extract-text" title="Write the text of the pages to a .txt file (the selection, or all the pages)"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg>Extract text</button>
       </div>
       </div>
@@ -319,6 +325,101 @@
       <span class="sep"></span>
       <button type="button" class="btn" id="find-cancel">Cancel</button>
       <button type="button" class="btn primary" id="find-apply" disabled><svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg><span id="find-apply-label">Redact</span></button>
+    </div>
+  </dialog>
+
+  <dialog id="sign-dialog" aria-labelledby="sign-title">
+    <div class="dlg-head">
+      <svg class="ic" aria-hidden="true"><use href="#i-sign"/></svg>
+      <h2 id="sign-title">Your signature</h2>
+    </div>
+    <div class="dlg-body">
+      <div class="seg" role="radiogroup" aria-label="How to make the signature">
+        <label><input type="radio" name="sign-mode" value="draw" checked><span>Draw</span></label>
+        <label><input type="radio" name="sign-mode" value="type"><span>Type</span></label>
+        <label><input type="radio" name="sign-mode" value="image"><span>Image</span></label>
+      </div>
+      <div id="sign-draw" class="sign-pane">
+        <canvas id="sign-pad" width="640" height="220" aria-label="Signature pad: draw with the pointer"></canvas>
+        <div class="sign-row"><button type="button" class="btn sm ghost" id="sign-reset">Clear</button><span class="hint">No pointer? Use Type or Image.</span></div>
+      </div>
+      <div id="sign-type" class="sign-pane" hidden>
+        <label class="field wide">Name <input type="text" id="sign-text" maxlength="40" spellcheck="false"></label>
+        <canvas id="sign-typed" width="640" height="220" aria-hidden="true"></canvas>
+      </div>
+      <div id="sign-image" class="sign-pane" hidden>
+        <label class="field wide">Image <input type="file" id="sign-file" accept="image/*"></label>
+        <label class="field wide"><input type="checkbox" id="sign-white" checked> Make the white of the paper transparent</label>
+        <canvas id="sign-photo" width="640" height="220" aria-hidden="true"></canvas>
+      </div>
+      <p class="hint">It is a picture of a signature, not a digital signature with a certificate.</p>
+      <p id="sign-error" role="alert" class="hint"></p>
+    </div>
+    <div class="dlg-foot">
+      <span class="sep"></span>
+      <button type="button" class="btn" id="sign-cancel">Cancel</button>
+      <button type="button" class="btn primary" id="sign-use"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Use this signature</button>
+    </div>
+  </dialog>
+
+  <dialog id="place-dialog" aria-labelledby="place-title">
+    <div class="dlg-head">
+      <svg class="ic" aria-hidden="true"><use href="#i-sign"/></svg>
+      <h2 id="place-title">Place it on the page</h2>
+      <span class="sep"></span>
+      <span id="place-where" class="summary"></span>
+    </div>
+    <div class="place-options">
+      <label class="field" id="place-text-field" hidden>Text <input type="text" id="place-text" maxlength="80" spellcheck="false"></label>
+      <button type="button" class="btn sm" id="place-date" hidden>Today</button>
+      <label class="field" id="place-size-field" hidden>Size <input type="range" id="place-size" min="12" max="70" value="25" aria-label="Size of the text"></label>
+      <span id="place-error" role="alert" class="hint"></span>
+    </div>
+    <p class="hint">Drag it where it belongs. With the keyboard, focus it: arrows move it, Shift and the arrows make it larger or smaller, Enter places it.</p>
+    <div class="dlg-stage">
+      <div id="place-stage" class="sheet-stage">
+        <canvas id="place-canvas"></canvas>
+        <div id="place-layer"></div>
+      </div>
+    </div>
+    <div class="dlg-foot">
+      <div class="scope" role="radiogroup" aria-label="Where to put it">
+        <label><input type="radio" name="place-scope" value="page" checked> This page</label>
+        <label id="scope-selection"><input type="radio" name="place-scope" value="selection"> The selected pages</label>
+        <label><input type="radio" name="place-scope" value="all"> All the pages</label>
+      </div>
+      <span class="sep"></span>
+      <button type="button" class="btn" id="place-cancel">Cancel</button>
+      <button type="button" class="btn primary" id="place-go"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Place</button>
+    </div>
+  </dialog>
+
+  <dialog id="props-dialog" aria-labelledby="props-title">
+    <div class="dlg-head">
+      <svg class="ic" aria-hidden="true"><use href="#i-info"/></svg>
+      <h2 id="props-title">Properties and hidden data</h2>
+    </div>
+    <div class="dlg-body">
+      <section>
+        <h3 class="section-title">What your files carry</h3>
+        <div id="props-report" class="report"></div>
+        <p class="hint">The file you download is a new document: the properties, embedded files, scripts, bookmarks and layers of your files are not copied into it. The links and comments stay on the pages that are copied, unless you remove them below.</p>
+      </section>
+      <fieldset>
+        <legend>The file you download</legend>
+        <label class="field wide">Title <input type="text" id="props-title-input" maxlength="200" spellcheck="false"></label>
+        <label class="field wide">Author <input type="text" id="props-author" maxlength="200" spellcheck="false"></label>
+        <label class="field wide">Subject <input type="text" id="props-subject" maxlength="200" spellcheck="false"></label>
+        <label class="field wide">Keywords <input type="text" id="props-keywords" maxlength="300" spellcheck="false" placeholder="separated by commas"></label>
+        <label class="field wide"><input type="checkbox" id="props-dates"> Write the creation and modification dates</label>
+        <label class="field wide"><input type="checkbox" id="props-strip"> Remove the links and comments from the pages</label>
+      </fieldset>
+    </div>
+    <div class="dlg-foot">
+      <button type="button" class="btn ghost" id="props-reset">Reset</button>
+      <span class="sep"></span>
+      <button type="button" class="btn" id="props-cancel">Cancel</button>
+      <button type="button" class="btn primary" id="props-apply"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Apply</button>
     </div>
   </dialog>
 

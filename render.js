@@ -62,9 +62,34 @@ export async function renderEnds(bytes, width) {
   }
 }
 
+// The size of a page as it is displayed, in points: its rotation applied.
+export async function entrySize(doc, entry) {
+  if (entry.blank) return entry.rotation % 180 ? { width: entry.blank.height, height: entry.blank.width } : { width: entry.blank.width, height: entry.blank.height };
+  return pageSize(doc, entry.source, entry.rotation);
+}
+
+const bitmaps = new WeakMap();
+
+// The pictures and the lines of text put on a page, drawn on its canvas as they will be in the PDF.
+async function paintMarks(canvas, marks) {
+  const context = canvas.getContext('2d');
+  for (const mark of marks ?? []) {
+    if (mark.kind === 'image') {
+      if (!bitmaps.has(mark.png)) bitmaps.set(mark.png, await createImageBitmap(new Blob([mark.png], { type: 'image/png' })));
+      context.drawImage(bitmaps.get(mark.png), mark.x * canvas.width, mark.y * canvas.height, mark.w * canvas.width, mark.h * canvas.height);
+    } else {
+      const size = mark.size * canvas.width;
+      context.fillStyle = '#0f0f1a';
+      context.font = `${size}px Helvetica, Arial, sans-serif`;
+      context.textBaseline = 'alphabetic';
+      context.fillText(mark.text, mark.x * canvas.width, mark.y * canvas.height + size * 0.8);
+    }
+  }
+}
+
 // A page as it will be downloaded, drawn at `scale`: its rotation applied, a blank page white, the rectangles painted black.
 // The rectangles grow to whole pixels outward, so no sliver of what they cover stays visible at their edges.
-export async function paintEntry(doc, entry, scale) {
+export async function paintEntry(doc, entry, scale, withMarks = false) {
   const canvas = document.createElement('canvas');
   if (entry.blank) {
     const turned = entry.rotation % 180 !== 0;
@@ -83,6 +108,7 @@ export async function paintEntry(doc, entry, scale) {
     const top = Math.floor(y * canvas.height);
     context.fillRect(left, top, Math.ceil((x + w) * canvas.width) - left, Math.ceil((y + h) * canvas.height) - top);
   }
+  if (withMarks) await paintMarks(canvas, entry.marks);
   return canvas;
 }
 
@@ -102,7 +128,7 @@ export async function burnPage(doc, entry) {
 export async function entryImage(doc, entry, dpi, type) {
   const size = entry.blank ? { width: entry.blank.width, height: entry.blank.height } : await pageSize(doc, entry.source, entry.rotation);
   const scale = Math.min(dpi / 72, MAX_SIDE / Math.max(size.width, size.height));
-  return toBlob(await paintEntry(doc, entry, scale), type, 0.92);
+  return toBlob(await paintEntry(doc, entry, scale, true), type, 0.92);
 }
 
 // The share of a page that is not white, drawn small: it tells a blank page from one that holds something.
