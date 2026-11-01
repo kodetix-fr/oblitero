@@ -1,0 +1,35 @@
+{
+  "name": "oblitero",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A Chrome extension (Manifest V3) to merge, split, sign and redact PDF files. 100% local, no account.",
+  "keywords": ["chrome-extension", "manifest-v3", "pdf", "merge", "redact", "privacy"],
+  "license": "MIT",
+  "author": "Bruno Bellenoue",
+  "homepage": "https://github.com/kodetix-fr/oblitero#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kodetix-fr/oblitero.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kodetix-fr/oblitero/issues"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "test": "node --test \"*.test.js\"",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json",
+    "check": "npm run lint && npm run typecheck && npm test"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/chrome": "0.3.4",
+    "@types/node": "22.20.4",
+    "eslint": "10.11.0",
+    "globals": "17.13.0",
+    "typescript": "7.0.2"
+  }
+}

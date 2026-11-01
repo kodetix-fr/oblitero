@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Oblitero",
+  "version": "0.1.0",
+  "minimum_chrome_version": "116",
+  "description": "Merge, split, sign and redact PDF files. 100% local, no account.",
+  "permissions": [],
+  "background": { "service_worker": "sw.js" },
+  "content_security_policy": {
+    "extension_pages": "default-src 'none'; script-src 'self'; object-src 'none'; style-src 'self'; img-src 'self' data: blob:; connect-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'"
+  },
+  "action": {
+    "default_title": "Oblitero"
+  }
+}

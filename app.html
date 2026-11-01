@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Oblitero</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <main>
+    <h1>Merge PDF files</h1>
+    <label class="picker">
+      <span>Choose PDF files, or drop them anywhere on this page</span>
+      <input type="file" id="files" accept="application/pdf" multiple>
+    </label>
+    <ol id="list"></ol>
+    <p id="status" role="status"></p>
+    <button type="button" id="merge" disabled>Merge</button>
+  </main>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
