@@ -1,0 +1,73 @@
+name: Bug report
+description: Something in the extension does not behave as it should
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For a security vulnerability, do not open an issue: follow
+        [SECURITY.md](https://github.com/kodetix-fr/oblitero/blob/main/SECURITY.md).
+
+        Do not attach a PDF that holds personal or confidential data.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you expected, and what the extension did instead. If a file was refused or slow, say how many pages and how big it is.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the Pages tool and choose a PDF ...
+        2. Select two pages and drag them ...
+        3. ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Merge
+        - Pages (grid, selection, drag and drop)
+        - Cut and ZIP of parts
+        - Hide and Show
+        - Redact
+        - Download or export
+        - Opening a file (refused, slow, wrong pages)
+        - Undo and redo
+        - Keyboard shortcuts
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: chrome
+    attributes:
+      label: Chrome version and system
+      description: From `chrome://version`.
+      placeholder: Chrome 143, Windows 11
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Oblitero version or commit
+      description: Shown in `chrome://extensions`, or in `manifest.json`.
+      placeholder: 0.1.0, or the commit you loaded
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: The console of the Oblitero tab (F12), if it logged something. Strip anything private.
+      render: text
