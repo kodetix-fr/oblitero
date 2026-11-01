@@ -8,15 +8,66 @@
 </head>
 <body>
   <main>
-    <h1>Merge PDF files</h1>
-    <label class="picker">
-      <span>Choose PDF files, or drop them anywhere on this page</span>
-      <input type="file" id="files" accept="application/pdf" multiple>
-    </label>
-    <ol id="list"></ol>
-    <p id="status" role="status"></p>
-    <button type="button" id="merge" disabled>Merge</button>
+    <h1>Oblitero</h1>
+    <div role="tablist" aria-label="Tools">
+      <button type="button" role="tab" id="tab-merge" aria-controls="panel-merge" aria-selected="true">Merge</button>
+      <button type="button" role="tab" id="tab-pages" aria-controls="panel-pages" aria-selected="false" tabindex="-1">Pages</button>
+    </div>
+
+    <section role="tabpanel" id="panel-merge" aria-labelledby="tab-merge">
+      <label class="picker">
+        <span>Choose PDF files to merge, or drop them anywhere on this page</span>
+        <input type="file" id="files" accept="application/pdf" multiple>
+      </label>
+      <ol id="list"></ol>
+      <p id="status" role="status"></p>
+      <button type="button" id="merge" disabled>Merge</button>
+    </section>
+
+    <section role="tabpanel" id="panel-pages" aria-labelledby="tab-pages" hidden>
+      <label class="picker">
+        <span>Choose a PDF to reorder, rotate, split or redact, or drop it anywhere on this page</span>
+        <input type="file" id="pages-file" accept="application/pdf">
+      </label>
+      <p id="pages-status" role="status"></p>
+      <div id="pages-tools" hidden>
+        <div class="toolbar" role="toolbar" aria-label="Selected pages">
+          <button type="button" id="select-all">Select all</button>
+          <button type="button" id="select-none">Select none</button>
+          <button type="button" id="rotate-left">Rotate left</button>
+          <button type="button" id="rotate-right">Rotate right</button>
+          <button type="button" id="move-earlier">Move earlier</button>
+          <button type="button" id="move-later">Move later</button>
+          <button type="button" id="delete">Delete</button>
+          <button type="button" id="redact">Redact</button>
+        </div>
+        <p class="hint">Click a page to select it, Shift+click to select a range.</p>
+        <ol id="grid" class="grid"></ol>
+        <div class="toolbar">
+          <button type="button" id="download-all" class="primary">Download PDF</button>
+          <button type="button" id="download-selected">Download selected pages</button>
+          <label class="inline">Split every <input type="number" id="split-size" min="1" value="1"> pages</label>
+          <button type="button" id="split">Download ZIP</button>
+        </div>
+      </div>
+    </section>
   </main>
+
+  <dialog id="redact-dialog" aria-labelledby="redact-title">
+    <h2 id="redact-title">Redact page</h2>
+    <p class="hint">Drag on the page to cover what must disappear. The covered content is destroyed in the downloaded PDF: the whole page becomes a picture.</p>
+    <div id="redact-stage" class="stage">
+      <canvas id="redact-canvas"></canvas>
+      <div id="redact-layer"></div>
+    </div>
+    <div class="toolbar">
+      <button type="button" id="redact-undo">Undo</button>
+      <button type="button" id="redact-clear">Clear</button>
+      <button type="button" id="redact-cancel">Cancel</button>
+      <button type="button" id="redact-done" class="primary">Done</button>
+    </div>
+  </dialog>
+
   <script type="module" src="app.js"></script>
 </body>
 </html>

@@ -5,7 +5,7 @@ const NO_HTML = 'Forbidden: interprets HTML (file names flow through the UI). Us
 const HTML_SINKS = ['innerHTML', 'outerHTML', 'insertAdjacentHTML', 'createContextualFragment', 'setHTMLUnsafe', 'parseHTMLUnsafe'];
 
 const WORKER = ['sw.js'];
-const NODE = ['**/*.test.js', 'eslint.config.js'];
+const NODE = ['**/*.test.js', 'eslint.config.js', 'test/**/*.mjs'];
 
 export default [
   { ignores: ['vendor/', 'dist/', 'node_modules/', 'coverage/'] },
@@ -50,5 +50,10 @@ export default [
   {
     files: NODE,
     languageOptions: { globals: globals.node },
+  },
+  // Functions passed to page.evaluate run in the browser.
+  {
+    files: ['test/**/*.mjs'],
+    languageOptions: { globals: { ...globals.browser, chrome: 'readonly' } },
   },
 ];

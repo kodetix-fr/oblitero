@@ -1,0 +1,125 @@
+import test, { after, before } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { launchExtension, writePdf } from './support/browser.mjs';
+
+const hexText = (text) => `FEFF${[...text].map((c) => c.charCodeAt(0).toString(16).padStart(4, '0')).join('')}`.toUpperCase();
+const hasText = (bytes, text) => bytes.toString('latin1').toUpperCase().includes(hexText(text));
+
+// The box covers the text of page 1: x 0.02-0.62, y 0.04-0.17 of a 400 point page.
+const BOX = { x0: 0.02, y0: 0.04, x1: 0.62, y1: 0.17 };
+
+let app;
+let page;
+let sourcePath;
+before(async () => {
+  app = await launchExtension();
+  sourcePath = await writePdf(
+    app.dir,
+    'secret.pdf',
+    [
+      { size: 400, text: 'SECRET-12345' },
+      { size: 400, text: 'PUBLIC-67890' },
+    ],
+    { title: 'SECRET-TITLE' },
+  );
+  page = await app.openApp();
+  await page.getByRole('tab', { name: 'Pages' }).click();
+  await page.setInputFiles('#pages-file', sourcePath);
+  await page.locator('#grid li').nth(1).waitFor();
+});
+after(async () => {
+  const errors = app.errors;
+  await app.close();
+  assert.deepEqual(errors, []);
+});
+
+async function clearSelection() {
+  await page.locator('#select-all').click();
+  await page.locator('#select-none').click();
+}
+
+async function openEditor() {
+  await clearSelection();
+  await page.getByRole('button', { name: /^Page 1/ }).click();
+  await page.locator('#redact').click();
+  await page.locator('#redact-dialog').waitFor({ state: 'visible' });
+}
+
+async function drawBox() {
+  await openEditor();
+  const bounds = await page.locator('#redact-layer').boundingBox();
+  const at = (fx, fy) => [bounds.x + fx * bounds.width, bounds.y + fy * bounds.height];
+  await page.mouse.move(...at(BOX.x0, BOX.y0));
+  await page.mouse.down();
+  await page.mouse.move(...at((BOX.x0 + BOX.x1) / 2, BOX.y1), { steps: 4 });
+  await page.mouse.move(...at(BOX.x1, BOX.y1), { steps: 4 });
+  await page.mouse.up();
+}
+
+// Opens the downloaded bytes with pdf.js in the app page: the text of page 1 and the luminance at two points of it.
+function inspect(bytes, points) {
+  return page.evaluate(
+    async ({ bytes, points }) => {
+      const { openRender, renderPage } = await import('./render.js');
+      const doc = await openRender(new Uint8Array(bytes));
+      const text = async (index) => (await (await doc.getPage(index)).getTextContent()).items.map((item) => item.str).join(' ');
+      const canvas = document.createElement('canvas');
+      await renderPage(doc, 0, 0, canvas, 1);
+      const context = canvas.getContext('2d');
+      const luminance = points.map(([fx, fy]) => {
+        const [r, g, b] = context.getImageData(Math.round(fx * canvas.width), Math.round(fy * canvas.height), 1, 1).data;
+        return (r + g + b) / 3;
+      });
+      const { info } = await doc.getMetadata();
+      return { pages: doc.numPages, first: await text(1), second: await text(2), title: info.Title ?? '', luminance };
+    },
+    { bytes: Array.from(bytes), points },
+  );
+}
+
+async function downloadAll(name) {
+  const [download] = await Promise.all([page.waitForEvent('download'), page.locator('#download-all').click()]);
+  const path = join(app.dir, name);
+  await download.saveAs(path);
+  return readFileSync(path);
+}
+
+test('the redacted page loses its content and metadata; the other page keeps its text', async () => {
+  await drawBox();
+  await page.locator('#redact-done').click();
+  await page.locator('#grid .box').waitFor();
+  assert.equal(await page.locator('#grid .box').count(), 1);
+
+  assert.ok(hasText(readFileSync(sourcePath), 'SECRET-TITLE'), 'the source has no title to lose');
+  const bytes = await downloadAll('redacted.pdf');
+
+  const centre = [(BOX.x0 + BOX.x1) / 2, (BOX.y0 + BOX.y1) / 2];
+  const result = await inspect(bytes, [centre, [0.5, 0.6]]);
+  assert.equal(result.pages, 2);
+  assert.equal(result.title, '', 'the title of the source is still in the file');
+  assert.equal(result.first, '', 'page 1 still has selectable text');
+  assert.match(result.second, /PUBLIC-67890/);
+  assert.ok(result.luminance[0] < 30, `the box is not black (${result.luminance[0]})`);
+  assert.ok(result.luminance[1] > 225, `the rest of the page is not white (${result.luminance[1]})`);
+});
+
+test('rotating a page turns its redactions with it', async () => {
+  await clearSelection();
+  await page.getByRole('button', { name: /^Page 1/ }).click();
+  await page.locator('#rotate-right').click();
+
+  const bytes = await downloadAll('rotated.pdf');
+  const turned = [1 - (BOX.y0 + BOX.y1) / 2, (BOX.x0 + BOX.x1) / 2];
+  const result = await inspect(bytes, [turned, [(BOX.x0 + BOX.x1) / 2, (BOX.y0 + BOX.y1) / 2]]);
+  assert.ok(result.luminance[0] < 30, `the turned box is not black (${result.luminance[0]})`);
+  assert.ok(result.luminance[1] > 225, `the old place of the box is not white (${result.luminance[1]})`);
+});
+
+test('cancelling the editor keeps the previous redactions', async () => {
+  await openEditor();
+  await page.locator('#redact-clear').click();
+  await page.locator('#redact-cancel').click();
+  assert.equal(await page.locator('#grid .box').count(), 1);
+});

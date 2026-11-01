@@ -26,14 +26,41 @@ body {
 }
 
 main {
-  max-width: 40rem;
+  max-width: 64rem;
   margin: 0 auto;
   padding: 2rem 1rem;
 }
 
 h1 {
-  margin: 0 0 1.5rem;
+  margin: 0 0 1rem;
   font-size: 1.5rem;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+[role='tablist'] {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+[role='tab'] {
+  border: 0;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+}
+
+[role='tab'][aria-selected='true'] {
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .picker {
@@ -84,7 +111,8 @@ button:disabled {
   cursor: not-allowed;
 }
 
-#merge {
+#merge,
+.primary {
   border-color: var(--accent);
   background: var(--accent);
   color: var(--accent-fg);
@@ -93,4 +121,123 @@ button:disabled {
 #status {
   min-height: 1.5rem;
   color: var(--muted);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.hint {
+  margin: 0.5rem 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.inline input {
+  width: 4rem;
+  padding: 0.3rem;
+  border: 1px solid var(--line);
+  border-radius: 0.375rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.grid li {
+  display: block;
+  padding: 0;
+  border: 0;
+}
+
+.card {
+  display: grid;
+  gap: 0.25rem;
+  width: 100%;
+  padding: 0.5rem;
+  border: 2px solid var(--line);
+  text-align: center;
+}
+
+.card[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.thumb {
+  position: relative;
+  justify-self: center;
+  line-height: 0;
+}
+
+.thumb canvas {
+  display: block;
+  width: 150px;
+  height: auto;
+  background: #fff;
+}
+
+.box {
+  position: absolute;
+  background: #000;
+}
+
+.box.draft {
+  opacity: 0.6;
+}
+
+dialog {
+  max-width: calc(100vw - 2rem);
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+dialog::backdrop {
+  background: rgb(0 0 0 / 0.6);
+}
+
+dialog h2 {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.stage {
+  position: relative;
+  margin: 0 auto;
+}
+
+.stage canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #fff;
+}
+
+#redact-layer {
+  position: absolute;
+  inset: 0;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+#redact-layer .box {
+  opacity: 0.75;
 }

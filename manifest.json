@@ -7,7 +7,7 @@
   "permissions": [],
   "background": { "service_worker": "sw.js" },
   "content_security_policy": {
-    "extension_pages": "default-src 'none'; script-src 'self'; object-src 'none'; style-src 'self'; img-src 'self' data: blob:; connect-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'"
+    "extension_pages": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; object-src 'none'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; frame-src 'none'; form-action 'none'; base-uri 'none'"
   },
   "action": {
     "default_title": "Oblitero"
