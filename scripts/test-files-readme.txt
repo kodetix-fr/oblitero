@@ -81,8 +81,13 @@ rapport-10-pages.pdf
     Numbers and watermark : saute la couverture (premier numero 1 a la page 2).
 
 deux-colonnes.pdf
-    Deux pages en deux colonnes avec un tableau. Extract text : l'ordre des
-    colonnes n'est pas toujours celui de la lecture (limite connue).
+    Deux pages en deux colonnes avec un tableau. Extract text : titre, colonne
+    de gauche, colonne de droite, puis le tableau ligne par ligne.
+
+deux-colonnes-entrelacees.pdf
+    Une page en deux colonnes dont le texte est dessine ligne par ligne, une
+    ligne a gauche (G1, G2...), une a droite (D1, D2...). Extract text lit la
+    colonne de gauche en entier, puis celle de droite : G1 a G12, puis D1 a D12.
 
 metadonnees.pdf
     Titre, auteur, sujet, mots-cles, createur, producteur, dates, tous marques

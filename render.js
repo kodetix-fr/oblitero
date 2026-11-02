@@ -1,5 +1,6 @@
 import * as pdfjs from './vendor/pdfjs/pdf.min.mjs';
 import { multiply, runBox } from './find.js';
+import { readingText } from './reading-order.js';
 import { t } from './i18n.js';
 
 const resource = (path) => new URL(`vendor/pdfjs/${path}`, import.meta.url).href;
@@ -130,10 +131,19 @@ export async function inkOf(doc, index, thumbWidth = 72) {
   return { ink: ink / (canvas.width * canvas.height), thumb };
 }
 
+// The text of a page in reading order: from the position of each run, not from the order the file draws them in.
 export async function textOf(doc, index) {
   const page = await doc.getPage(index + 1);
+  const viewport = viewportOf(page, 1, 0);
   const { items } = await page.getTextContent();
-  return items.map((item) => item.str + (item.hasEOL ? '\n' : '')).join('').replace(/[ \t]+\n/g, '\n').trim();
+  return readingText(
+    items
+      .filter((item) => 'str' in item)
+      .map((item) => {
+        const m = multiply(viewport.transform, item.transform);
+        return { text: item.str, x: m[4], y: m[5], width: item.width * viewport.scale, height: Math.hypot(m[2], m[3]) || item.height * viewport.scale };
+      }),
+  );
 }
 
 // The text of a page as it is displayed, and the box of each text run on it, so that a match in the text can be covered.

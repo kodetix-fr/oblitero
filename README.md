@@ -105,8 +105,11 @@ after the page, Ctrl/Cmd+Z and Shift+Ctrl/Cmd+Z undo and redo.
   calculations) do not run; a multiple choice list keeps one choice.
 - Page numbers and the watermark are drawn in the standard Helvetica: a
   character outside it is refused with a message.
-- Text extraction follows the order the file stores its text in, which is not
-  always the reading order of a page with columns.
+- Text extraction reads the page from the position of its text, not from the
+  order the file draws it in: columns are read one after the other, a header
+  before them, a table row by row. It is a guess from the layout, so a page with
+  a sidebar, a table whose cells hold long text, or vertical text can come out in
+  the wrong order.
 - Encrypted PDF files are refused.
 - Only tested with the Chromium that ships with Playwright 1.57.
 

@@ -407,7 +407,7 @@ function wrap(font, size, text, width) {
       let y = 740;
       page.drawText(column ? 'Colonne de droite' : 'Colonne de gauche', { x, y, size: 13, font: bold });
       y -= 26;
-      for (let paragraph = 0; paragraph < 3; paragraph++) {
+      for (let paragraph = 0; paragraph < 2; paragraph++) {
         for (const line of wrap(font, 11, LOREM, 230)) {
           page.drawText(line, { x, y, size: 11, font });
           y -= 15;
@@ -427,6 +427,22 @@ function wrap(font, size, text, width) {
     }
   }
   await write('pages/deux-colonnes.pdf', document);
+}
+
+{
+  const document = await PDFDocument.create();
+  const font = await document.embedFont(StandardFonts.Helvetica);
+  const bold = await document.embedFont(StandardFonts.HelveticaBold);
+  const page = document.addPage(A4);
+  page.drawText('Journal en deux colonnes, dessiné ligne par ligne', { x: 56, y: 790, size: 18, font: bold });
+  const left = wrap(font, 11, LOREM, 215).slice(0, 12).map((line, i) => `G${i + 1} ${line}`);
+  const right = wrap(font, 11, LOREM, 215).slice(0, 12).map((line, i) => `D${i + 1} ${line}`);
+  left.forEach((line, i) => {
+    page.drawText(line, { x: 56, y: 740 - i * 15, size: 11, font });
+    page.drawText(right[i], { x: 310, y: 740 - i * 15, size: 11, font });
+  });
+  page.drawText('Pied de page', { x: 56, y: 40, size: 10, font });
+  await write('pages/deux-colonnes-entrelacees.pdf', document);
 }
 
 // Pages: a form without fields, to be filled with text and a signature.
