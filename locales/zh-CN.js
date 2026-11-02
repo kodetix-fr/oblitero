@@ -370,4 +370,12 @@ export default {
   'stamp.error-range': '不是有效的页面列表。请试试 2-5, 8',
   'summary.header': '页眉',
   'summary.footer': '页脚',
+  // watermark image
+  'stamp.kind': '类型',
+  'stamp.kind-text': '文字',
+  'stamp.kind-image': '图片',
+  'stamp.image': '图片',
+  'stamp.scale': '宽度',
+  'stamp.tile': '在整页重复',
+  'stamp.image-kept': '图片：{name}',
 };

@@ -370,4 +370,12 @@ export default {
   'stamp.error-range': 'Liste de pages non valide. Essaie 2-5, 8',
   'summary.header': 'en-tête',
   'summary.footer': 'pied de page',
+  // watermark image
+  'stamp.kind': 'Type',
+  'stamp.kind-text': 'Texte',
+  'stamp.kind-image': 'Image',
+  'stamp.image': 'Image',
+  'stamp.scale': 'Largeur',
+  'stamp.tile': 'Répéter sur toute la page',
+  'stamp.image-kept': 'Image : {name}',
 };

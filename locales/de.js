@@ -370,4 +370,12 @@ export default {
   'stamp.error-range': 'Keine gültige Seitenliste. Versuche 2-5, 8',
   'summary.header': 'Kopfzeile',
   'summary.footer': 'Fußzeile',
+  // watermark image
+  'stamp.kind': 'Art',
+  'stamp.kind-text': 'Text',
+  'stamp.kind-image': 'Bild',
+  'stamp.image': 'Bild',
+  'stamp.scale': 'Breite',
+  'stamp.tile': 'Über die ganze Seite wiederholen',
+  'stamp.image-kept': 'Bild: {name}',
 };

@@ -370,4 +370,12 @@ export default {
   'stamp.error-range': 'Bukan daftar halaman. Coba 2-5, 8',
   'summary.header': 'header',
   'summary.footer': 'footer',
+  // watermark image
+  'stamp.kind': 'Jenis',
+  'stamp.kind-text': 'Teks',
+  'stamp.kind-image': 'Gambar',
+  'stamp.image': 'Gambar',
+  'stamp.scale': 'Lebar',
+  'stamp.tile': 'Ulangi di seluruh halaman',
+  'stamp.image-kept': 'Gambar: {name}',
 };

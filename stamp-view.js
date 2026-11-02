@@ -1,11 +1,12 @@
 import { FORMATS, NO_STAMPS, POSITIONS, checkText } from './stamps.js';
 import { parseRange } from './pages-model.js';
 import { byId, setI18n } from './dom.js';
+import { readPhoto } from './photo.js';
 import { t } from './i18n.js';
 
 const DEFAULTS = {
   numbers: { position: 'bottom-center', format: 'of', first: 1, size: 10, skipFirst: false },
-  watermark: { text: 'DRAFT', size: 72, opacity: 0.25, angle: 45 },
+  watermark: { kind: 'text', text: 'DRAFT', size: 72, opacity: 0.25, angle: 45, scale: 50, tile: false, image: null },
   header: { text: '', align: 'center', size: 10 },
   footer: { text: '', align: 'center', size: 10 },
 };
@@ -22,6 +23,29 @@ export function initStamps() {
   );
   field('numbers-format').replaceChildren(...FORMATS.map(([value, text]) => Object.assign(document.createElement('option'), { value, textContent: text })));
 
+  let image = null;
+  const syncKind = () => {
+    const picture = field('watermark-kind').value === 'image';
+    for (const id of ['watermark-text-field', 'watermark-size-field']) byId(id).hidden = picture;
+    for (const id of ['watermark-image-field', 'watermark-scale-field']) byId(id).hidden = !picture;
+  };
+  const showImageName = () => {
+    byId('watermark-image-name').textContent = image ? t('stamp.image-kept', { name: image.name }) : '';
+  };
+  field('watermark-kind').addEventListener('change', syncKind);
+  field('watermark-file').addEventListener('change', async () => {
+    const file = field('watermark-file').files[0];
+    if (!file) return;
+    try {
+      image = { ...(await readPhoto(file)), name: file.name };
+      field('stamp-error').textContent = '';
+    } catch {
+      field('stamp-error').textContent = t('sign.error-open');
+    }
+    field('watermark-file').value = '';
+    showImageName();
+  });
+
   function show(current) {
     const numbers = current.numbers ?? DEFAULTS.numbers;
     const watermark = current.watermark ?? DEFAULTS.watermark;
@@ -32,6 +56,12 @@ export function initStamps() {
     field('numbers-size').value = String(numbers.size);
     field('numbers-skip').checked = numbers.skipFirst;
     field('watermark-on').checked = !!current.watermark;
+    field('watermark-kind').value = watermark.kind ?? 'text';
+    field('watermark-scale').value = String(watermark.scale ?? 50);
+    field('watermark-tile').checked = !!watermark.tile;
+    image = watermark.image ?? null;
+    showImageName();
+    syncKind();
     field('watermark-text').value = watermark.text;
     field('watermark-size').value = String(watermark.size);
     field('watermark-angle').value = String(watermark.angle);
@@ -68,6 +98,10 @@ export function initStamps() {
         : null,
       watermark: field('watermark-on').checked
         ? {
+            kind: field('watermark-kind').value,
+            image,
+            scale: number('watermark-scale', 50, 10, 100),
+            tile: field('watermark-tile').checked,
             text: field('watermark-text').value.trim(),
             size: number('watermark-size', 72, 12, 200),
             angle: number('watermark-angle', 45, -90, 90),
@@ -91,7 +125,8 @@ export function initStamps() {
         async () => {
           const settings = read();
           const problem =
-            (settings.watermark && !settings.watermark.text && 'stamp.error.text') ||
+            (settings.watermark?.kind === 'text' && !settings.watermark.text && 'stamp.error.text') ||
+            (settings.watermark?.kind === 'image' && !settings.watermark.image && 'sign.error-image') ||
             (settings.header && !settings.header.text && 'stamp.error-header') ||
             (settings.footer && !settings.footer.text && 'stamp.error-footer') ||
             (settings.range && parseRange(settings.range, 1e6) === null && 'stamp.error-range');
@@ -100,7 +135,7 @@ export function initStamps() {
             return;
           }
           try {
-            for (const text of [settings.watermark?.text, settings.header?.text, settings.footer?.text]) if (text) await checkText(text);
+            for (const text of [settings.watermark?.kind === 'text' ? settings.watermark.text : '', settings.header?.text, settings.footer?.text]) if (text) await checkText(text);
           } catch (error) {
             field('stamp-error').textContent = error.message;
             return;

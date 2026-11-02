@@ -370,4 +370,12 @@ export default {
   'stamp.error-range': 'Это не список страниц. Попробуйте 2-5, 8',
   'summary.header': 'верхний колонтитул',
   'summary.footer': 'нижний колонтитул',
+  // watermark image
+  'stamp.kind': 'Тип',
+  'stamp.kind-text': 'Текст',
+  'stamp.kind-image': 'Изображение',
+  'stamp.image': 'Изображение',
+  'stamp.scale': 'Ширина',
+  'stamp.tile': 'Повторять по всей странице',
+  'stamp.image-kept': 'Изображение: {name}',
 };

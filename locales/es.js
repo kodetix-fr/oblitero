@@ -370,4 +370,12 @@ export default {
   'stamp.error-range': 'No es una lista de páginas. Prueba 2-5, 8',
   'summary.header': 'encabezado',
   'summary.footer': 'pie de página',
+  // watermark image
+  'stamp.kind': 'Tipo',
+  'stamp.kind-text': 'Texto',
+  'stamp.kind-image': 'Imagen',
+  'stamp.image': 'Imagen',
+  'stamp.scale': 'Ancho',
+  'stamp.tile': 'Repetir por toda la página',
+  'stamp.image-kept': 'Imagen: {name}',
 };

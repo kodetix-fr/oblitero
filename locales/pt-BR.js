@@ -375,4 +375,12 @@ export default {
   'stamp.error-range': 'Não é uma lista de páginas. Tente 2-5, 8',
   'summary.header': 'cabeçalho',
   'summary.footer': 'rodapé',
+  // watermark image
+  'stamp.kind': 'Tipo',
+  'stamp.kind-text': 'Texto',
+  'stamp.kind-image': 'Imagem',
+  'stamp.image': 'Imagem',
+  'stamp.scale': 'Largura',
+  'stamp.tile': 'Repetir pela página inteira',
+  'stamp.image-kept': 'Imagem: {name}',
 };

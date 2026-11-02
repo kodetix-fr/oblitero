@@ -406,4 +406,12 @@ export default {
   'stamp.error-range': 'Not a list of pages. Try 2-5, 8',
   'summary.header': 'header',
   'summary.footer': 'footer',
+  // watermark image
+  'stamp.kind': 'Type',
+  'stamp.kind-text': 'Text',
+  'stamp.kind-image': 'Image',
+  'stamp.image': 'Image',
+  'stamp.scale': 'Width',
+  'stamp.tile': 'Repeat across the page',
+  'stamp.image-kept': 'Image: {name}',
 };

@@ -375,4 +375,12 @@ export default {
   'stamp.error-range': 'ページの一覧として読み取れません。2-5, 8 のように入力してください。',
   'summary.header': 'ヘッダー',
   'summary.footer': 'フッター',
+  // watermark image
+  'stamp.kind': '種類',
+  'stamp.kind-text': 'テキスト',
+  'stamp.kind-image': '画像',
+  'stamp.image': '画像',
+  'stamp.scale': '幅',
+  'stamp.tile': 'ページ全体に繰り返す',
+  'stamp.image-kept': '画像: {name}',
 };

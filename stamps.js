@@ -12,6 +12,7 @@ export const FORMATS = [
   ['page', 'Page 3'],
 ];
 const MARGIN = 28;
+const MAX_TILES = 400;
 const INK = rgb(0.15, 0.15, 0.15);
 
 // The text of a header or a footer, with {page} and {pages} replaced by the number of the page and the number of pages.
@@ -50,6 +51,39 @@ function drawTextAt(page, font, text, size, x, y, angle, options = {}) {
   const { width, height } = page.getSize();
   const point = toPage(rotation, width, height, x, y);
   page.drawText(text, { x: point.x, y: point.y, size, font, color: INK, rotate: degrees(rotation + angle), ...options });
+}
+
+function drawImageAt(page, image, width, height, x, y, angle, opacity) {
+  const rotation = page.getRotation().angle;
+  const size = page.getSize();
+  const point = toPage(rotation, size.width, size.height, x, y);
+  page.drawImage(image, { x: point.x, y: point.y, width, height, rotate: degrees(rotation + angle), opacity });
+}
+
+// The bottom left corner of a box of `width` by `height`, turned by `angle` degrees around its center (centerX, centerY).
+export function cornerOf(centerX, centerY, width, height, angle) {
+  const radians = (angle * Math.PI) / 180;
+  return { x: centerX - ((width / 2) * Math.cos(radians) - (height / 2) * Math.sin(radians)), y: centerY - ((width / 2) * Math.sin(radians) + (height / 2) * Math.cos(radians)) };
+}
+
+// The centers of a mark that is repeated across a page, in rows that are shifted by half a step; the steps leave room for the
+// mark once it is turned, and grow when the page would hold more than `MAX_TILES` of them.
+export function tileCenters(width, height, markWidth, markHeight, angle) {
+  const radians = (angle * Math.PI) / 180;
+  const boxWidth = Math.abs(markWidth * Math.cos(radians)) + Math.abs(markHeight * Math.sin(radians));
+  const boxHeight = Math.abs(markWidth * Math.sin(radians)) + Math.abs(markHeight * Math.cos(radians));
+  let stepX = Math.max(boxWidth * 1.5, 24);
+  let stepY = Math.max(boxHeight * 2, 24);
+  const crowd = Math.sqrt(((width / stepX + 1) * (height / stepY + 1)) / MAX_TILES);
+  if (crowd > 1) {
+    stepX *= crowd;
+    stepY *= crowd;
+  }
+  const centers = [];
+  for (let row = 0, y = stepY / 2; y < height + stepY / 2; row++, y += stepY) {
+    for (let x = row % 2 ? 0 : stepX / 2; x < width + stepX / 2; x += stepX) centers.push([x, y]);
+  }
+  return centers;
 }
 
 const displaySize = (page) => {
@@ -97,16 +131,19 @@ export async function applyStamps(output, settings) {
     });
   }
   if (settings.watermark) {
-    const { text, size, opacity, angle } = settings.watermark;
-    const radians = (angle * Math.PI) / 180;
-    const half = font.widthOfTextAtSize(text, size) / 2;
-    const rise = size * 0.3;
+    const mark = settings.watermark;
+    const { angle, opacity } = mark;
+    const image = mark.kind === 'image' ? await (mark.image.kind === 'png' ? output.embedPng(mark.image.bytes) : output.embedJpg(mark.image.bytes)) : null;
     for (const [index, page] of pages.entries()) {
       if (!reaches(index)) continue;
       const box = displaySize(page);
-      const x = box.width / 2 - (half * Math.cos(radians) - rise * Math.sin(radians));
-      const y = box.height / 2 - (half * Math.sin(radians) + rise * Math.cos(radians));
-      drawTextAt(page, font, text, size, x, y, angle, { opacity, color: rgb(0.45, 0.45, 0.45) });
+      const width = image ? (box.width * mark.scale) / 100 : font.widthOfTextAtSize(mark.text, mark.size);
+      const height = image ? (width * image.height) / image.width : mark.size * 0.6;
+      for (const [centerX, centerY] of mark.tile ? tileCenters(box.width, box.height, width, height, angle) : [[box.width / 2, box.height / 2]]) {
+        const corner = cornerOf(centerX, centerY, width, height, angle);
+        if (image) drawImageAt(page, image, width, height, corner.x, corner.y, angle, opacity);
+        else drawTextAt(page, font, mark.text, mark.size, corner.x, corner.y, angle, { opacity, color: rgb(0.45, 0.45, 0.45) });
+      }
     }
   }
 }

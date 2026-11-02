@@ -1,6 +1,7 @@
 import test, { after, before } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { PDFDocument } from '../../vendor/pdf-lib.esm.min.js';
 import { launchExtension, writePdf } from './support/browser.mjs';
 
@@ -264,6 +265,78 @@ test('a header and a footer with the page number go on the pages of a range, and
   assert.equal(await page.locator('#stamp-range').inputValue(), '2-3');
   await page.locator('#stamp-clear').click();
   await page.waitForFunction(() => !/header|footer/.test(document.getElementById('selection-summary').textContent));
+  await page.close();
+});
+
+// A picture of one color, made by the browser itself.
+async function redPicture(name) {
+  const bytes = await page.evaluate(async () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 200;
+    canvas.height = 100;
+    const context = canvas.getContext('2d');
+    context.fillStyle = '#ff0000';
+    context.fillRect(0, 0, 200, 100);
+    return Array.from(new Uint8Array(await (await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'))).arrayBuffer()));
+  });
+  const path = join(app.dir, name);
+  writeFileSync(path, Buffer.from(bytes));
+  return path;
+}
+
+// The pink of the first page of a PDF: the color at its center and at its corner, and how many pixels are tinted.
+async function tint(bytes) {
+  return page.evaluate(async (bytes) => {
+    const { openRender, renderPage } = await import('./render.js');
+    const doc = await openRender(new Uint8Array(bytes));
+    const canvas = document.createElement('canvas');
+    await renderPage(doc, 0, 0, canvas, 1);
+    const context = canvas.getContext('2d');
+    const at = (x, y) => Array.from(context.getImageData(Math.floor(x), Math.floor(y), 1, 1).data.slice(0, 3));
+    const { data } = context.getImageData(0, 0, canvas.width, canvas.height);
+    let tinted = 0;
+    for (let i = 0; i < data.length; i += 4) if (data[i] > 200 && data[i + 1] < 215 && data[i + 1] > 60) tinted++;
+    return { center: at(canvas.width / 2, canvas.height / 2), corner: at(8, 8), tinted };
+  }, Array.from(bytes));
+}
+
+test('an image watermark is where the settings say: centered at the width asked, as opaque as asked, and repeated when tiled', async () => {
+  await openDocument([300, 300], { text: false });
+  await page.locator('#stamps').click();
+  await page.locator('#stamp-dialog').waitFor({ state: 'visible' });
+  await page.locator('#watermark-on').check();
+  await page.locator('#watermark-kind').selectOption('image');
+  assert.equal(await page.locator('#watermark-text-field').isHidden(), true);
+  await page.locator('#stamp-apply').click();
+  assert.equal(await page.locator('#stamp-error').innerText(), 'Choose an image first.');
+  await page.locator('#watermark-file').setInputFiles(await redPicture('red.png'));
+  await page.waitForFunction(() => document.getElementById('watermark-image-name').textContent === 'Image: red.png');
+  await page.locator('#watermark-angle').fill('0');
+  await page.locator('#watermark-scale').fill('60');
+  await page.locator('#watermark-opacity').fill('50');
+  await page.locator('#stamp-apply').click();
+  await page.locator('#stamp-dialog').waitFor({ state: 'hidden' });
+  await page.waitForFunction(() => /watermark/.test(document.getElementById('selection-summary').textContent));
+
+  const single = await tint(await downloaded(() => page.locator('#download-all').click()));
+  assert.ok(single.center[0] > 240 && single.center[1] > 100 && single.center[1] < 170 && single.center[2] < 170, `the center is half red: ${single.center}`);
+  assert.deepEqual(single.corner, [255, 255, 255]);
+  const expected = 180 * 90;
+  assert.ok(Math.abs(single.tinted - expected) < expected * 0.1, `the mark is 180 by 90 pixels, ${single.tinted} are tinted`);
+
+  await page.locator('#stamps').click();
+  await page.locator('#stamp-dialog').waitFor({ state: 'visible' });
+  assert.equal(await page.locator('#watermark-image-name').innerText(), 'Image: red.png');
+  await page.locator('#watermark-scale').fill('25');
+  await page.locator('#watermark-tile').check();
+  await page.locator('#stamp-apply').click();
+  await page.locator('#stamp-dialog').waitFor({ state: 'hidden' });
+  const tiled = await tint(await downloaded(() => page.locator('#download-all').click()));
+  assert.ok(tiled.tinted > 3 * 75 * 37 * 0.8, `several marks of 75 by 37 pixels: ${tiled.tinted}`);
+  assert.ok(tiled.tinted < single.tinted * 1.6);
+  await page.locator('#stamps').click();
+  await page.locator('#stamp-dialog').waitFor({ state: 'visible' });
+  await page.locator('#stamp-clear').click();
   await page.close();
 });
 
