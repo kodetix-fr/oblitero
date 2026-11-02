@@ -2,7 +2,8 @@ import test, { after, before } from 'node:test';
 import assert from 'node:assert/strict';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { launchExtension, writePdf } from './support/browser.mjs';
+import { PDFDocument } from '../../vendor/pdf-lib.esm.min.js';
+import { launchExtension } from './support/browser.mjs';
 import { LANGUAGES } from '../../languages.js';
 
 const CODES = Object.keys(LANGUAGES);
@@ -19,6 +20,18 @@ after(async () => {
   assert.deepEqual(errors, []);
 });
 
+// Two pages, a text field on the first, a button on the second.
+async function formPdf(name) {
+  const document = await PDFDocument.create();
+  const first = document.addPage([200, 200]);
+  const second = document.addPage([200, 200]);
+  document.getForm().createTextField('nom').addToPage(first, { x: 20, y: 150, width: 120, height: 22 });
+  document.getForm().createButton('envoyer').addToPage('OK', second, { x: 20, y: 150, width: 60, height: 22 });
+  const path = join(app.dir, name);
+  writeFileSync(path, await document.save());
+  return path;
+}
+
 test('the browser is in English, so the interface is', async () => {
   const page = await app.openApp();
   assert.equal(await page.locator('html').getAttribute('lang'), 'en');
@@ -28,7 +41,7 @@ test('the browser is in English, so the interface is', async () => {
 });
 
 test('the picker changes the language of everything at once, a status included, and the choice is kept', async () => {
-  const path = await writePdf(app.dir, 'langue.pdf', [{ size: 200, text: 'A' }, { size: 200, text: 'B' }]);
+  const path = await formPdf('langue.pdf');
   const broken = join(app.dir, 'casse.pdf');
   writeFileSync(broken, 'not a pdf');
   const page = await app.openApp();
@@ -53,6 +66,12 @@ test('the picker changes the language of everything at once, a status included, 
   assert.equal(await page.locator('#compress-describe').innerText(), fr['level.balanced-desc']);
   await page.locator('#language').selectOption('en');
   assert.equal(await page.locator('#compress-describe').innerText(), texts.en['level.balanced-desc']);
+  await page.locator('#language').selectOption('fr');
+  await page.locator('#fill-form').click();
+  assert.equal(await page.locator('#form-title').innerText(), fr['form.title']);
+  assert.equal(await page.locator('#form-fields .form-note').innerText(), `envoyer: ${fr['form.unsupported']}`);
+  await page.keyboard.press('Escape');
+  await page.locator('#language').selectOption('en');
   await page.locator('#language').selectOption('ja');
   await page.reload();
   assert.equal(await page.locator('html').getAttribute('lang'), 'ja');
@@ -65,7 +84,7 @@ test('the picker changes the language of everything at once, a status included, 
 });
 
 test('every language draws the screens, the dialogs and the files view without a raw key', async () => {
-  const path = await writePdf(app.dir, 'toutes.pdf', [{ size: 200, text: 'A' }, { size: 200, text: 'B' }]);
+  const path = await formPdf('toutes.pdf');
   const RAW = /\b(?:app|redact|stamp|export|find|sign|place|compare|props|status|summary|card|cut|hide|files|level|photo|position|preset|count|page|list|name|parts|size|error|text|drop|language)[.-][a-z]+(?:[.-][a-z]+)*\b/;
   const page = await app.openApp();
   for (const code of CODES) {
@@ -82,7 +101,7 @@ test('every language draws the screens, the dialogs and the files view without a
       assert.doesNotMatch(body, RAW, `${code}, ${label}: a raw key is shown: ${RAW.exec(body)?.[0]}`);
     };
     await visible('pages');
-    for (const [button, dialog] of [['#stamps', '#stamp-dialog'], ['#find', '#find-dialog'], ['#sign', '#sign-dialog'], ['#properties', '#props-dialog'], ['#export-images', '#export-dialog'], ['#redact', '#redact-dialog'], ['#compare-open', '#compare-dialog']]) {
+    for (const [button, dialog] of [['#stamps', '#stamp-dialog'], ['#find', '#find-dialog'], ['#sign', '#sign-dialog'], ['#properties', '#props-dialog'], ['#fill-form', '#form-dialog'], ['#export-images', '#export-dialog'], ['#redact', '#redact-dialog'], ['#compare-open', '#compare-dialog']]) {
       await page.locator(button).click();
       await page.locator(dialog).waitFor({ state: 'visible' });
       await page.waitForTimeout(150);

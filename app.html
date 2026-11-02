@@ -49,6 +49,7 @@
     <symbol id="i-compress" viewBox="0 0 24 24"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></symbol>
     <symbol id="i-sign" viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17z"/><path d="M13.5 7.5l3 3M12 20h8"/></symbol>
     <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8v.1"/></symbol>
+    <symbol id="i-form" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2.6"/><path d="M8 9h8M8 13h8M8 17h4"/></symbol>
     <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17.2v.1"/></symbol>
   </svg>
 
@@ -104,6 +105,7 @@
         <button type="button" class="btn sm" id="find" title="Find e-mail addresses, phone numbers, IBAN, card numbers or words in the text, and cover them" data-i18n-title="app.find.title"><svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg><span data-i18n="app.find">Find and redact</span></button>
         <button type="button" class="btn sm" id="sign" title="Sign with a drawn, typed or imported signature" data-i18n-title="app.sign.title"><svg class="ic" aria-hidden="true"><use href="#i-sign"/></svg><span data-i18n="app.sign">Sign</span></button>
         <button type="button" class="btn sm" id="add-text" title="Put a line of text anywhere on a page: a name, a date, a cross" data-i18n-title="app.add-text.title"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg><span data-i18n="app.add-text">Add text</span></button>
+        <button type="button" class="btn sm" id="fill-form" title="Fill the fields of a form: text, check boxes and lists. The values are written on the page." data-i18n-title="app.fill-form.title"><svg class="ic" aria-hidden="true"><use href="#i-form"/></svg><span data-i18n="app.fill-form">Fill form</span></button>
         <button type="button" class="btn sm ghost" id="clear-marks" hidden title="Remove the signatures and texts of the selected pages, or of all the pages" data-i18n-title="app.clear-marks.title"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span data-i18n="app.clear-marks">Remove signatures and texts</span></button>
         <button type="button" class="btn sm" id="stamps" title="Number the pages and add a watermark to what you download" data-i18n-title="app.stamps.title"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg><span data-i18n="app.stamps">Numbers and watermark</span></button>
         <button type="button" class="btn sm" id="properties" title="See what the files carry, and write the properties of the file you download" data-i18n-title="app.properties.title"><svg class="ic" aria-hidden="true"><use href="#i-info"/></svg><span data-i18n="app.properties">Properties</span></button>
@@ -322,6 +324,24 @@
       <span class="sep"></span>
       <button type="button" class="btn" id="place-cancel" data-i18n="place.place-cancel">Cancel</button>
       <button type="button" class="btn primary" id="place-go"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="place.place-go">Place</span></button>
+    </div>
+  </dialog>
+
+  <dialog id="form-dialog" aria-labelledby="form-title">
+    <div class="dlg-head">
+      <svg class="ic" aria-hidden="true"><use href="#i-form"/></svg>
+      <h2 id="form-title" data-i18n="form.title">Fill the form</h2>
+    </div>
+    <div class="dlg-body">
+      <p class="hint" data-i18n="form.hint">The values are written on the pages of the file you download, so the fields can no longer be changed there. For a page without fields, use Add text.</p>
+      <div id="form-fields" class="form-fields"></div>
+      <p id="form-error" role="alert" class="hint"></p>
+    </div>
+    <div class="dlg-foot">
+      <button type="button" class="btn ghost" id="form-reset" data-i18n="form.reset">Reset</button>
+      <span class="sep"></span>
+      <button type="button" class="btn" id="form-cancel" data-i18n="form.cancel">Cancel</button>
+      <button type="button" class="btn primary" id="form-apply"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="form.apply">Apply</span></button>
     </div>
   </dialog>
 

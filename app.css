@@ -315,6 +315,24 @@ dialog::backdrop { background: var(--shade); }
 .mark-img { position: absolute; pointer-events: none; }
 .mark-text { position: absolute; color: #0f0f1a; font-family: Helvetica, Arial, sans-serif; font-size: calc(var(--thumb-w) * var(--fit, 1) * var(--size)); line-height: 1; white-space: nowrap; pointer-events: none; }
 
+/* ---------- fill a form ---------- */
+#form-dialog { width: min(720px, calc(100vw - 32px)); }
+#form-dialog[open] { grid-template-rows: auto minmax(0, 1fr) auto; }
+#form-dialog .dlg-body { max-height: min(70vh, 640px); }
+#form-dialog .hint { padding: 0; }
+#form-error { min-height: 1.2em; color: #b3261e; }
+.form-fields { display: grid; gap: 18px; }
+.form-file { display: grid; gap: 8px; }
+.form-file h3 { margin: 0; overflow: hidden; font-size: 13px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+.form-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); align-items: start; gap: 4px 14px; }
+.form-row label { display: grid; padding-top: 5px; }
+.form-label { overflow-wrap: anywhere; font-weight: 550; }
+.form-meta { color: var(--muted); font-size: 12px; }
+.form-row input[type="text"], .form-row select, .form-row textarea { width: 100%; padding: 4px 8px; border: 1px solid var(--field-line); border-radius: var(--r-s); background: var(--surface); font: inherit; }
+.form-row input[type="text"], .form-row select { height: 28px; }
+.form-row input[type="checkbox"] { justify-self: start; width: 18px; height: 18px; margin-top: 5px; accent-color: var(--accent); }
+.form-note { color: var(--muted); }
+
 /* ---------- properties ---------- */
 #props-dialog { width: min(640px, calc(100vw - 32px)); }
 #props-dialog[open] { grid-template-rows: auto minmax(0, 1fr) auto; }

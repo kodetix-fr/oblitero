@@ -1,4 +1,4 @@
-import { countPages } from './merge.js';
+import { openInfo } from './pdf-info.js';
 import { buildPdf } from './export.js';
 import { LEVELS, compressPdf, formatSize } from './compress.js';
 import { MARGINS, PAGE_SIZES, imagesToPdf } from './images.js';
@@ -15,6 +15,8 @@ import { applyStamps } from './stamps.js';
 import { initFind } from './find-view.js';
 import { initSign } from './sign-view.js';
 import { initProperties } from './properties-view.js';
+import { initForm } from './form-view.js';
+import { fillForm } from './forms.js';
 import { DEFAULT_PROPERTIES, applyProperties } from './properties.js';
 import { placeMark } from './place-view.js';
 import { imageMark, textMark } from './marks.js';
@@ -55,6 +57,7 @@ export function initPages() {
   const viewRadios = /** @type {NodeListOf<HTMLInputElement>} */ (document.querySelectorAll('input[name="view"]'));
   const controls = {
     addFiles: byId('add-files'),
+    fillForm: byId('fill-form'),
     clearAll: byId('clear-all'),
     compare: byId('compare-open'),
     addBlank: byId('add-blank'),
@@ -108,6 +111,7 @@ export function initPages() {
   const finder = initFind();
   const signer = initSign();
   const propertiesDialog = initProperties();
+  const formDialog = initForm();
   let properties = { ...DEFAULT_PROPERTIES };
   let nextMark = 0;
   const documents = [];
@@ -360,6 +364,9 @@ export function initPages() {
     controls.find.disabled = shown === 0;
     controls.sign.disabled = shown === 0;
     controls.properties.disabled = empty;
+    const fillable = used().some((document) => document.fields.length);
+    controls.fillForm.disabled = !fillable;
+    controls.fillForm.title = t(fillable ? 'app.fill-form.title' : 'form.none-title');
     controls.addText.disabled = shown === 0;
     controls.clearMarks.disabled = false;
     controls.clearMarks.hidden = !pages.some((page) => page.marks?.length);
@@ -437,10 +444,13 @@ export function initPages() {
   // A PDF is a file of its own; a photo becomes a file of one page, laid out as the Photos settings say.
   async function load(file) {
     const bytes = new Uint8Array(await file.arrayBuffer());
-    if (isPdf(bytes)) return { name: file.name, bytes, doc: await openRender(bytes), count: await countPages(bytes) };
+    if (isPdf(bytes)) {
+      const { count, fields } = await openInfo(bytes);
+      return { name: file.name, bytes, doc: await openRender(bytes), count, fields, values: {} };
+    }
     const photo = await readPhoto(file);
     const pdf = await imagesToPdf([photo], photoLayout());
-    return { name: file.name, bytes: pdf, doc: await openRender(pdf), count: 1, photo };
+    return { name: file.name, bytes: pdf, doc: await openRender(pdf), count: 1, fields: [], values: {}, photo };
   }
 
   // The pages of PDF files and photos go into the document, before or after the page `targetId` (at the end without one).
@@ -794,11 +804,42 @@ export function initPages() {
     setStatus(() => t(noticeKey, { pages: pagesOf(reach.size) }));
   }
   controls.properties.addEventListener('click', async () => {
-    const result = await propertiesDialog.open(documents, properties);
+    const result = await propertiesDialog.open(used().map((document) => ({ name: document.name, bytes: document.original ?? document.bytes })), properties);
     if (result) {
       properties = result;
       refresh();
     }
+  });
+  // The values go into a copy of the file with the fields flattened; the first bytes are kept, so the form can be filled again.
+  const applyForms = (result) =>
+    run('status.filling', async () => {
+      let changedAny = false;
+      for (const [index, values] of result) {
+        const document = documents[index];
+        const changed = Object.fromEntries(document.fields.filter((field) => Object.hasOwn(values, field.name) && values[field.name] !== field.value).map((field) => [field.name, values[field.name]]));
+        if (JSON.stringify(changed) === JSON.stringify(document.values)) continue;
+        document.values = changed;
+        document.original ??= document.bytes;
+        const bytes = Object.keys(changed).length ? await fillForm(document.original, changed) : document.original;
+        const old = document.doc;
+        document.bytes = bytes;
+        document.doc = await openRender(bytes);
+        closeRender(old);
+        changedAny = true;
+      }
+      if (changedAny) {
+        generation += 1;
+        thumbs.clear();
+        render();
+      }
+      return () => t('status.form-updated');
+    });
+  controls.fillForm.addEventListener('click', async () => {
+    const files = used()
+      .filter((document) => document.fields.length)
+      .map((document) => ({ index: documents.indexOf(document), name: document.name, fields: document.fields, values: document.values }));
+    const result = await formDialog.edit(files);
+    if (result) await applyForms(result);
   });
   controls.sign.addEventListener('click', async () => {
     const signature = await signer.create();

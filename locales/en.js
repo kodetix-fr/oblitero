@@ -355,4 +355,22 @@ export default {
   'error.font': 'The standard font cannot draw one of these characters. Use letters, digits and common punctuation.',
   'error.image-large': 'The image is too large to convert.',
   'error.page-large': 'The page is too large to draw.',
+  // form filling
+  'app.fill-form': 'Fill form',
+  'app.fill-form.title': 'Fill the fields of a form: text, check boxes and lists. The values are written on the page.',
+  'form.none-title': 'There is no form field in these files. To write on a page, use Add text.',
+  'form.title': 'Fill the form',
+  'form.hint': 'The values are written on the pages of the file you download, so the fields can no longer be changed there. For a page without fields, use Add text.',
+  'form.reset': 'Reset',
+  'form.cancel': 'Cancel',
+  'form.apply': 'Apply',
+  // an empty choice in a list of options
+  'form.none': '(none)',
+  // {list} is a list of page numbers, such as 2, 3
+  'form.pages': 'Pages {list}',
+  'form.read-only': 'read only',
+  'form.unsupported': 'cannot be filled here (button or signature)',
+  'form.error-field': '{label}: {message}',
+  'status.filling': 'Filling the form...',
+  'status.form-updated': 'The form is filled: the values are written on the pages.',
 };

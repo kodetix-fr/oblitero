@@ -52,6 +52,12 @@ Status: under construction, private until the first release.
   Each match is listed, can be switched off, and becomes a rectangle that covers
   the whole line of text it is in. Scanned pages have no text and are reported
   as not searched.
+- **Fill form**: the text fields, check boxes, radio buttons and lists of a form
+  are listed with their page and their readable name; fill them and the values
+  are written on the pages of the file you download, which no longer holds any
+  field. Fill again, or Reset, as long as the file is open; a button, a signature
+  or a read only field is listed but not filled. A PDF without fields uses Add
+  text.
 - **Sign and add text**: sign with a drawn, typed or imported signature (an
   imported scan gets a transparent paper), or put a line of text anywhere on a
   page (a name, a date, a cross). Drag it where it belongs, or move it with the
@@ -90,9 +96,10 @@ after the page, Ctrl/Cmd+Z and Shift+Ctrl/Cmd+Z undo and redo.
   in other encodings are kept as they are, so a PDF made of scanned PNG pages
   or of vector drawings may not shrink; the result says so. Bookmarks, forms and
   the rest of the structure are kept, and there is no PDF/A guarantee.
-- Text put on a page is limited to the same characters. Real form fields (the
-  boxes of an administrative form) are not detected yet: type into them with
-  Add text.
+- Text put on a page is limited to the same characters, and so are the values of
+  a form (the standard font only holds Latin characters). A form is filled
+  through a list, not on the page itself, and its scripts (formats, checks,
+  calculations) do not run; a multiple choice list keeps one choice.
 - Page numbers and the watermark are drawn in the standard Helvetica: a
   character outside it is refused with a message.
 - Text extraction follows the order the file stores its text in, which is not
@@ -102,9 +109,8 @@ after the page, Ctrl/Cmd+Z and Shift+Ctrl/Cmd+Z undo and redo.
 
 ## Planned
 
-The backlog is on the project board (milestones 0.1.0 and 0.2.0): signing and
-filling forms, finding text to redact, an interface in several languages,
-headers and footers, an image watermark, and more.
+The backlog is on the project board (milestones 0.1.0 and 0.2.0): headers and
+footers, an image watermark, more precise reading order of the text, and more.
 
 ## Performance
 

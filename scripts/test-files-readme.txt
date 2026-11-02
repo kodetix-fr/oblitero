@@ -60,6 +60,13 @@ formulaire-a-remplir.pdf
     Une attestation SANS champ actif : lignes a remplir, cases, cadre de signature.
     Cas de "Add text" (nom, date, croix) et de "Sign".
 
+formulaire-champs.pdf
+    Deux pages avec de vrais champs : texte (avec un nom lisible), texte sur
+    plusieurs lignes, case a cocher, boutons radio, liste deroulante, liste a
+    choix, un champ en lecture seule et un bouton. "Fill form" les liste et les
+    remplit ; les valeurs sont ecrites sur les pages du PDF telecharge, plus
+    aucun champ n'y reste. Le bouton est signale comme non remplissable.
+
 scan-avec-dos-blancs.pdf
     8 pages-images : texte, blanc pur, texte, blanc avec bruit de scanner, texte,
     blanc avec 3 poussieres, texte, page avec un petit tampon (vrai contenu).

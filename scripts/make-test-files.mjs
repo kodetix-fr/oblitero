@@ -177,6 +177,49 @@ await write(
   await write('pages/liens-et-formulaire.pdf', document);
 }
 
+{
+  const document = await PDFDocument.create();
+  const font = await document.embedFont(StandardFonts.Helvetica);
+  const first = document.addPage(LETTER);
+  const second = document.addPage(LETTER);
+  const form = document.getForm();
+  first.drawText('Formulaire avec toutes sortes de champs', { x: 56, y: 730, size: 16, font });
+  const label = (page, text, y) => page.drawText(text, { x: 56, y: y + 6, size: 12, font });
+  label(first, 'Nom :', 670);
+  const name = form.createTextField('identite.nom');
+  name.addToPage(first, { x: 180, y: 664, width: 260, height: 24 });
+  name.acroField.dict.set(PDFName.of('TU'), PDFString.of('Nom et prénom'));
+  label(first, 'Remarques :', 600);
+  const notes = form.createTextField('remarques');
+  notes.enableMultiline();
+  notes.addToPage(first, { x: 180, y: 560, width: 260, height: 66 });
+  notes.setFontSize(11);
+  label(first, 'J\'accepte :', 520);
+  form.createCheckBox('accepte').addToPage(first, { x: 180, y: 520, width: 18, height: 18 });
+  label(first, 'Civilité :', 470);
+  const civility = form.createRadioGroup('civilite');
+  civility.addOptionToPage('M', first, { x: 180, y: 474, width: 16, height: 16 });
+  civility.addOptionToPage('Mme', first, { x: 230, y: 474, width: 16, height: 16 });
+  first.drawText('M', { x: 200, y: 478, size: 11, font });
+  first.drawText('Mme', { x: 250, y: 478, size: 11, font });
+  label(second, 'Pays :', 670);
+  const country = form.createDropdown('pays');
+  country.addOptions(['France', 'Japon', 'Brésil']);
+  country.addToPage(second, { x: 180, y: 664, width: 180, height: 24 });
+  label(second, 'Langue :', 600);
+  const language = form.createOptionList('langue');
+  language.addOptions(['Français', 'English', 'Español']);
+  language.addToPage(second, { x: 180, y: 540, width: 180, height: 70 });
+  label(second, 'Référence :', 490);
+  const reference = form.createTextField('reference');
+  reference.setText('REF-2026-001');
+  reference.enableReadOnly();
+  reference.addToPage(second, { x: 180, y: 484, width: 180, height: 24 });
+  label(second, 'Envoi :', 440);
+  form.createButton('envoyer').addToPage('Envoyer', second, { x: 180, y: 434, width: 100, height: 26 });
+  await write('pages/formulaire-champs.pdf', document);
+}
+
 await write(
   'pages/metadonnees.pdf',
   await textPages(
