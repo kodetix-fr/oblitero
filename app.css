@@ -263,6 +263,22 @@ dialog::backdrop { background: var(--shade); }
 @media (prefers-reduced-motion: reduce) { .meter span { transition: none; } }
 .compress-result { min-height: 1.4em; font-variant-numeric: tabular-nums; }
 .compress-result strong { font-size: 15px; }
+.compare { max-width: 860px; }
+.compare[hidden] { display: none; }
+.compare-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.compare-tag { color: var(--muted); font-variant-numeric: tabular-nums; }
+.compare-tag strong { margin-left: 4px; color: var(--fg); }
+.compare-pager { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.compare-scroll { max-height: 68vh; overflow-y: auto; border-radius: var(--r-s); background: var(--stage); }
+.compare-stage { --split: 50%; position: relative; overflow: hidden; touch-action: none; cursor: ew-resize; user-select: none; }
+.compare-pages { position: relative; line-height: 0; }
+.compare-pages canvas { display: block; width: 100%; height: auto; background: #fff; }
+.compare-pages canvas:first-child { position: absolute; inset: 0; height: 100%; clip-path: inset(0 calc(100% - var(--split)) 0 0); }
+.compare-handle { position: absolute; top: 0; bottom: 0; left: var(--split); width: 28px; margin-left: -14px; cursor: ew-resize; }
+.compare-handle::before { content: ""; position: absolute; top: 0; bottom: 0; left: 13px; width: 2px; background: var(--accent); box-shadow: 0 0 0 1px #fff; }
+.compare-handle::after { content: ""; position: absolute; top: 56px; left: 4px; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px #fff, 0 1px 4px rgba(0, 0, 0, .4); }
+.compare-handle:focus-visible { outline: none; }
+.compare-handle:focus-visible::after { box-shadow: 0 0 0 2px #fff, 0 0 0 5px var(--ring); }
 
 /* ---------- find and redact ---------- */
 #find-dialog { width: min(640px, calc(100vw - 32px)); }

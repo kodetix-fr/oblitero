@@ -227,6 +227,24 @@
             <div class="meter" aria-hidden="true"><span id="compress-bar"></span></div>
             <p id="compress-result" role="status" class="compress-result"></p>
           </div>
+          <div class="panel-card compare" id="compare" hidden>
+            <div class="compare-bar">
+              <span class="compare-tag">Before <strong id="compare-before-size"></strong></span>
+              <span class="compare-pager">
+                <button type="button" class="btn ghost icon" id="compare-prev" aria-label="Previous page" title="Previous page"><svg class="ic" aria-hidden="true"><use href="#i-left"/></svg></button>
+                <span id="compare-page" role="status"></span>
+                <button type="button" class="btn ghost icon" id="compare-next" aria-label="Next page" title="Next page"><svg class="ic" aria-hidden="true"><use href="#i-right"/></svg></button>
+              </span>
+              <span class="compare-tag">After <strong id="compare-after-size"></strong></span>
+            </div>
+            <div class="compare-scroll">
+              <div class="compare-stage" id="compare-stage">
+                <div class="compare-pages" id="compare-pages"></div>
+                <div class="compare-handle" id="compare-handle" role="slider" tabindex="0" aria-label="Before and after" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"></div>
+              </div>
+            </div>
+            <p class="hint" id="compare-hint">Drag the line, or use the arrow keys, to compare the same page before and after.</p>
+          </div>
         </div>
       </div>
       <div class="status"><span id="compress-status" role="status"></span></div>

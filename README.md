@@ -68,7 +68,9 @@ Status: under construction, private until the first release.
   or download it.
 - **Compress**: Light rewrites the file compactly; Balanced and Strong also
   re-encode the JPEG photos inside at a lower size and quality. The size before
-  and after is shown before you download.
+  and after is shown before you download, and so is the page itself: a line you
+  drag (or move with the arrow keys) shows the original on its left and the
+  result on its right, page by page, so you can judge the loss.
 
 ## Keyboard
 
@@ -129,6 +131,11 @@ npm run test:e2e     # the extension in Chromium (needs: npx playwright-core ins
 ```
 
 `npm run icons` redraws `icons/` from `docs/logo.svg`.
+
+`node scripts/make-test-files.mjs <folder>` writes the files used to try every tool by
+hand, one folder per tool (PDF files, photos, a phone photo stored sideways, signatures,
+scans, files that must be refused), with a `LISEZ-MOI.txt` that says what to check in each.
+The pictures are drawn by the Chromium of Playwright.
 
 Load the folder as an unpacked extension from `chrome://extensions`, then click
 the Oblitero icon. Third-party code is in `vendor/`, copied as is.

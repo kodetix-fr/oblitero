@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { PDFDocument, StandardFonts } from '../../vendor/pdf-lib.esm.min.js';
-import { launchExtension } from './support/browser.mjs';
+import { launchExtension, writePdf } from './support/browser.mjs';
 
 let app;
 let page;
@@ -101,4 +101,60 @@ test('the result says the size before and after, and a file that is not a PDF is
   await page.setInputFiles('#compress-file', text);
   await page.waitForFunction(() => document.getElementById('compress-note').textContent.includes('Cannot read fake.pdf'));
   assert.equal(await page.locator('#compress-name').innerText(), 'photos.pdf');
+});
+
+test('the same page is shown before and after, with a line to compare them', async () => {
+  await page.getByRole('radio', { name: 'Strong' }).check();
+  await waitForSaving();
+  await page.locator('#compare-pages canvas').nth(1).waitFor();
+  assert.equal(await page.locator('#compare-page').innerText(), 'Page 1 of 1');
+  assert.equal(await page.locator('#compare-prev').isDisabled(), true);
+  assert.equal(await page.locator('#compare-next').isDisabled(), true);
+  assert.match(await page.locator('#compare-before-size').innerText(), /^[\d.]+ [KM]B$/);
+  assert.match(await page.locator('#compare-after-size').innerText(), /^[\d.]+ [KM]B$/);
+
+  const difference = await page.evaluate(() => {
+    const [before, after] = document.querySelectorAll('#compare-pages canvas');
+    const read = (canvas) => canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+    const [a, b] = [read(before), read(after)];
+    let total = 0;
+    for (let i = 0; i < a.length; i += 4) total += Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]);
+    return { same: before.width === after.width && before.height === after.height, mean: total / (a.length / 4) };
+  });
+  assert.ok(difference.same, 'both sides have the same size');
+  assert.ok(difference.mean > 3, `the two sides look alike: ${difference.mean}`);
+
+  const handle = page.locator('#compare-handle');
+  const value = async () => Number(await handle.getAttribute('aria-valuenow'));
+  await handle.focus();
+  await page.keyboard.press('ArrowRight');
+  assert.equal(await value(), 55);
+  await page.keyboard.press('Shift+ArrowLeft');
+  assert.equal(await value(), 35);
+  await page.keyboard.press('Home');
+  assert.equal(await value(), 0);
+  await page.keyboard.press('End');
+  assert.equal(await value(), 100);
+
+  const box = await page.locator('#compare-stage').boundingBox();
+  await page.mouse.move(box.x + box.width * 0.5, box.y + 60);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.25, box.y + 60, { steps: 4 });
+  await page.mouse.up();
+  assert.ok(Math.abs((await value()) - 25) <= 1, `the line is at ${await value()} %`);
+  assert.equal(await page.locator('#compare-stage').evaluate((element) => element.style.getPropertyValue('--split')), `${await value()}%`);
+});
+
+test('the pages of a longer document can be turned, and a new file starts at its first page', async () => {
+  const album = await writePdf(app.dir, 'album.pdf', [1, 2, 3].map((n) => ({ size: 300, text: `PAGE-${n}` })));
+  await page.setInputFiles('#compress-file', album);
+  await page.waitForFunction(() => document.getElementById('compress-name').textContent === 'album.pdf');
+  await page.waitForFunction(() => document.getElementById('compare-page').textContent === 'Page 1 of 3');
+  await page.locator('#compare-next').click();
+  await page.waitForFunction(() => document.getElementById('compare-page').textContent === 'Page 2 of 3');
+  await page.locator('#compare-next').click();
+  await page.waitForFunction(() => document.getElementById('compare-page').textContent === 'Page 3 of 3');
+  assert.equal(await page.locator('#compare-next').isDisabled(), true);
+  await page.setInputFiles('#compress-file', source);
+  await page.waitForFunction(() => document.getElementById('compare-page').textContent === 'Page 1 of 1');
 });

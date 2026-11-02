@@ -1,6 +1,9 @@
 import { LEVELS, compressPdf, formatSize } from './compress.js';
 import { byId } from './dom.js';
 import { download } from './download.js';
+import { closeRender, openRender, pageSize, renderPage } from './render.js';
+
+const COMPARE_WIDTH = 860;
 
 // Redraws a JPEG at a smaller size and quality; the EXIF orientation is ignored, a PDF ignores it too.
 async function encode({ bytes, maxSide, quality }) {
@@ -36,6 +39,77 @@ export function initCompress() {
   let results = new Map();
   let token = 0;
 
+  const compare = byId('compare');
+  const stage = byId('compare-stage');
+  const handle = byId('compare-handle');
+  let beforeDoc = null;
+  let comparePage = 0;
+  let paintToken = 0;
+
+  function setSplit(percent) {
+    const split = Math.max(0, Math.min(100, percent));
+    stage.style.setProperty('--split', `${split}%`);
+    handle.setAttribute('aria-valuenow', String(Math.round(split)));
+  }
+  const followPointer = (event) => {
+    const box = stage.getBoundingClientRect();
+    setSplit(((event.clientX - box.left) / box.width) * 100);
+  };
+  stage.addEventListener('pointerdown', (event) => {
+    stage.setPointerCapture(event.pointerId);
+    followPointer(event);
+    handle.focus();
+  });
+  stage.addEventListener('pointermove', (event) => stage.hasPointerCapture(event.pointerId) && followPointer(event));
+  handle.addEventListener('keydown', (event) => {
+    const now = Number(handle.getAttribute('aria-valuenow'));
+    const target = { ArrowLeft: now - (event.shiftKey ? 20 : 5), ArrowRight: now + (event.shiftKey ? 20 : 5), Home: 0, End: 100 }[event.key];
+    if (target === undefined) return;
+    event.preventDefault();
+    setSplit(target);
+  });
+
+  async function closeCompare() {
+    paintToken += 1;
+    const doc = beforeDoc;
+    beforeDoc = null;
+    if (doc) closeRender(await doc);
+  }
+
+  async function paint() {
+    const mine = ++paintToken;
+    const result = results.get(level);
+    compare.hidden = !file || !result;
+    if (compare.hidden) return;
+    byId('compare-before-size').textContent = formatSize(file.bytes.length);
+    byId('compare-after-size').textContent = formatSize(result.length);
+    let after = null;
+    try {
+      beforeDoc ??= openRender(file.bytes);
+      after = await openRender(result);
+      const before = await beforeDoc;
+      if (mine !== paintToken) return;
+      comparePage = Math.min(comparePage, before.numPages - 1);
+      byId('compare-page').textContent = `Page ${comparePage + 1} of ${before.numPages}`;
+      byId('compare-prev').disabled = comparePage === 0;
+      byId('compare-next').disabled = comparePage === before.numPages - 1;
+      const scale = (COMPARE_WIDTH * devicePixelRatio) / (await pageSize(before, comparePage, 0)).width;
+      const canvases = [document.createElement('canvas'), document.createElement('canvas')];
+      await Promise.all([renderPage(before, comparePage, 0, canvases[0], scale), renderPage(after, comparePage, 0, canvases[1], scale)]);
+      if (mine === paintToken) byId('compare-pages').replaceChildren(...canvases);
+    } catch {
+      if (mine === paintToken) compare.hidden = true;
+    } finally {
+      if (after) closeRender(after);
+    }
+  }
+  for (const [id, step] of /** @type {Array<[string, number]>} */ ([['compare-prev', -1], ['compare-next', 1]])) {
+    byId(id).addEventListener('click', () => {
+      comparePage += step;
+      paint();
+    });
+  }
+
   const setStatus = (text) => {
     status.textContent = text;
     note.textContent = text;
@@ -64,9 +138,11 @@ export function initCompress() {
     if (!result) {
       text.textContent = 'Working on it...';
       bar.style.width = '100%';
+      paint();
       run(level);
       return;
     }
+    paint();
     const saved = 1 - result.length / file.bytes.length;
     bar.style.width = `${Math.max(2, Math.min(100, (result.length / file.bytes.length) * 100))}%`;
     if (result.length < file.bytes.length) {
@@ -104,8 +180,11 @@ export function initCompress() {
       return;
     }
     token += 1;
+    await closeCompare();
     file = { name: chosen.name, bytes };
     results = new Map();
+    comparePage = 0;
+    setSplit(50);
     setStatus('');
     panel.removeAttribute('data-empty');
     byId('compress-name').textContent = chosen.name;

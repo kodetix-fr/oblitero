@@ -53,7 +53,7 @@ export default [
   },
   // Functions passed to page.evaluate run in the browser.
   {
-    files: ['test/**/*.mjs'],
+    files: ['test/**/*.mjs', 'scripts/draw-test-images.mjs'],
     languageOptions: { globals: { ...globals.browser, chrome: 'readonly' } },
   },
 ];
