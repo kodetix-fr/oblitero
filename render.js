@@ -45,23 +45,6 @@ export async function renderPage(doc, index, rotation, canvas, scale) {
   await page.render({ canvas, viewport, background: '#ffffff' }).promise;
 }
 
-// The first and the last page of a document (only the first when there is one page), as canvases `width` CSS pixels wide.
-export async function renderEnds(bytes, width) {
-  const doc = await openRender(bytes);
-  try {
-    const last = doc.numPages - 1;
-    const ends = [];
-    for (const index of last > 0 ? [0, last] : [0]) {
-      const canvas = document.createElement('canvas');
-      await renderPage(doc, index, 0, canvas, (width * devicePixelRatio) / (await pageSize(doc, index, 0)).width);
-      ends.push(canvas);
-    }
-    return ends;
-  } finally {
-    closeRender(doc);
-  }
-}
-
 // The size of a page as it is displayed, in points: its rotation applied.
 export async function entrySize(doc, entry) {
   if (entry.blank) return entry.rotation % 180 ? { width: entry.blank.height, height: entry.blank.width } : { width: entry.blank.width, height: entry.blank.height };

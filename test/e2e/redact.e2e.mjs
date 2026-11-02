@@ -25,7 +25,6 @@ before(async () => {
     { title: 'SECRET-TITLE' },
   );
   page = await app.openApp();
-  await page.getByRole('tab', { name: 'Pages' }).click();
   await page.setInputFiles('#pages-file', sourcePath);
   await page.locator('#grid li').nth(1).waitFor();
 });

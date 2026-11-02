@@ -1,8 +1,13 @@
 import { countPages } from './merge.js';
 import { buildPdf } from './export.js';
+import { LEVELS, compressPdf, formatSize } from './compress.js';
+import { MARGINS, PAGE_SIZES, imagesToPdf } from './images.js';
+import { readPhoto, recode } from './photo.js';
+import { initCompare } from './compare-view.js';
+import { initFiles } from './files-view.js';
 import { buildZip } from './zip.js';
 import { burnPage, closeRender, entryImage, inkOf, openRender, pageRuns, pageSize, renderPage, textOf } from './render.js';
-import { blankPage, createPages, cutEvery, duplicate, insertEntries, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, rotatePages, showAll, toggleCuts, toggleHidden, visible } from './pages-model.js';
+import { blankPage, createPages, cutEvery, duplicate, insertEntries, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, removePages, rotatePages, runsOf, showAll, toggleCuts, toggleHidden, visible } from './pages-model.js';
 import { createHistory } from './history.js';
 import { openRedactor } from './redact-view.js';
 import { applyStamps } from './stamps.js';
@@ -26,8 +31,7 @@ const MARQUEE_THRESHOLD = 4;
 
 export function initPages() {
   const panel = byId('panel-pages');
-  const stage = byId('panel-pages').querySelector('.stage');
-  const dialog = byId('redact-dialog');
+  const stage = panel.querySelector('.stage');
   const fileInput = byId('pages-file');
   const grid = byId('grid');
   const status = byId('pages-status');
@@ -41,9 +45,17 @@ export function initPages() {
   const splitSize = byId('split-size');
   const rangeInput = byId('select-range');
   const zoom = byId('zoom');
-  const insertInput = byId('insert-file');
+  const fileList = byId('file-list');
+  let applied = { size: 'fit', margin: 'none' };
+  const photoSettings = byId('photo-settings');
+  const sizeSelect = byId('images-size');
+  const marginSelect = byId('images-margin');
+  const levelsGroup = byId('compress-levels');
+  const viewRadios = /** @type {NodeListOf<HTMLInputElement>} */ (document.querySelectorAll('input[name="view"]'));
   const controls = {
-    insertPdf: byId('insert-pdf'),
+    addFiles: byId('add-files'),
+    clearAll: byId('clear-all'),
+    compare: byId('compare-open'),
     addBlank: byId('add-blank'),
     duplicate: byId('duplicate'),
     selectOdd: byId('select-odd'),
@@ -77,13 +89,20 @@ export function initPages() {
   };
 
   let stamps = { numbers: null, watermark: null };
+  let view = 'pages';
+  let compression = 'none';
+  const comparer = initCompare();
+  const choices = (select, entries) => select.replaceChildren(...entries.map(([value, text]) => Object.assign(document.createElement('option'), { value, textContent: text })));
+  choices(sizeSelect, PAGE_SIZES);
+  choices(marginSelect, MARGINS);
+  marginSelect.value = 'none';
   const stampDialog = initStamps();
   const finder = initFind();
   const signer = initSign();
   const propertiesDialog = initProperties();
   let properties = { ...DEFAULT_PROPERTIES };
   let nextMark = 0;
-  let documents = [];
+  const documents = [];
   let nextId = 0;
   let pages = [];
   let cuts = new Set();
@@ -109,6 +128,9 @@ export function initPages() {
   };
   const thumbKey = (page) => `${generation}:${page.id}:${page.rotation}`;
   const plural = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`;
+  const nameOf = (page) => (page.file === null ? 'Blank page' : documents[page.file].name);
+  const used = () => documents.filter((_, file) => pages.some((page) => page.file === file));
+  let tagged = new Set();
 
   // ---------- thumbnails, drawn when they come into view ----------
 
@@ -191,6 +213,8 @@ export function initPages() {
     check.className = 'check';
     check.append(icon('check'));
     toggle.append(check);
+    toggle.title = nameOf(page);
+    if (tagged.has(page.id)) toggle.append(Object.assign(document.createElement('span'), { className: 'run-tag', textContent: nameOf(page) }));
     if (count) {
       const badge = document.createElement('span');
       badge.className = 'badge';
@@ -276,7 +300,10 @@ export function initPages() {
     const parts = partsOf(pages, cuts);
     const partOf = new Map();
     parts.forEach((part, index) => part.forEach((page) => partOf.set(page.id, index)));
+    const runs = runsOf(pages);
+    tagged = runs.length > 1 ? new Set(runs.map((run) => run.pages[0].id)) : new Set();
     grid.replaceChildren(...pages.map((page, index) => card(page, index, index === pages.length - 1, partOf.get(page.id), parts.length > 1)));
+    if (view === 'files') renderFiles(runs);
     refresh();
     flip(before);
     if (hadFocus) cards.get(focusId)?.focus();
@@ -291,7 +318,8 @@ export function initPages() {
     const hidden = pages.length - shown;
     const chosen = pages.filter((page) => selected.has(page.id));
     const allHidden = chosen.length > 0 && chosen.every((page) => page.hidden);
-    panel.toggleAttribute('data-empty', documents.length === 0);
+    panel.toggleAttribute('data-empty', empty);
+    panel.toggleAttribute('data-fresh', empty && !history.canUndo);
     controls.undo.disabled = !history.canUndo;
     controls.redo.disabled = !history.canRedo;
     controls.selectAll.disabled = empty;
@@ -301,8 +329,12 @@ export function initPages() {
     controls.cut.disabled = none || pages.length < 2;
     controls.redact.disabled = chosen.length !== 1 || chosen[0].hidden || !!chosen[0].blank;
     controls.duplicate.disabled = none;
-    controls.insertPdf.disabled = documents.length === 0;
-    controls.addBlank.disabled = documents.length === 0;
+    controls.addFiles.disabled = false;
+    controls.clearAll.disabled = empty;
+    controls.addBlank.disabled = empty;
+    controls.compare.hidden = compression === 'none';
+    controls.compare.disabled = shown === 0;
+    photoSettings.hidden = !used().some((document) => document.photo);
     controls.selectOdd.disabled = empty;
     controls.selectEven.disabled = empty;
     controls.hideBlank.disabled = empty;
@@ -310,7 +342,7 @@ export function initPages() {
     controls.stamps.disabled = shown === 0;
     controls.find.disabled = shown === 0;
     controls.sign.disabled = shown === 0;
-    controls.properties.disabled = documents.length === 0;
+    controls.properties.disabled = empty;
     controls.addText.disabled = shown === 0;
     controls.clearMarks.disabled = false;
     controls.clearMarks.hidden = !pages.some((page) => page.marks?.length);
@@ -327,7 +359,8 @@ export function initPages() {
     controls.clearCuts.hidden = cuts.size === 0;
     controls.downloadParts.disabled = parts < 2;
     partsLabel.textContent = parts < 2 ? 'Download ZIP' : `Download ${parts} parts (ZIP)`;
-    const title = documents.length > 1 ? `${documents[0].name} and ${documents.length - 1} more` : (documents[0]?.name ?? '');
+    const names = used();
+    const title = names.length > 1 ? `${names[0].name} and ${names.length - 1} more` : (names[0]?.name ?? '');
     name.textContent = title;
     name.title = title;
     summary.textContent = `${none ? plural(pages.length, 'page') : `${selected.size} of ${pages.length} selected`}${hidden ? ` · ${hidden} hidden` : ''}${stamps.numbers ? ' · numbered' : ''}${stamps.watermark ? ' · watermark' : ''}${JSON.stringify(properties) === JSON.stringify(DEFAULT_PROPERTIES) ? '' : ' · properties'}${parts > 1 ? ` · ${parts} parts` : ''}`;
@@ -372,35 +405,19 @@ export function initPages() {
     refresh();
   }
 
+  const photoLayout = () => ({ size: sizeSelect.value, margin: MARGINS.find(([value]) => value === marginSelect.value)[2] });
+  const isPdf = (bytes) => new TextDecoder('latin1').decode(bytes.subarray(0, 1024)).includes('%PDF-');
+
+  // A PDF is a file of its own; a photo becomes a file of one page, laid out as the Photos settings say.
   async function load(file) {
     const bytes = new Uint8Array(await file.arrayBuffer());
-    const count = await countPages(bytes);
-    return { name: file.name, bytes, doc: await openRender(bytes), count };
+    if (isPdf(bytes)) return { name: file.name, bytes, doc: await openRender(bytes), count: await countPages(bytes) };
+    const photo = await readPhoto(file);
+    const pdf = await imagesToPdf([photo], photoLayout());
+    return { name: file.name, bytes: pdf, doc: await openRender(pdf), count: 1, photo };
   }
 
-  async function open(file) {
-    if (!file) return;
-    try {
-      const document = await load(file);
-      for (const old of documents) closeRender(old.doc);
-      generation += 1;
-      thumbs.clear();
-      documents = [document];
-      selected = new Set();
-      anchor = null;
-      pages = createPages(document.count, { file: 0, firstId: 0 });
-      nextId = document.count;
-      cuts = new Set();
-      focusId = pages[0]?.id ?? null;
-      history.clear();
-      setStatus('');
-      render();
-    } catch {
-      setStatus(`Cannot read ${file.name}: not a PDF, encrypted or damaged.`);
-    }
-  }
-
-  // The pages of other PDF files go into the document, before or after the page `targetId` (at the end without one).
+  // The pages of PDF files and photos go into the document, before or after the page `targetId` (at the end without one).
   async function insert(files, targetId = null, after = true) {
     const added = [];
     const unreadable = [];
@@ -414,11 +431,36 @@ export function initPages() {
         unreadable.push(file.name);
       }
     }
-    setStatus(unreadable.length ? `Cannot read ${unreadable.join(', ')}: not a PDF, encrypted or damaged.` : '');
+    setStatus(unreadable.length ? `Cannot read ${unreadable.join(', ')}: not a PDF or a picture, or encrypted or damaged.` : '');
     if (added.length === 0) return;
-    selected = new Set(added.map((page) => page.id));
+    const first = pages.length === 0;
+    selected = first ? new Set() : new Set(added.map((page) => page.id));
     commit({ pages: insertEntries(pages, added, targetId, after) });
   }
+
+  // Photos are laid out again when the settings change; their redactions and marks would no longer fit the new page.
+  const layoutPhotos = () =>
+    run('Laying out the photos...', async () => {
+      const photos = documents.filter((document) => document.photo);
+      if (photos.length === 0) return '';
+      if (pages.some((page) => documents[page.file]?.photo && (page.redactions.length || page.marks.length))) {
+        sizeSelect.value = applied.size;
+        marginSelect.value = applied.margin;
+        return 'Remove the redactions, signatures and texts on the photos before changing their page.';
+      }
+      applied = { size: sizeSelect.value, margin: marginSelect.value };
+      for (const document of photos) {
+        const old = document.doc;
+        document.bytes = await imagesToPdf([document.photo], photoLayout());
+        document.doc = await openRender(document.bytes);
+        closeRender(old);
+      }
+      generation += 1;
+      thumbs.clear();
+      history.clear();
+      render();
+      return '';
+    });
 
   const lastSelected = () => [...pages].reverse().find((page) => selected.has(page.id));
 
@@ -438,9 +480,9 @@ export function initPages() {
     commit({ pages: result.pages });
   }
 
-  // A PDF dropped on the grid goes next to the page nearest to the pointer; without a document it is opened.
+  // Files dropped on the grid go next to the page nearest to the pointer; elsewhere they go at the end.
   function drop(files, event) {
-    if (documents.length === 0) return open(files[0]);
+    if (pages.length === 0 || view !== 'pages') return insert(files);
     const hit = nearestEntry(grid, 'li', (element) => Number(element.dataset.id), event, 'x');
     return insert(files, hit?.id ?? null, hit?.after ?? true);
   }
@@ -535,7 +577,7 @@ export function initPages() {
   // A drag that starts on the background of the stage draws a rectangle; the pages it touches are selected
   // (Shift or Ctrl/Cmd keeps the current selection). A plain click on the background clears the selection.
   stage.addEventListener('pointerdown', (/** @type {PointerEvent} */ event) => {
-    if (event.button !== 0 || panel.hasAttribute('data-empty')) return;
+    if (event.button !== 0 || view !== 'pages' || panel.hasAttribute('data-empty')) return;
     if (/** @type {Element} */ (event.target).closest('.card, .cut, button, input')) return;
     event.preventDefault();
     const keep = event.shiftKey || event.metaKey || event.ctrlKey ? new Set(selected) : new Set();
@@ -613,7 +655,7 @@ export function initPages() {
   const cutSelected = () => commit({ cuts: toggleCuts(pages, cuts, selected) });
 
   document.addEventListener('keydown', (event) => {
-    if (panel.hidden || panel.hasAttribute('data-empty') || dialog.open) return;
+    if (view !== 'pages' || panel.hasAttribute('data-fresh') || document.querySelector('dialog[open]')) return;
     if (/** @type {Element} */ (event.target).closest('input, textarea, select')) return;
     const mod = event.metaKey || event.ctrlKey;
     const key = event.key.toLowerCase();
@@ -641,22 +683,40 @@ export function initPages() {
 
   // ---------- toolbar ----------
 
-  const stem = () => documents[0].name.replace(/\.pdf$/i, '');
-  const asPdf = async (entries) => {
+  const stem = () => {
+    const lead = pages.find((page) => page.file !== null && !page.hidden) ?? pages.find((page) => page.file !== null);
+    return (lead ? documents[lead.file].name : 'document').replace(/\.[^.]+$/, '');
+  };
+  const build = async (entries) => {
     const redacted = entries.filter((entry) => entry.redactions.length > 0).length;
     let drawn = 0;
     const burn = (entry) => {
       setStatus(`Redacting page ${++drawn} of ${redacted}...`);
       return burnPage(documents[entry.file].doc, entry);
     };
-    return new Blob([await buildPdf(documents.map((document) => document.bytes), entries, burn, async (output) => {
+    return buildPdf(documents.map((document) => document.bytes), entries, burn, async (output) => {
       await applyStamps(output, stamps);
       applyProperties(output, properties);
-    })], { type: 'application/pdf' });
+    });
   };
+  const squeeze = (bytes) => compressPdf(bytes, compression, recode, (done, total) => total && setStatus(`Compressing the images: ${done + 1} of ${total}...`));
+  let saved = { before: 0, after: 0 };
+  const asPdf = async (entries) => {
+    const bytes = await build(entries);
+    let result = bytes;
+    if (compression !== 'none') {
+      const smaller = await squeeze(bytes);
+      if (smaller.length < bytes.length) result = smaller;
+    }
+    saved.before += bytes.length;
+    saved.after += result.length;
+    return new Blob([result], { type: 'application/pdf' });
+  };
+  const savedText = () => (compression !== 'none' && saved.after < saved.before ? `Compressed from ${formatSize(saved.before)} to ${formatSize(saved.after)}.` : '');
 
   async function run(label, work) {
     for (const control of Object.values(controls)) control.disabled = true;
+    saved = { before: 0, after: 0 };
     setStatus(label);
     try {
       setStatus((await work()) ?? '');
@@ -668,16 +728,15 @@ export function initPages() {
   }
 
   fileInput.addEventListener('change', async () => {
-    await open(fileInput.files[0]);
+    const target = view === 'pages' ? lastSelected() : null;
+    await insert(Array.from(fileInput.files), target?.id ?? null, true);
     fileInput.value = '';
   });
-  for (const id of ['open-pages', 'choose-pages']) byId(id).addEventListener('click', () => fileInput.click());
-  insertInput.addEventListener('change', async () => {
-    const target = lastSelected();
-    await insert(Array.from(insertInput.files), target?.id ?? null, true);
-    insertInput.value = '';
-  });
-  controls.insertPdf.addEventListener('click', () => insertInput.click());
+  for (const id of ['add-files', 'choose-pages']) byId(id).addEventListener('click', () => fileInput.click());
+  controls.clearAll.addEventListener('click', () => commit({ pages: [], cuts: new Set() }));
+  for (const radio of viewRadios) radio.addEventListener('change', () => radio.checked && setView(radio.value));
+  sizeSelect.addEventListener('change', layoutPhotos);
+  marginSelect.addEventListener('change', layoutPhotos);
   controls.addBlank.addEventListener('click', addBlank);
   controls.duplicate.addEventListener('click', duplicateSelected);
   controls.hideBlank.addEventListener('click', hideBlankPages);
@@ -777,10 +836,16 @@ export function initPages() {
     }
   });
   controls.downloadAll.addEventListener('click', () =>
-    run('Preparing the PDF...', async () => download(await asPdf(visible(pages)), `${stem()}-edited.pdf`)),
+    run('Preparing the PDF...', async () => {
+      download(await asPdf(visible(pages)), `${stem()}-edited.pdf`);
+      return savedText();
+    }),
   );
   controls.downloadSelected.addEventListener('click', () =>
-    run('Preparing the PDF...', async () => download(await asPdf(visible(pages).filter((page) => selected.has(page.id))), `${stem()}-pages.pdf`)),
+    run('Preparing the PDF...', async () => {
+      download(await asPdf(visible(pages).filter((page) => selected.has(page.id))), `${stem()}-pages.pdf`);
+      return savedText();
+    }),
   );
   controls.downloadParts.addEventListener('click', () =>
     run('Splitting...', async () => {
@@ -791,9 +856,93 @@ export function initPages() {
         files.push({ name: `${stem()}-${String(files.length + 1).padStart(3, '0')}.pdf`, blob: await asPdf(part) });
       }
       download(await buildZip(files), `${stem()}-split.zip`);
+      return savedText();
+    }),
+  );
+  controls.compare.addEventListener('click', () =>
+    run('Preparing the preview...', async () => {
+      const parts = exportParts(pages, cuts);
+      const bytes = await build(parts[0]);
+      await comparer.open(bytes, await squeeze(bytes), `${parts.length > 1 ? 'First part, ' : ''}${LEVELS.find(([id]) => id === compression)[1]}`);
     }),
   );
 
+  const none = 'The file is saved as it is.';
+  levelsGroup.replaceChildren(
+    ...[['none', 'None', none], ...LEVELS].map(([id, text, description]) => {
+      const label = document.createElement('label');
+      const radio = Object.assign(document.createElement('input'), { type: 'radio', name: 'compression', value: id, checked: id === compression });
+      radio.addEventListener('change', () => {
+        compression = id;
+        byId('compress-describe').textContent = description;
+        refresh();
+      });
+      label.append(radio, Object.assign(document.createElement('span'), { textContent: text }));
+      return label;
+    }),
+  );
+  byId('compress-describe').textContent = none;
+
+  // ---------- files: one row for each run of pages that come from the same file ----------
+
+  const runKey = (run) => run.pages[0].id;
+  function runThumb(page) {
+    const canvas = document.createElement('canvas');
+    if (page.blank) {
+      canvas.width = 40;
+      canvas.height = 52;
+    } else {
+      renderPage(documents[page.file].doc, page.source, page.rotation, canvas, 0.35 * devicePixelRatio).catch(() => {});
+    }
+    return canvas;
+  }
+  const runInfo = (run) => {
+    const hiddenCount = run.pages.filter((page) => page.hidden).length;
+    return {
+      id: runKey(run),
+      name: run.file === null ? 'Blank page' : documents[run.file].name,
+      detail: `${plural(run.pages.length, 'page')}${run.file !== null && documents[run.file].photo ? ' (photo)' : ''}${hiddenCount ? `, ${hiddenCount} hidden` : ''}`,
+      hidden: hiddenCount === run.pages.length,
+      thumb: () => runThumb(run.pages[0]),
+    };
+  };
+  const idsOf = (key) => new Set((runsOf(pages).find((run) => runKey(run) === key)?.pages ?? []).map((page) => page.id));
+
+  const files = initFiles({
+    onMove: (keys, targetKey, after) => {
+      const runs = runsOf(pages);
+      const moving = new Set(runs.filter((run) => keys.has(runKey(run))).flatMap((run) => run.pages.map((page) => page.id)));
+      const target = runs.find((run) => runKey(run) === targetKey);
+      if (target) commit({ pages: place(pages, moving, (after ? target.pages.at(-1) : target.pages[0]).id, after) });
+    },
+    onStep: (key, step) => {
+      const runs = runsOf(pages);
+      const neighbor = runs[runs.findIndex((run) => runKey(run) === key) + step];
+      if (neighbor) commit({ pages: place(pages, idsOf(key), (step < 0 ? neighbor.pages[0] : neighbor.pages.at(-1)).id, step > 0) });
+    },
+    onToggle: (key) => commit({ pages: toggleHidden(pages, idsOf(key)) }),
+    onRemove: (key) => commit({ pages: removePages(pages, idsOf(key)) }),
+    onOpen: (key) => {
+      selected = idsOf(key);
+      setView('pages');
+      const [first] = selected;
+      cards.get(first)?.scrollIntoView({ block: 'center' });
+      cards.get(first)?.focus();
+    },
+  });
+  function renderFiles(runs = runsOf(pages)) {
+    files.render(runs.map(runInfo));
+  }
+  function setView(next) {
+    view = next;
+    panel.dataset.view = next;
+    grid.hidden = next !== 'pages';
+    fileList.hidden = next !== 'files';
+    for (const radio of viewRadios) radio.checked = radio.value === next;
+    if (next === 'files') renderFiles();
+    refresh();
+  }
+
   refresh();
-  return { open, drop, hasDocument: () => documents.length > 0 };
+  return { drop, hasDocument: () => pages.length > 0 };
 }

@@ -39,7 +39,6 @@ try {
   console.log(`${PAGES} scanned pages, ${(statSync(path).size / 1048576).toFixed(0)} MB, built in ${Date.now() - t} ms`);
 
   const heap = () => page.evaluate(() => Math.round(performance.memory.usedJSHeapSize / 1048576));
-  await page.getByRole('tab', { name: 'Pages' }).click();
   t = Date.now();
   await page.setInputFiles('#pages-file', path);
   await page.locator('#grid li').nth(PAGES - 1).waitFor({ timeout: 300000 });
@@ -55,10 +54,10 @@ try {
   const [download] = await Promise.all([page.waitForEvent('download', { timeout: 600000 }), page.locator('#download-all').click()]);
   console.log(`download all: ${Date.now() - t} ms, ${(statSync(await download.path()).size / 1048576).toFixed(0)} MB, heap ${await heap()} MB`);
   t = Date.now();
-  await page.getByRole('tab', { name: 'Compress' }).click();
-  await page.setInputFiles('#compress-file', path);
-  await page.waitForFunction(() => /smaller|No saving/.test(document.getElementById('compress-result').textContent), null, { timeout: 900000 });
-  console.log(`compress (Balanced): ${Date.now() - t} ms -> ${await page.locator('#compress-result').innerText()}, heap ${await heap()} MB`);
+  await page.getByRole('radio', { name: 'Balanced' }).check();
+  t = Date.now();
+  const [packed] = await Promise.all([page.waitForEvent('download', { timeout: 900000 }), page.locator('#download-all').click()]);
+  console.log(`download compressed (Balanced): ${Date.now() - t} ms, ${(statSync(await packed.path()).size / 1048576).toFixed(1)} MB, heap ${await heap()} MB`);
   console.log('errors:', JSON.stringify(app.errors));
 } finally {
   await app.close();

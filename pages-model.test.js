@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { blankPage, createPages, cutEvery, duplicate, insertEntries, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, rotatePages, rotateRect, showAll, toggleCuts, toggleHidden, visible } from './pages-model.js';
+import { blankPage, createPages, cutEvery, duplicate, insertEntries, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, removePages, rotatePages, runsOf, rotateRect, showAll, toggleCuts, toggleHidden, visible } from './pages-model.js';
 
 const ids = (pages) => pages.map((page) => page.id);
 const close = (actual, expected) => {
@@ -152,4 +152,19 @@ test('parseRange reads numbers, ranges and open ranges, and refuses anything els
   assert.deepEqual(parseRange(' 2 , 2-3 ', 5), [1, 2]);
   assert.deepEqual(parseRange('', 5), []);
   for (const bad of ['a', '3-1', '0', '1--2', '1;2', '-']) assert.equal(parseRange(bad, 5), null, bad);
+});
+
+test('removePages drops the pages of the set and keeps the order of the others', () => {
+  const pages = createPages(4);
+  assert.deepEqual(ids(removePages(pages, new Set([1, 2]))), [0, 3]);
+  assert.equal(removePages(pages, new Set()).length, 4);
+});
+
+test('runsOf groups consecutive pages of the same file, a blank page apart', () => {
+  const first = createPages(2, { file: 0, firstId: 0 });
+  const second = createPages(2, { file: 1, firstId: 2 });
+  const pages = [first[0], second[0], first[1], blankPage(9, 100, 100), second[1]];
+  assert.deepEqual(runsOf(pages).map((run) => [run.file, ids(run.pages)]), [[0, [0]], [1, [2]], [0, [1]], [null, [9]], [1, [3]]]);
+  assert.deepEqual(runsOf([...first, ...second]).map((run) => [run.file, ids(run.pages)]), [[0, [0, 1]], [1, [2, 3]]]);
+  assert.deepEqual(runsOf([]), []);
 });

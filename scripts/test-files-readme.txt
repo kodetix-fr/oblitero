@@ -7,13 +7,13 @@ Les images (JPEG, WebP, PNG) sont dessinees par le Chromium de Playwright.
 Tout est fictif : les noms, IBAN, cartes et numeros sont inventes.
 
 
-fusion/        Merge : plusieurs PDF a assembler
+fusion/        Plusieurs PDF sur le meme ecran
 ------------------------------------------------
 fusion-A.pdf, fusion-B.pdf, fusion-C.pdf
     Deux pages chacune : fond rouge (A1 A2), vert (B1 B2), bleu (C1 C2).
-    Ajoute-les dans le desordre, reordonne, fusionne : l'ordre des pages
-    du resultat est celui de la liste. Regarde l'apercu (premiere et derniere
-    page de chaque fichier, ligne pointillee a la jonction).
+    Depose-les ensemble, passe en vue Files, reordonne les lignes, cache-en
+    un, ouvre ses pages, puis reviens a Files : l'ordre des pages du resultat
+    est celui de l'ecran. Depose aussi une photo du dossier images avec eux.
 
 
 pages/         Pages : un PDF, ses pages, ses outils
@@ -94,12 +94,12 @@ accents-et-symboles.pdf
     Accents, oe, euro, livre, copyright, guillemets francais et anglais.
 
 
-images/        Images : photos et captures a transformer en PDF
+images/        Photos et captures, deposees avec ou sans PDF
 ----------------------------------------------------------------
 ordre-1.png a ordre-5.png
-    Cinq tuiles numerotees (paysage, portrait, paysage...). Ajoute-les, change
-    l'ordre, regarde le PDF : les pages suivent la liste. Essaie "Fit",
-    A4 et Letter, avec et sans marge.
+    Cinq tuiles numerotees (paysage, portrait, paysage...). Depose-les, change
+    l'ordre dans Files, regarde le PDF : les pages suivent la liste. Essaie
+    "Fit", A4 et Letter, avec et sans marge (panneau Result, section Photos).
 
 photo-paysage.jpg, photo-portrait.jpg
     Photos de 3000 x 2000 px, lourdes.
@@ -127,11 +127,12 @@ faux-image.jpg, vide.png
     A refuser avec un message : texte renomme en .jpg, fichier de 0 octet.
 
 
-compression/   Compress : de quoi voir l'avant et l'apres
-----------------------------------------------------------
+compression/   Compression (panneau Result) : de quoi voir l'avant et l'apres
+------------------------------------------------------------------------
 album-photos.pdf
     3 pages, une grosse photo chacune. Le cas ideal : Balanced et Strong divisent
-    le poids. Fais glisser la ligne de comparaison pour voir ce qui est perdu.
+    le poids. Choisis un niveau, clique "See before and after", fais glisser la
+    ligne de comparaison pour voir ce qui est perdu.
 
 rapport-photo-et-texte.pdf
     Du texte et une photo par page. Le texte doit rester net (il n'est pas touche),

@@ -22,7 +22,6 @@ let counter = 0;
 async function openDocument(sizes, { text = true } = {}) {
   const path = await writePdf(app.dir, `doc-${counter++}.pdf`, sizes.map((size, i) => ({ size, text: text === true || (Array.isArray(text) && text.includes(i)) ? String(size) : '' })));
   page = await app.openApp();
-  await page.getByRole('tab', { name: 'Pages' }).click();
   await page.setInputFiles('#pages-file', path);
   await page.locator('#grid li').nth(sizes.length - 1).waitFor();
   return path;
@@ -40,7 +39,7 @@ test('Insert PDF puts the pages of another file after the selection, and selects
   await openDocument([100, 200, 300]);
   const other = await writePdf(app.dir, 'other.pdf', [{ size: 500 }, { size: 600 }]);
   await card(2).click();
-  await page.setInputFiles('#insert-file', other);
+  await page.setInputFiles('#pages-file', other);
   await page.locator('#grid li').nth(4).waitFor();
   assert.equal(await pressed(), 2);
   assert.match(await page.locator('#pages-name').innerText(), /and 1 more/);
@@ -66,7 +65,7 @@ test('a PDF dropped on the grid lands next to the page nearest to the pointer', 
       { type, x, y, bytes },
     );
   await send('dragover', first.x + 4, first.y + first.height / 2);
-  assert.equal(await page.locator('#dropHint p').innerText(), 'Drop a PDF to insert its pages there');
+  assert.equal(await page.locator('#dropHint p').innerText(), 'Drop PDF files or photos to add them');
   await send('drop', first.x + 4, first.y + first.height / 2);
   await page.locator('#grid li').nth(3).waitFor();
   assert.deepEqual(await widths(), [700, 100, 200, 300]);
@@ -232,7 +231,6 @@ test('Find and redact covers what it finds on every page, keeps what the user sw
     { size: 612, text: ['KEEP-ME-ENTIRELY'] },
   ]);
   page = await app.openApp();
-  await page.getByRole('tab', { name: 'Pages' }).click();
   await page.setInputFiles('#pages-file', path);
   await page.locator('#grid li').nth(2).waitFor();
 

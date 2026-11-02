@@ -45,67 +45,64 @@ after(async () => {
   assert.deepEqual(errors, []);
 });
 
-const resultText = () => page.locator('#compress-result').innerText();
-
-async function waitForSaving() {
-  await page.waitForFunction(() => /smaller|No saving/.test(document.getElementById('compress-result').textContent), null, { timeout: 60000 });
-}
-
 async function downloaded(trigger) {
   const [download] = await Promise.all([page.waitForEvent('download'), trigger()]);
   return { bytes: readFileSync(await download.path()), name: download.suggestedFilename() };
 }
 
+const settled = () => page.waitForFunction(() => !/^(Preparing|Compressing)/.test(document.getElementById('pages-status').textContent), null, { timeout: 60000 });
+
 test('a PDF full of photos gets smaller at each level, and still holds its text and its picture', async () => {
-  await page.getByRole('tab', { name: 'Compress' }).click();
-  await page.setInputFiles('#compress-file', source);
-  await page.locator('#compress-name').waitFor();
-  assert.equal(await page.locator('#compress-name').innerText(), 'photos.pdf');
+  await page.setInputFiles('#pages-file', source);
+  await page.locator('#grid li').first().waitFor();
+  assert.equal(await page.locator('#compare-open').isHidden(), true);
   const original = readFileSync(source).length;
 
   const sizes = {};
   for (const level of ['Light', 'Balanced', 'Strong']) {
     await page.getByRole('radio', { name: level }).check();
-    await waitForSaving();
-    if (level !== 'Light') {
-      const { bytes, name } = await downloaded(() => page.locator('#compress-download').click());
-      assert.equal(name, 'photos-compressed.pdf');
-      sizes[level] = bytes.length;
-      const checked = await page.evaluate(async (bytes) => {
-        const { openRender, renderPage } = await import('./render.js');
-        const doc = await openRender(new Uint8Array(bytes));
-        const sheet = await doc.getPage(1);
-        const text = (await sheet.getTextContent()).items.map((item) => item.str).join(' ');
-        const canvas = document.createElement('canvas');
-        await renderPage(doc, 0, 0, canvas, 0.5);
-        const { data } = canvas.getContext('2d').getImageData(canvas.width >> 1, Math.round(canvas.height * 0.45), 1, 1);
-        return { pages: doc.numPages, text, ink: data[0] + data[1] + data[2] };
-      }, Array.from(bytes));
-      assert.equal(checked.pages, 1);
-      assert.match(checked.text, /KEEP-THIS-TEXT/);
-      assert.ok(checked.ink > 60 && checked.ink < 740, `the picture is gone or blank: ${checked.ink}`);
-    }
+    const { bytes, name } = await downloaded(() => page.locator('#download-all').click());
+    assert.equal(name, 'photos-edited.pdf');
+    sizes[level] = bytes.length;
+    if (level === 'Light') continue;
+    const checked = await page.evaluate(async (bytes) => {
+      const { openRender, renderPage } = await import('./render.js');
+      const doc = await openRender(new Uint8Array(bytes));
+      const sheet = await doc.getPage(1);
+      const text = (await sheet.getTextContent()).items.map((item) => item.str).join(' ');
+      const canvas = document.createElement('canvas');
+      await renderPage(doc, 0, 0, canvas, 0.5);
+      const { data } = canvas.getContext('2d').getImageData(canvas.width >> 1, Math.round(canvas.height * 0.45), 1, 1);
+      return { pages: doc.numPages, text, ink: data[0] + data[1] + data[2] };
+    }, Array.from(bytes));
+    assert.equal(checked.pages, 1);
+    assert.match(checked.text, /KEEP-THIS-TEXT/);
+    assert.ok(checked.ink > 60 && checked.ink < 740, `the picture is gone or blank: ${checked.ink}`);
   }
   assert.ok(sizes.Balanced < original * 0.75, `${sizes.Balanced} against ${original}`);
   assert.ok(sizes.Strong < sizes.Balanced * 0.8, `${sizes.Strong} against ${sizes.Balanced}`);
 });
 
-test('the result says the size before and after, and a file that is not a PDF is refused', async () => {
+test('the status says the size before and after, and a file that is not a PDF is refused', async () => {
   await page.getByRole('radio', { name: 'Balanced' }).check();
-  await waitForSaving();
-  assert.match((await resultText()).replace(/\s+/g, ' '), /^[\d.]+ [KM]B to [\d.]+ [KM]B, \d+ % smaller\.$/);
-  assert.equal(await page.locator('#compress-download').isDisabled(), false);
+  await downloaded(() => page.locator('#download-all').click());
+  await page.waitForFunction(() => /^Compressed from/.test(document.getElementById('pages-status').textContent));
+  assert.match(await page.locator('#pages-status').innerText(), /^Compressed from [\d.]+ [KM]B to [\d.]+ [KM]B\.$/);
+
+  await page.getByRole('radio', { name: 'None' }).check();
+  await downloaded(() => page.locator('#download-all').click());
+  await page.waitForFunction(() => document.getElementById('pages-status').textContent === '');
 
   const text = join(app.dir, 'fake.pdf');
   writeFileSync(text, 'not a pdf at all');
-  await page.setInputFiles('#compress-file', text);
-  await page.waitForFunction(() => document.getElementById('compress-note').textContent.includes('Cannot read fake.pdf'));
-  assert.equal(await page.locator('#compress-name').innerText(), 'photos.pdf');
+  await page.setInputFiles('#pages-file', text);
+  await page.waitForFunction(() => document.getElementById('pages-status').textContent.includes('Cannot read fake.pdf'));
+  assert.equal(await page.locator('#grid li').count(), 1);
 });
 
 test('the same page is shown before and after, with a line to compare them', async () => {
   await page.getByRole('radio', { name: 'Strong' }).check();
-  await waitForSaving();
+  await page.locator('#compare-open').click();
   await page.locator('#compare-pages canvas').nth(1).waitFor();
   assert.equal(await page.locator('#compare-page').innerText(), 'Page 1 of 1');
   assert.equal(await page.locator('#compare-prev').isDisabled(), true);
@@ -143,18 +140,27 @@ test('the same page is shown before and after, with a line to compare them', asy
   await page.mouse.up();
   assert.ok(Math.abs((await value()) - 25) <= 1, `the line is at ${await value()} %`);
   assert.equal(await page.locator('#compare-stage').evaluate((element) => element.style.getPropertyValue('--split')), `${await value()}%`);
+  await page.locator('#compare-close').click();
+  await page.locator('#compare-dialog').waitFor({ state: 'hidden' });
+  await settled();
 });
 
-test('the pages of a longer document can be turned, and a new file starts at its first page', async () => {
+test('the pages of a longer result can be turned, and the comparison starts again at the first page', async () => {
   const album = await writePdf(app.dir, 'album.pdf', [1, 2, 3].map((n) => ({ size: 300, text: `PAGE-${n}` })));
-  await page.setInputFiles('#compress-file', album);
-  await page.waitForFunction(() => document.getElementById('compress-name').textContent === 'album.pdf');
-  await page.waitForFunction(() => document.getElementById('compare-page').textContent === 'Page 1 of 3');
+  await page.setInputFiles('#pages-file', album);
+  await page.locator('#grid li').nth(3).waitFor();
+  await page.locator('#compare-open').click();
+  await page.waitForFunction(() => document.getElementById('compare-page').textContent === 'Page 1 of 4');
   await page.locator('#compare-next').click();
-  await page.waitForFunction(() => document.getElementById('compare-page').textContent === 'Page 2 of 3');
+  await page.waitForFunction(() => document.getElementById('compare-page').textContent === 'Page 2 of 4');
   await page.locator('#compare-next').click();
-  await page.waitForFunction(() => document.getElementById('compare-page').textContent === 'Page 3 of 3');
+  await page.locator('#compare-next').click();
+  await page.waitForFunction(() => document.getElementById('compare-page').textContent === 'Page 4 of 4');
   assert.equal(await page.locator('#compare-next').isDisabled(), true);
-  await page.setInputFiles('#compress-file', source);
-  await page.waitForFunction(() => document.getElementById('compare-page').textContent === 'Page 1 of 1');
+  await page.locator('#compare-close').click();
+  await page.locator('#compare-dialog').waitFor({ state: 'hidden' });
+  await settled();
+  await page.locator('#compare-open').click();
+  await page.waitForFunction(() => document.getElementById('compare-page').textContent === 'Page 1 of 4');
+  await page.locator('#compare-close').click();
 });

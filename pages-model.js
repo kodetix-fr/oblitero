@@ -58,6 +58,19 @@ export function rotatePages(pages, ids, delta) {
   );
 }
 
+export const removePages = (pages, ids) => pages.filter((page) => !ids.has(page.id));
+
+// Consecutive pages that come from the same file make one run (a blank page is a run of its own file, null).
+export function runsOf(pages) {
+  const runs = [];
+  for (const page of pages) {
+    const last = runs.at(-1);
+    if (last && last.file === page.file) last.pages.push(page);
+    else runs.push({ file: page.file, pages: [page] });
+  }
+  return runs;
+}
+
 // Hiding keeps a page in the document view but out of every result. Hides the pages of `ids`, or shows them again when
 // all of them are already hidden.
 export function toggleHidden(pages, ids) {

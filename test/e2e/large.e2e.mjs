@@ -20,7 +20,6 @@ before(async () => {
   const path = join(app.dir, 'five-hundred.pdf');
   writeFileSync(path, await document.save());
   page = await app.openApp();
-  await page.getByRole('tab', { name: 'Pages' }).click();
   await page.setInputFiles('#pages-file', path);
 });
 after(async () => {

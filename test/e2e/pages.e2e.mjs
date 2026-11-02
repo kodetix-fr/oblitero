@@ -31,7 +31,6 @@ test('open a PDF: every page gets a card and a rendered thumbnail', async () => 
     { size: 400, text: 'THREE' },
   ]);
   page = await app.openApp();
-  await page.getByRole('tab', { name: 'Pages' }).click();
   await page.setInputFiles('#pages-file', path);
   await page.locator('#grid li').nth(2).waitFor();
 
@@ -96,7 +95,7 @@ test('a file that is not a PDF is refused without changing the document', async 
   assert.equal(await page.locator('#grid li').count(), 3);
 });
 
-test('opening a second PDF replaces the first and draws its thumbnails', async () => {
+test('adding a second PDF keeps the first and draws its thumbnails', async () => {
   const path = await writePdf(app.dir, 'second.pdf', [
     { size: 200, text: 'A' },
     { size: 200, text: 'B' },
@@ -104,7 +103,7 @@ test('opening a second PDF replaces the first and draws its thumbnails', async (
     { size: 200, text: 'D' },
   ]);
   await page.setInputFiles('#pages-file', path);
-  await page.waitForFunction(() => document.querySelectorAll('#grid li').length === 4);
+  await page.waitForFunction(() => document.querySelectorAll('#grid li').length === 7);
   assert.equal(await page.locator('#pages-status').innerText(), '');
   await page.waitForFunction(() =>
     Array.from(document.querySelectorAll('#grid canvas')).every((canvas) => {

@@ -20,7 +20,6 @@ const card = (n) => page.getByRole('button', { name: new RegExp(`^Page ${n}(,|$)
 async function openDocument(count) {
   const path = await writePdf(app.dir, `marks-${counter++}.pdf`, Array.from({ length: count }, () => ({ size: 612 })));
   page = await app.openApp();
-  await page.getByRole('tab', { name: 'Pages' }).click();
   await page.setInputFiles('#pages-file', path);
   await page.locator('#grid li').nth(count - 1).waitFor();
 }

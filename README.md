@@ -8,22 +8,27 @@ Status: under construction, private until the first release.
 
 ## What works
 
-- **Merge**: drop PDF files on the page or choose them, drag the cards, or the
-  groups of the preview (or use the arrows), to reorder, see a preview of the
-  result (first and last page of each file, its page range, a dashed line where
-  files join), and download one PDF.
-- **Pages**: open one PDF and see every page. Click selects, Shift+click selects
-  a range, a rectangle dragged on the background selects what it touches, and a
-  field takes a list such as `1-3, 7, 10-` (Odd and Even are one click). Rotate,
-  hide, drag to reorder (the whole selection travels with the page you grab,
-  and a drop lands next to the nearest page, gaps and the end included). Every
-  change can be undone and redone. A hidden page stays in the grid, dimmed, and
-  is left out of every download; Show brings it back. Download the result or
-  only the selected pages. The thumbnails have a size slider.
-- **Several files in one document**: Insert PDF puts the pages of another file
-  after the selection, and a PDF dropped on the grid lands next to the nearest
-  page. Add a blank page (the size of the page before it) and Duplicate act on
-  the selection.
+- **One screen**: drop PDF files and photos together on the page, or choose them.
+  The **Files** view lists them, one row each: drag the rows (or use the arrows)
+  to reorder, hide a whole file from the result, remove it, or open its pages.
+  The **Pages** view shows every page of every file, in the order of the result,
+  and the name of each file on its first page. Add files puts new pages after the
+  selection, and a file dropped on the grid lands next to the nearest page. Clear
+  empties the screen, and Undo brings it back.
+- **Pages**: click selects, Shift+click selects a range, a rectangle dragged on
+  the background selects what it touches, and a field takes a list such as
+  `1-3, 7, 10-` (Odd and Even are one click). Rotate, hide, drag to reorder (the
+  whole selection travels with the page you grab, and a drop lands next to the
+  nearest page, gaps and the end included). Every change can be undone and
+  redone. A hidden page stays in the grid, dimmed, and is left out of every
+  download; Show brings it back. Download the result or only the selected pages.
+  The thumbnails have a size slider. Add a blank page (the size of the page
+  before it) and Duplicate act on the selection.
+- **Photos**: photos and screenshots (JPEG, PNG, WebP) become pages like any
+  other, in the order you give them, with a page size (fit, A4, Letter) and a
+  margin chosen in the result panel. A photo stored sideways by a phone is turned
+  upright. The page of the photos cannot change while one of them carries a
+  redaction, a signature or a text.
 - **Cut**: the scissors that appear between two pages cut the document there.
   The parts get their own color, and one click downloads them as a ZIP. "Cut
   every N pages" places the cuts for you, and they can be moved or removed one
@@ -62,15 +67,13 @@ Status: under construction, private until the first release.
   file. A redacted page is written as `[redacted page]`.
 - **Export images**: the pages as PNG or JPEG at 72, 150 or 300 dpi, as a ZIP.
   Redactions are painted in and hidden pages are left out.
-- **Images**: photos and screenshots (JPEG, PNG, WebP) become the pages of a PDF,
-  in the order you give them, with a page size (fit, A4, Letter) and a margin. A
-  photo stored sideways by a phone is turned upright. Open the result in Pages
-  or download it.
-- **Compress**: Light rewrites the file compactly; Balanced and Strong also
-  re-encode the JPEG photos inside at a lower size and quality. The size before
-  and after is shown before you download, and so is the page itself: a line you
-  drag (or move with the arrow keys) shows the original on its left and the
-  result on its right, page by page, so you can judge the loss.
+- **Compression**, in the result panel: None, Light (rewrites the file
+  compactly), Balanced or Strong (also re-encode the JPEG photos inside at a
+  lower size and quality). It applies to everything you download. "See before
+  and after" shows the page itself: a line you drag (or move with the arrow keys)
+  shows the original on its left and the result on its right, page by page, so
+  you can judge the loss; the sizes are shown, and the download says how much
+  was saved.
 
 ## Keyboard
 

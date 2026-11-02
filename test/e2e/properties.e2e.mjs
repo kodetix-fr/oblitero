@@ -23,7 +23,6 @@ before(async () => {
   source = join(app.dir, 'carrier.pdf');
   writeFileSync(source, await document.save());
   page = await app.openApp();
-  await page.getByRole('tab', { name: 'Pages' }).click();
   await page.setInputFiles('#pages-file', source);
   await page.locator('#grid li').nth(1).waitFor();
 });

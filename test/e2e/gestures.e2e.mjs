@@ -23,7 +23,6 @@ const pressed = () => page.locator('#grid [aria-pressed="true"]').count();
 async function openDocument() {
   const path = await writePdf(app.dir, `five-${Date.now()}.pdf`, SIZES.map((size) => ({ size, text: String(size) })));
   page = await app.openApp();
-  await page.getByRole('tab', { name: 'Pages' }).click();
   await page.setInputFiles('#pages-file', path);
   await page.locator('#grid li').nth(4).waitFor();
 }
