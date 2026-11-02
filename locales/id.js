@@ -264,6 +264,7 @@ export default {
   'status.preview': 'Menyiapkan pratinjau...',
   'text.page': '--- Halaman {n} ---',
   'text.redacted': '[halaman dihitamkan]',
+  'text.none': '[tidak ada teks di halaman ini]',
   'export.note': '{pages} akan disimpan. Halaman tersembunyi dilewati, penghitaman ikut diterapkan, dan halaman yang terlalu besar untuk browser digambar dengan resolusi lebih rendah.',
   'export.note-zip': '{pages} akan disimpan dalam ZIP. Halaman tersembunyi dilewati, penghitaman ikut diterapkan, dan halaman yang terlalu besar untuk browser digambar dengan resolusi lebih rendah.',
   'position.top-left': 'Kiri atas',

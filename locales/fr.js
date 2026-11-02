@@ -264,6 +264,7 @@ export default {
   'status.preview': 'Préparation de l\'aperçu…',
   'text.page': '--- Page {n} ---',
   'text.redacted': '[page caviardée]',
+  'text.none': '[aucun texte sur cette page]',
   'export.note': 'Enregistrement de {pages}. Les pages masquées sont laissées de côté, les caviardages sont appliqués, et une page trop grande pour le navigateur est rendue à une résolution plus basse.',
   'export.note-zip': 'Enregistrement de {pages} dans un ZIP. Les pages masquées sont laissées de côté, les caviardages sont appliqués, et une page trop grande pour le navigateur est rendue à une résolution plus basse.',
   'position.top-left': 'En haut à gauche',

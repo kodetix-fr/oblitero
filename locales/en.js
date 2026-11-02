@@ -292,6 +292,7 @@ export default {
   // header written in the .txt file that holds the text of the pages
   'text.page': '--- Page {n} ---',
   'text.redacted': '[redacted page]',
+  'text.none': '[no text on this page]',
   'export.note': '{pages} will be saved. Hidden pages are left out, redactions are painted in, and a page too large for the browser is drawn at a lower resolution.',
   'export.note-zip': '{pages} will be saved in a ZIP. Hidden pages are left out, redactions are painted in, and a page too large for the browser is drawn at a lower resolution.',
   // dialogs

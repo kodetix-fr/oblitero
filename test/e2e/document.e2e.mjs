@@ -155,6 +155,14 @@ test('Extract text writes the text of the shown pages, in order, to a .txt file'
   await page.close();
 });
 
+test('Extract text says so for a page that has no text, as a scan does', async () => {
+  await openDocument([100, 200], { text: [0] });
+  const text = (await downloaded(() => page.locator('#extract-text').click())).toString('utf8');
+  assert.match(text, /--- Page 1 ---\n100/);
+  assert.match(text, /--- Page 2 ---\n\[no text on this page\]/);
+  await page.close();
+});
+
 test('the size slider resizes the thumbnails', async () => {
   await openDocument([100, 200]);
   await page.waitForFunction(() => document.querySelector('#grid canvas').width > 0);

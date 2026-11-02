@@ -264,6 +264,7 @@ export default {
   'status.preview': 'Vorschau wird vorbereitet…',
   'text.page': '--- Seite {n} ---',
   'text.redacted': '[geschwärzte Seite]',
+  'text.none': '[kein Text auf dieser Seite]',
   'export.note': 'Gespeichert: {pages}. Ausgeblendete Seiten werden weggelassen, Schwärzungen fest ins Bild übernommen, und eine für den Browser zu große Seite wird in geringerer Auflösung gezeichnet.',
   'export.note-zip': 'Gespeichert in einer ZIP-Datei: {pages}. Ausgeblendete Seiten werden weggelassen, Schwärzungen fest ins Bild übernommen, und eine für den Browser zu große Seite wird in geringerer Auflösung gezeichnet.',
   'position.top-left': 'Oben links',

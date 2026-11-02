@@ -268,6 +268,7 @@ export default {
   'status.preview': 'Preparando a prévia…',
   'text.page': '--- Página {n} ---',
   'text.redacted': '[página tarjada]',
+  'text.none': '[sem texto nesta página]',
   'export.note': 'Serão salvas: {pages}. As páginas ocultas ficam de fora, os tarjamentos são aplicados e uma página grande demais para o navegador é desenhada em resolução menor.',
   'export.note-zip': 'Serão salvas em um ZIP: {pages}. As páginas ocultas ficam de fora, os tarjamentos são aplicados e uma página grande demais para o navegador é desenhada em resolução menor.',
   // dialogs

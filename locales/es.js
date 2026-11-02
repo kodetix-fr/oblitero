@@ -264,6 +264,7 @@ export default {
   'status.preview': 'Preparando la vista previa…',
   'text.page': '--- Página {n} ---',
   'text.redacted': '[página tachada]',
+  'text.none': '[sin texto en esta página]',
   'export.note': 'Se guardará: {pages}. Las páginas ocultas se omiten, los tachados se pintan en la imagen y una página demasiado grande para el navegador se dibuja con una resolución menor.',
   'export.note-zip': 'Se guardará en un ZIP: {pages}. Las páginas ocultas se omiten, los tachados se pintan en la imagen y una página demasiado grande para el navegador se dibuja con una resolución menor.',
   'position.top-left': 'Arriba a la izquierda',

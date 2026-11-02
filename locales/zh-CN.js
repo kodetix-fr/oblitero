@@ -264,6 +264,7 @@ export default {
   'status.preview': '正在准备预览…',
   'text.page': '--- 第 {n} 页 ---',
   'text.redacted': '[已涂黑的页面]',
+  'text.none': '[此页没有文字]',
   'export.note': '将保存 {pages}。已隐藏的页面不会包含在内，涂黑的区域会直接画入图片，浏览器无法处理的超大页面将以较低分辨率绘制。',
   'export.note-zip': '将保存 {pages}，打包为 ZIP。已隐藏的页面不会包含在内，涂黑的区域会直接画入图片，浏览器无法处理的超大页面将以较低分辨率绘制。',
   'position.top-left': '左上角',

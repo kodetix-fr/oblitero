@@ -580,7 +580,7 @@ export function initPages() {
         const number = pages.indexOf(page) + 1;
         let text = '';
         if (page.redactions.length) text = t('text.redacted');
-        else if (!page.blank) text = await textOf(documents[page.file].doc, page.source);
+        else if (!page.blank) text = (await textOf(documents[page.file].doc, page.source)) || t('text.none');
         parts.push(`${t('text.page', { n: number })}\n${text}`);
       }
       download(new Blob([`${parts.join('\n\n')}\n`], { type: 'text/plain;charset=utf-8' }), `${stem()}.txt`);
