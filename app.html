@@ -206,12 +206,26 @@
         <label class="field wide"><input type="checkbox" id="numbers-skip"> <span data-i18n="stamp.leave-the-first-page">Leave the first page without a number</span></label>
       </fieldset>
       <fieldset>
+        <legend><label><input type="checkbox" id="header-on"> <span data-i18n="stamp.header">Header</span></label></legend>
+        <label class="field wide"><span data-i18n="stamp.header-text">Text</span> <input type="text" id="header-text" maxlength="120" spellcheck="false"></label>
+        <label class="field"><span data-i18n="stamp.align">Alignment</span> <select id="header-align"><option value="left" data-i18n="stamp.align-left">Left</option><option value="center" data-i18n="stamp.align-center">Center</option><option value="right" data-i18n="stamp.align-right">Right</option></select></label>
+        <label class="field"><span data-i18n="stamp.header-size">Size</span> <input type="number" id="header-size" min="6" max="48" value="10"></label>
+      </fieldset>
+      <fieldset>
+        <legend><label><input type="checkbox" id="footer-on"> <span data-i18n="stamp.footer">Footer</span></label></legend>
+        <label class="field wide"><span data-i18n="stamp.footer-text">Text</span> <input type="text" id="footer-text" maxlength="120" spellcheck="false"></label>
+        <label class="field"><span data-i18n="stamp.align">Alignment</span> <select id="footer-align"><option value="left" data-i18n="stamp.align-left">Left</option><option value="center" data-i18n="stamp.align-center">Center</option><option value="right" data-i18n="stamp.align-right">Right</option></select></label>
+        <label class="field"><span data-i18n="stamp.footer-size">Size</span> <input type="number" id="footer-size" min="6" max="48" value="10"></label>
+      </fieldset>
+      <fieldset>
         <legend><label><input type="checkbox" id="watermark-on"> <span data-i18n="stamp.watermark">Watermark</span></label></legend>
         <label class="field wide"><span data-i18n="stamp.text">Text</span> <input type="text" id="watermark-text" value="DRAFT" maxlength="60" spellcheck="false"></label>
         <label class="field"><span data-i18n="stamp.size-2">Size</span> <input type="number" id="watermark-size" min="12" max="200" value="72"></label>
         <label class="field"><span data-i18n="stamp.angle">Angle</span> <input type="number" id="watermark-angle" min="-90" max="90" value="45"></label>
         <label class="field wide"><span data-i18n="stamp.opacity">Opacity</span> <input type="range" id="watermark-opacity" min="5" max="80" value="25"></label>
       </fieldset>
+      <label class="field"><span data-i18n="stamp.pages">Pages</span> <input type="text" id="stamp-range" placeholder="2-5, 8" aria-label="Pages that get the numbers, the header, the footer and the watermark: empty for all, or a list such as 2-5, 8" data-i18n-aria="stamp.pages-aria" spellcheck="false"></label>
+      <p class="hint" data-i18n="stamp.hint">In a header or a footer, {page} is replaced by the number of the page and {pages} by the number of pages. The Pages field limits all four to a list such as 2-5, 8.</p>
       <p id="stamp-error" role="alert" class="hint"></p>
     </div>
     <div class="dlg-foot">

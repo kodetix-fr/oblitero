@@ -1,10 +1,13 @@
-import { FORMATS, POSITIONS, checkText } from './stamps.js';
+import { FORMATS, NO_STAMPS, POSITIONS, checkText } from './stamps.js';
+import { parseRange } from './pages-model.js';
 import { byId, setI18n } from './dom.js';
 import { t } from './i18n.js';
 
 const DEFAULTS = {
   numbers: { position: 'bottom-center', format: 'of', first: 1, size: 10, skipFirst: false },
   watermark: { text: 'DRAFT', size: 72, opacity: 0.25, angle: 45 },
+  header: { text: '', align: 'center', size: 10 },
+  footer: { text: '', align: 'center', size: 10 },
 };
 
 export function initStamps() {
@@ -33,13 +36,27 @@ export function initStamps() {
     field('watermark-size').value = String(watermark.size);
     field('watermark-angle').value = String(watermark.angle);
     field('watermark-opacity').value = String(Math.round(watermark.opacity * 100));
+    for (const band of ['header', 'footer']) {
+      const settings = current[band] ?? DEFAULTS[band];
+      field(`${band}-on`).checked = !!current[band];
+      field(`${band}-text`).value = settings.text;
+      field(`${band}-align`).value = settings.align;
+      field(`${band}-size`).value = String(settings.size);
+    }
+    field('stamp-range').value = current.range ?? '';
     field('stamp-error').textContent = '';
   }
 
   const number = (id, fallback, min, max) => Math.min(max, Math.max(min, Math.round(Number(field(id).value)) || fallback));
 
+  const band = (name) =>
+    field(`${name}-on`).checked ? { text: field(`${name}-text`).value.trim(), align: field(`${name}-align`).value, size: number(`${name}-size`, 10, 6, 48) } : null;
+
   function read() {
     return {
+      header: band('header'),
+      footer: band('footer'),
+      range: field('stamp-range').value.trim(),
       numbers: field('numbers-on').checked
         ? {
             position: field('numbers-position').value,
@@ -68,17 +85,22 @@ export function initStamps() {
       const { signal } = session;
       let result = null;
       byId('stamp-cancel').addEventListener('click', () => dialog.close(), { signal });
-      byId('stamp-clear').addEventListener('click', () => ((result = { numbers: null, watermark: null }), dialog.close()), { signal });
+      byId('stamp-clear').addEventListener('click', () => ((result = { ...NO_STAMPS }), dialog.close()), { signal });
       byId('stamp-apply').addEventListener(
         'click',
         async () => {
           const settings = read();
-          if (settings.watermark && !settings.watermark.text) {
-            field('stamp-error').textContent = t('stamp.error.text');
+          const problem =
+            (settings.watermark && !settings.watermark.text && 'stamp.error.text') ||
+            (settings.header && !settings.header.text && 'stamp.error-header') ||
+            (settings.footer && !settings.footer.text && 'stamp.error-footer') ||
+            (settings.range && parseRange(settings.range, 1e6) === null && 'stamp.error-range');
+          if (problem) {
+            field('stamp-error').textContent = t(problem);
             return;
           }
           try {
-            if (settings.watermark) await checkText(settings.watermark.text);
+            for (const text of [settings.watermark?.text, settings.header?.text, settings.footer?.text]) if (text) await checkText(text);
           } catch (error) {
             field('stamp-error').textContent = error.message;
             return;

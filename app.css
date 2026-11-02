@@ -216,6 +216,7 @@ dialog::backdrop { background: var(--shade); }
 #dropHint p { padding: 14px 24px; border-radius: var(--r-m); background: var(--surface); color: var(--fg); font-size: 18px; font-weight: 600; box-shadow: var(--pop); }
 
 #stamp-dialog, #export-dialog { width: min(560px, calc(100vw - 32px)); }
+#stamp-dialog .hint { padding: 0; }
 #stamp-dialog[open], #export-dialog[open] { grid-template-rows: auto minmax(0, 1fr) auto; }
 #export-dialog { width: min(420px, calc(100vw - 32px)); }
 .dlg-body { display: grid; gap: 14px; padding: 14px 16px; overflow: auto; }

@@ -11,7 +11,7 @@ import { blankPage, createPages, cutEvery, duplicate, insertEntries, parseRange,
 import { createHistory } from './history.js';
 import { plural, t } from './i18n.js';
 import { openRedactor } from './redact-view.js';
-import { applyStamps } from './stamps.js';
+import { NO_STAMPS, applyStamps } from './stamps.js';
 import { initFind } from './find-view.js';
 import { initSign } from './sign-view.js';
 import { initProperties } from './properties-view.js';
@@ -92,7 +92,7 @@ export function initPages() {
     downloadParts: byId('download-parts'),
   };
 
-  let stamps = { numbers: null, watermark: null };
+  let stamps = { ...NO_STAMPS };
   let view = 'pages';
   let compression = 'none';
   const comparer = initCompare();
@@ -392,6 +392,8 @@ export function initPages() {
       none ? pagesOf(pages.length) : t('summary.selected', { n: selected.size, total: pages.length }),
       hidden ? t('summary.hidden', { n: hidden }) : '',
       stamps.numbers ? t('summary.numbered') : '',
+      stamps.header ? t('summary.header') : '',
+      stamps.footer ? t('summary.footer') : '',
       stamps.watermark ? t('summary.watermark') : '',
       JSON.stringify(properties) === JSON.stringify(DEFAULT_PROPERTIES) ? '' : t('summary.properties'),
       parts > 1 ? t('summary.parts', { n: parts }) : '',

@@ -236,6 +236,37 @@ test('page numbers and a watermark are drawn on what is downloaded, upright on a
   await page.close();
 });
 
+test('a header and a footer with the page number go on the pages of a range, and a bad range is refused', async () => {
+  await openDocument([300, 400, 500, 350], { text: false });
+  await page.locator('#stamps').click();
+  await page.locator('#stamp-dialog').waitFor({ state: 'visible' });
+  await page.locator('#header-on').check();
+  await page.locator('#header-text').fill('HEAD {page} of {pages}');
+  await page.locator('#footer-on').check();
+  await page.locator('#footer-text').fill('FOOT');
+  await page.locator('#footer-align').selectOption('right');
+  await page.locator('#stamp-range').fill('nope');
+  await page.locator('#stamp-apply').click();
+  assert.match(await page.locator('#stamp-error').innerText(), /Not a list of pages/);
+  assert.equal(await page.locator('#stamp-dialog').isVisible(), true);
+  await page.locator('#stamp-range').fill('2-3');
+  await page.locator('#stamp-apply').click();
+  await page.locator('#stamp-dialog').waitFor({ state: 'hidden' });
+  await page.waitForFunction(() => /header · footer/.test(document.getElementById('selection-summary').textContent));
+
+  const pages = await inspect(await downloaded(() => page.locator('#download-all').click()));
+  assert.deepEqual(pages.map((p) => /HEAD (\d) of (\d)/.exec(p.text)?.slice(1).join('/')), [undefined, '2/4', '3/4', undefined]);
+  assert.deepEqual(pages.map((p) => p.text.includes('FOOT')), [false, true, true, false]);
+
+  await page.locator('#stamps').click();
+  await page.locator('#stamp-dialog').waitFor({ state: 'visible' });
+  assert.equal(await page.locator('#header-text').inputValue(), 'HEAD {page} of {pages}');
+  assert.equal(await page.locator('#stamp-range').inputValue(), '2-3');
+  await page.locator('#stamp-clear').click();
+  await page.waitForFunction(() => !/header|footer/.test(document.getElementById('selection-summary').textContent));
+  await page.close();
+});
+
 test('Find and redact covers what it finds on every page, keeps what the user switches off, and spares the other pages', async () => {
   // Fake personal data, joined at run time so that no secret scanner reads it as one literal.
   const iban = ['FR76', '3000', '6000', '0112', '3456', '7890', '189'].join(' ');

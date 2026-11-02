@@ -1,8 +1,11 @@
 import { PDFDocument, StandardFonts, degrees, rgb } from './vendor/pdf-lib.esm.min.js';
 import { t } from './i18n.js';
+import { parseRange } from './pages-model.js';
 
 export const POSITIONS = ['top-left', 'top-center', 'top-right', 'bottom-left', 'bottom-center', 'bottom-right'];
 // The sample is what is drawn: the standard font only holds Latin characters, so "Page" is not translated.
+export const ALIGNS = ['left', 'center', 'right'];
+export const NO_STAMPS = Object.freeze({ numbers: null, header: null, footer: null, watermark: null, range: '' });
 export const FORMATS = [
   ['number', '3'],
   ['of', '3 / 12'],
@@ -10,6 +13,9 @@ export const FORMATS = [
 ];
 const MARGIN = 28;
 const INK = rgb(0.15, 0.15, 0.15);
+
+// The text of a header or a footer, with {page} and {pages} replaced by the number of the page and the number of pages.
+export const bandText = (template, number, total) => template.replaceAll('{page}', String(number)).replaceAll('{pages}', String(total));
 
 export function label(format, number, total) {
   if (format === 'of') return `${number} / ${total}`;
@@ -62,19 +68,32 @@ export async function checkText(text) {
   }
 }
 
-// settings: { numbers: null | { position, format, first, size, skipFirst }, watermark: null | { text, size, opacity, angle } }
+// settings: { numbers: null | { position, format, first, size, skipFirst }, header: null | { text, align, size }, footer: the same,
+// watermark: null | { text, size, opacity, angle }, range: '' for every page, or a list of pages such as 2-5, 8 }
 export async function applyStamps(output, settings) {
-  if (!settings.numbers && !settings.watermark) return;
+  if (!settings.numbers && !settings.header && !settings.footer && !settings.watermark) return;
   const font = await output.embedFont(StandardFonts.Helvetica);
   const pages = output.getPages();
+  const chosen = settings.range ? parseRange(settings.range, pages.length) : null;
+  const reaches = (index) => !chosen || chosen.includes(index);
   if (settings.numbers) {
     const { position, format, first, size, skipFirst } = settings.numbers;
     pages.forEach((page, index) => {
-      if (skipFirst && index === 0) return;
+      if ((skipFirst && index === 0) || !reaches(index)) return;
       const text = label(format, first + index, first + pages.length - 1);
       const box = displaySize(page);
       const at = anchor(position, box.width, box.height, font.widthOfTextAtSize(text, size), size);
       drawTextAt(page, font, text, size, at.x, at.y, 0);
+    });
+  }
+  for (const [band, edge] of [[settings.header, 'top'], [settings.footer, 'bottom']]) {
+    if (!band) continue;
+    pages.forEach((page, index) => {
+      if (!reaches(index)) return;
+      const text = bandText(band.text, index + 1, pages.length);
+      const box = displaySize(page);
+      const at = anchor(`${edge}-${band.align}`, box.width, box.height, font.widthOfTextAtSize(text, band.size), band.size);
+      drawTextAt(page, font, text, band.size, at.x, at.y, 0);
     });
   }
   if (settings.watermark) {
@@ -82,7 +101,8 @@ export async function applyStamps(output, settings) {
     const radians = (angle * Math.PI) / 180;
     const half = font.widthOfTextAtSize(text, size) / 2;
     const rise = size * 0.3;
-    for (const page of pages) {
+    for (const [index, page] of pages.entries()) {
+      if (!reaches(index)) continue;
       const box = displaySize(page);
       const x = box.width / 2 - (half * Math.cos(radians) - rise * Math.sin(radians));
       const y = box.height / 2 - (half * Math.sin(radians) + rise * Math.cos(radians));

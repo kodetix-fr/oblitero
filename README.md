@@ -38,9 +38,12 @@ Status: under construction, private until the first release.
   or only the empty pages), and the pages that would be hidden are dimmed as you
   move it. A page with a stamp or a signature stays. Apply hides them, undoable,
   and they can be shown again.
-- **Numbers and watermark**: page numbers (six positions, three formats, first
-  number, skip the cover) and a text watermark (size, angle, opacity), drawn on
-  everything you download, upright on rotated pages too.
+- **Numbers, header, footer and watermark**: page numbers (six positions, three
+  formats, first number, skip the cover), a header and a footer of free text
+  (left, center or right; `{page}` and `{pages}` become the page number and the
+  page count) and a text watermark (size, angle, opacity), drawn on everything
+  you download, upright on rotated pages too. A list of pages such as `2-5, 8`
+  limits all four to those pages of each file you download.
 - **Redact**: draw rectangles on a page. In the downloaded PDF that page becomes a
   picture with the rectangles painted black, so the text, the vectors and the
   links under them no longer exist. The other pages are copied untouched. The
