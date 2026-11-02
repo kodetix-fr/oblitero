@@ -33,8 +33,11 @@ Status: under construction, private until the first release.
   The parts get their own color, and one click downloads them as a ZIP. "Cut
   every N pages" places the cuts for you, and they can be moved or removed one
   by one.
-- **Hide blank pages**: pages with no ink (the blank backs of a scan) are hidden
-  in one click, and can be shown again.
+- **Hide blank pages**: every page is measured and shown in a dialog; a slider sets
+  how much ink a page may hold and still count as blank (faint scan noise and dust,
+  or only the empty pages), and the pages that would be hidden are dimmed as you
+  move it. A page with a stamp or a signature stays. Apply hides them, undoable,
+  and they can be shown again.
 - **Numbers and watermark**: page numbers (six positions, three formats, first
   number, skip the cover) and a text watermark (size, angle, opacity), drawn on
   everything you download, upright on rotated pages too.

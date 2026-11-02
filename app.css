@@ -315,6 +315,21 @@ dialog::backdrop { background: var(--shade); }
 .mark-img { position: absolute; pointer-events: none; }
 .mark-text { position: absolute; color: #0f0f1a; font-family: Helvetica, Arial, sans-serif; font-size: calc(var(--thumb-w) * var(--fit, 1) * var(--size)); line-height: 1; white-space: nowrap; pointer-events: none; }
 
+/* ---------- hide the blank pages ---------- */
+#blank-dialog { width: min(760px, calc(100vw - 32px)); }
+#blank-dialog[open] { grid-template-rows: auto minmax(0, 1fr) auto; }
+#blank-dialog .hint { padding: 0; }
+.blank-slider { display: grid; gap: 6px; font-weight: 550; }
+.blank-range { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; color: var(--muted); font-weight: 400; }
+.blank-range input { accent-color: var(--accent); }
+.blank-pages { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 10px; max-height: 44vh; margin: 0; padding: 4px; overflow: auto; list-style: none; border-radius: var(--r-s); background: var(--stage); }
+.blank-pages li { position: relative; display: grid; justify-items: center; gap: 4px; padding: 6px 4px; border-radius: var(--r-s); background: var(--surface); }
+.blank-pages canvas { display: block; width: 72px; height: auto; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .3); }
+.blank-number { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.blank-mark { position: absolute; top: 40%; left: 50%; display: none; place-items: center; width: 26px; height: 26px; transform: translate(-50%, -50%); border-radius: 50%; background: var(--surface); color: var(--muted); box-shadow: var(--lift); }
+.blank-pages li[data-blank] canvas { opacity: .25; filter: grayscale(1); }
+.blank-pages li[data-blank] .blank-mark { display: grid; }
+
 /* ---------- fill a form ---------- */
 #form-dialog { width: min(720px, calc(100vw - 32px)); }
 #form-dialog[open] { grid-template-rows: auto minmax(0, 1fr) auto; }

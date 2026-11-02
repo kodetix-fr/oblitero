@@ -48,6 +48,8 @@ try {
   console.log(`first 12 thumbnails drawn: ${Date.now() - t} ms`);
   t = Date.now();
   await page.locator('#hide-blank').click();
+  await page.locator('#blank-dialog').waitFor({ state: 'visible', timeout: 600000 });
+  await page.locator('#blank-apply').click();
   await page.waitForFunction(() => /^(Hid|No blank)/.test(document.getElementById('pages-status').textContent), null, { timeout: 600000 });
   console.log(`hide blank pages over ${PAGES} scans: ${Date.now() - t} ms, heap ${await heap()} MB`);
     t = Date.now();

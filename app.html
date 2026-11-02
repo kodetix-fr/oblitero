@@ -327,6 +327,29 @@
     </div>
   </dialog>
 
+  <dialog id="blank-dialog" aria-labelledby="blank-title">
+    <div class="dlg-head">
+      <svg class="ic" aria-hidden="true"><use href="#i-eye-off"/></svg>
+      <h2 id="blank-title" data-i18n="blank.title">Hide the blank pages</h2>
+      <span class="sep"></span>
+      <span id="blank-count" class="summary" role="status"></span>
+    </div>
+    <div class="dlg-body">
+      <p class="hint" data-i18n="blank.hint">Every page has been measured. Move the slider: the pages that would be hidden are dimmed. A page with only faint scan noise counts as blank, a page with a stamp or a signature does not.</p>
+      <label class="blank-slider">
+        <span data-i18n="blank.slider">Ink allowed on a blank page</span>
+        <span class="blank-range"><span data-i18n="blank.strict">Empty pages only</span><input type="range" id="blank-threshold"><span data-i18n="blank.loose">Nearly empty pages too</span></span>
+      </label>
+      <p id="blank-level" class="hint"></p>
+      <ol id="blank-pages" class="blank-pages"></ol>
+    </div>
+    <div class="dlg-foot">
+      <span class="sep"></span>
+      <button type="button" class="btn" id="blank-cancel" data-i18n="blank.cancel">Cancel</button>
+      <button type="button" class="btn primary" id="blank-apply"><svg class="ic" aria-hidden="true"><use href="#i-eye-off"/></svg><span data-i18n="blank.apply">Hide these pages</span></button>
+    </div>
+  </dialog>
+
   <dialog id="form-dialog" aria-labelledby="form-title">
     <div class="dlg-head">
       <svg class="ic" aria-hidden="true"><use href="#i-form"/></svg>

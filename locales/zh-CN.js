@@ -339,4 +339,15 @@ export default {
   'form.error-field': '{label}：{message}',
   'status.filling': '正在填写表单…',
   'status.form-updated': '表单已填写：值已写入页面。',
+  // hide the blank pages
+  'blank.title': '隐藏空白页',
+  'blank.hint': '已测量每一页。移动滑块：将被隐藏的页面会变淡。只有轻微扫描噪点的页面算空白页，有印章或签名的页面不算。',
+  'blank.slider': '空白页允许的墨迹量',
+  'blank.strict': '仅完全空白的页面',
+  'blank.loose': '包括近乎空白的页面',
+  'blank.level': '墨迹面积不足 {percent} 的页面算空白页。',
+  'blank.summary': '要隐藏的页面：{total} 页中的 {n} 页',
+  'blank.page-title': '第 {n} 页：墨迹 {percent}',
+  'blank.apply': '隐藏这些页面',
+  'blank.cancel': '取消',
 };

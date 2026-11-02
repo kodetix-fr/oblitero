@@ -339,4 +339,15 @@ export default {
   'form.error-field': '{label}: {message}',
   'status.filling': 'Rellenando el formulario…',
   'status.form-updated': 'El formulario está relleno: los valores están escritos en las páginas.',
+  // hide the blank pages
+  'blank.title': 'Ocultar las páginas en blanco',
+  'blank.hint': 'Se ha medido cada página. Mueve el control deslizante: las páginas que se ocultarían aparecen atenuadas. Una página con solo un ligero ruido de escaneo cuenta como en blanco; una con un sello o una firma, no.',
+  'blank.slider': 'Tinta admitida en una página en blanco',
+  'blank.strict': 'Solo páginas vacías',
+  'blank.loose': 'También casi vacías',
+  'blank.level': 'Una página con menos de {percent} de su superficie con tinta cuenta como en blanco.',
+  'blank.summary': 'Páginas por ocultar: {n} de {total}',
+  'blank.page-title': 'Página {n}: {percent} de tinta',
+  'blank.apply': 'Ocultar estas páginas',
+  'blank.cancel': 'Cancelar',
 };

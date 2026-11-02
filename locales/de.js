@@ -339,4 +339,15 @@ export default {
   'form.error-field': '{label}: {message}',
   'status.filling': 'Formular wird ausgefüllt…',
   'status.form-updated': 'Das Formular ist ausgefüllt: Die Werte stehen jetzt auf den Seiten.',
+  // hide the blank pages
+  'blank.title': 'Leere Seiten ausblenden',
+  'blank.hint': 'Jede Seite wurde gemessen. Bewege den Regler: Die Seiten, die ausgeblendet würden, sind abgedunkelt. Eine Seite mit nur schwachem Scanrauschen gilt als leer, eine Seite mit Stempel oder Unterschrift nicht.',
+  'blank.slider': 'Erlaubte Tinte auf einer leeren Seite',
+  'blank.strict': 'Nur ganz leere Seiten',
+  'blank.loose': 'Fast leere auch',
+  'blank.level': 'Eine Seite, deren Fläche zu weniger als {percent} bedruckt ist, gilt als leer.',
+  'blank.summary': 'Seiten zum Ausblenden: {n} von {total}',
+  'blank.page-title': 'Seite {n}: {percent} Tinte',
+  'blank.apply': 'Diese Seiten ausblenden',
+  'blank.cancel': 'Abbrechen',
 };

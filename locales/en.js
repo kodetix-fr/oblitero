@@ -373,4 +373,17 @@ export default {
   'form.error-field': '{label}: {message}',
   'status.filling': 'Filling the form...',
   'status.form-updated': 'The form is filled: the values are written on the pages.',
+  // hide the blank pages: a slider sets how much ink a page may hold and still count as blank
+  'blank.title': 'Hide the blank pages',
+  'blank.hint': 'Every page has been measured. Move the slider: the pages that would be hidden are dimmed. A page with only faint scan noise counts as blank, a page with a stamp or a signature does not.',
+  'blank.slider': 'Ink allowed on a blank page',
+  // the two ends of the slider
+  'blank.strict': 'Empty pages only',
+  'blank.loose': 'Nearly empty pages too',
+  // {percent} is a share such as 0.03%
+  'blank.level': 'A page with less than {percent} of its surface inked counts as blank.',
+  'blank.summary': 'Pages to hide: {n} of {total}',
+  'blank.page-title': 'Page {n}: {percent} of ink',
+  'blank.apply': 'Hide these pages',
+  'blank.cancel': 'Cancel',
 };

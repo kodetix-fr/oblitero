@@ -16,6 +16,7 @@ import { initFind } from './find-view.js';
 import { initSign } from './sign-view.js';
 import { initProperties } from './properties-view.js';
 import { initForm } from './form-view.js';
+import { initBlank } from './blank-view.js';
 import { fillForm } from './forms.js';
 import { DEFAULT_PROPERTIES, applyProperties } from './properties.js';
 import { placeMark } from './place-view.js';
@@ -27,7 +28,6 @@ import { download } from './download.js';
 const THUMB_WIDTH = 150;
 const THUMB_HEIGHT = 220;
 const THUMB_QUALITY = 1.75;
-const BLANK_INK = 0.0003;
 const A4 = { width: 595.28, height: 841.89 };
 const TONES = 7;
 const MARQUEE_THRESHOLD = 4;
@@ -112,6 +112,7 @@ export function initPages() {
   const signer = initSign();
   const propertiesDialog = initProperties();
   const formDialog = initForm();
+  const blankDialog = initBlank();
   let properties = { ...DEFAULT_PROPERTIES };
   let nextMark = 0;
   const documents = [];
@@ -530,17 +531,27 @@ export function initPages() {
 
   async function hideBlankPages() {
     await run('status.blank-looking', async () => {
-      const blank = new Set();
+      const items = [];
       for (const [index, page] of pages.entries()) {
         if (index % 8 === 0) {
           say('status.blank-at', { n: index + 1, total: pages.length });
           await new Promise((resolve) => setTimeout(resolve));
         }
-        if (page.hidden) continue;
-        if (page.blank || (page.redactions.length === 0 && (await inkOf(documents[page.file].doc, page.source)) < BLANK_INK)) blank.add(page.id);
+        if (page.hidden || page.redactions.length) continue;
+        if (page.blank) {
+          const thumb = document.createElement('canvas');
+          thumb.width = 72;
+          thumb.height = Math.round((72 * page.blank.height) / page.blank.width);
+          items.push({ id: page.id, number: index + 1, ink: 0, thumb });
+        } else {
+          items.push({ id: page.id, number: index + 1, ...(await inkOf(documents[page.file].doc, page.source)) });
+        }
       }
-      if (blank.size) commit({ pages: toggleHidden(pages, blank) });
-      return blank.size ? () => plural(blank.size, 'status.hid-blank-one', 'status.hid-blank-other') : () => t('status.no-blank');
+      if (items.length === 0) return () => t('status.no-blank');
+      const blank = await blankDialog.choose(items);
+      if (!blank) return '';
+      commit({ pages: toggleHidden(pages, blank) });
+      return () => plural(blank.size, 'status.hid-blank-one', 'status.hid-blank-other');
     });
   }
 

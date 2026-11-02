@@ -339,4 +339,15 @@ export default {
   'form.error-field': '{label} : {message}',
   'status.filling': 'Remplissage du formulaire…',
   'status.form-updated': 'Le formulaire est rempli : les valeurs sont écrites sur les pages.',
+  // hide the blank pages
+  'blank.title': 'Masquer les pages blanches',
+  'blank.hint': 'Chaque page a été mesurée. Déplace le curseur : les pages qui seraient masquées sont estompées. Une page avec seulement un faible bruit de scan compte comme blanche, une page avec un tampon ou une signature non.',
+  'blank.slider': 'Encre admise sur une page blanche',
+  'blank.strict': 'Pages vides seulement',
+  'blank.loose': 'Presque vides aussi',
+  'blank.level': 'Une page dont moins de {percent} de la surface est encrée compte comme blanche.',
+  'blank.summary': 'Pages à masquer : {n} sur {total}',
+  'blank.page-title': 'Page {n} : {percent} d\'encre',
+  'blank.apply': 'Masquer ces pages',
+  'blank.cancel': 'Annuler',
 };

@@ -62,6 +62,11 @@ export function formatNumber(n) {
   return format.format(n);
 }
 
+/** A share of 0 to 1 as a percentage with two significant digits, in the language in use. @param {number} ratio */
+export function formatPercent(ratio) {
+  return new Intl.NumberFormat(current, { style: 'percent', maximumSignificantDigits: 2 }).format(ratio);
+}
+
 /** A number with exactly `digits` decimals, in the language in use. @param {number} n @param {number} digits */
 export function formatFixed(n, digits) {
   return new Intl.NumberFormat(current, { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(n);

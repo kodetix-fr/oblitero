@@ -115,14 +115,19 @@ export async function entryImage(doc, entry, dpi, type) {
   return toBlob(await paintEntry(doc, entry, scale, true), type, 0.92);
 }
 
-// The share of a page that is not white, drawn small: it tells a blank page from one that holds something.
-export async function inkOf(doc, index) {
+// The share of a page that is not white, drawn small: it tells a blank page from one that holds something. Also a thumbnail
+// `thumbWidth` pixels wide, to show which page it is.
+export async function inkOf(doc, index, thumbWidth = 72) {
   const canvas = document.createElement('canvas');
   await renderPage(doc, index, 0, canvas, 0.3);
   const { data } = canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height);
   let ink = 0;
   for (let i = 0; i < data.length; i += 4) if (data[i] + data[i + 1] + data[i + 2] < 600) ink++;
-  return ink / (canvas.width * canvas.height);
+  const thumb = document.createElement('canvas');
+  thumb.width = thumbWidth;
+  thumb.height = Math.max(1, Math.round((canvas.height * thumbWidth) / canvas.width));
+  thumb.getContext('2d').drawImage(canvas, 0, 0, thumb.width, thumb.height);
+  return { ink: ink / (canvas.width * canvas.height), thumb };
 }
 
 export async function textOf(doc, index) {

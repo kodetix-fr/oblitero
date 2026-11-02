@@ -101,7 +101,7 @@ test('every language draws the screens, the dialogs and the files view without a
       assert.doesNotMatch(body, RAW, `${code}, ${label}: a raw key is shown: ${RAW.exec(body)?.[0]}`);
     };
     await visible('pages');
-    for (const [button, dialog] of [['#stamps', '#stamp-dialog'], ['#find', '#find-dialog'], ['#sign', '#sign-dialog'], ['#properties', '#props-dialog'], ['#fill-form', '#form-dialog'], ['#export-images', '#export-dialog'], ['#redact', '#redact-dialog'], ['#compare-open', '#compare-dialog']]) {
+    for (const [button, dialog] of [['#stamps', '#stamp-dialog'], ['#find', '#find-dialog'], ['#sign', '#sign-dialog'], ['#properties', '#props-dialog'], ['#fill-form', '#form-dialog'], ['#hide-blank', '#blank-dialog'], ['#export-images', '#export-dialog'], ['#redact', '#redact-dialog'], ['#compare-open', '#compare-dialog']]) {
       await page.locator(button).click();
       await page.locator(dialog).waitFor({ state: 'visible' });
       await page.waitForTimeout(150);

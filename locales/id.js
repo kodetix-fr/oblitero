@@ -339,4 +339,15 @@ export default {
   'form.error-field': '{label}: {message}',
   'status.filling': 'Mengisi formulir...',
   'status.form-updated': 'Formulir sudah diisi: nilainya ditulis di halaman.',
+  // hide the blank pages
+  'blank.title': 'Sembunyikan halaman kosong',
+  'blank.hint': 'Setiap halaman sudah diukur. Geser penggeser: halaman yang akan disembunyikan tampak redup. Halaman yang hanya berisi noda tipis hasil pindai dianggap kosong, halaman dengan stempel atau tanda tangan tidak.',
+  'blank.slider': 'Tinta yang diizinkan di halaman kosong',
+  'blank.strict': 'Hanya halaman yang benar-benar kosong',
+  'blank.loose': 'Yang hampir kosong juga',
+  'blank.level': 'Halaman dengan kurang dari {percent} permukaan bertinta dianggap kosong.',
+  'blank.summary': 'Halaman yang disembunyikan: {n} dari {total}',
+  'blank.page-title': 'Halaman {n}: tinta {percent}',
+  'blank.apply': 'Sembunyikan halaman ini',
+  'blank.cancel': 'Batal',
 };

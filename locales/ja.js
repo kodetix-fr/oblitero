@@ -344,4 +344,15 @@ export default {
   'form.error-field': '{label}: {message}',
   'status.filling': 'フォームに入力しています…',
   'status.form-updated': 'フォームに入力しました。値はページに書き込まれています。',
+  // hide the blank pages
+  'blank.title': '白紙ページを非表示',
+  'blank.hint': 'すべてのページを測定しました。スライダーを動かすと、非表示になるページが薄く表示されます。スキャンのわずかなノイズだけのページは白紙として扱い、スタンプや署名があるページは白紙として扱いません。',
+  'blank.slider': '白紙とみなすインクの量',
+  'blank.strict': '完全な白紙のみ',
+  'blank.loose': 'ほぼ白紙も含める',
+  'blank.level': '面積の {percent} 未満しかインクがないページは白紙として扱います。',
+  'blank.summary': '非表示にするページ: {total} 件中 {n} 件',
+  'blank.page-title': '{n}ページ: インク {percent}',
+  'blank.apply': 'これらのページを非表示',
+  'blank.cancel': 'キャンセル',
 };

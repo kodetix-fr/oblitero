@@ -120,12 +120,19 @@ test('Select takes a list of pages, odd pages or even pages', async () => {
 test('Hide blank pages hides the pages with no ink, and only those', async () => {
   await openDocument([100, 110, 120, 130, 140], { text: [0, 2, 4] });
   await page.locator('#hide-blank').click();
+  await page.locator('#blank-dialog').waitFor({ state: 'visible' });
+  await page.locator('#blank-apply').click();
   await page.locator('#grid li[data-hidden]').nth(1).waitFor();
   assert.equal(await page.locator('#grid li[data-hidden]').count(), 2);
   assert.match(await page.locator('#pages-status').innerText(), /Hid 2 blank pages/);
   assert.deepEqual(await widths(), [100, 120, 140]);
   await page.locator('#hide-blank').click();
-  await page.waitForFunction(() => document.getElementById('pages-status').textContent.includes('No blank page found'));
+  await page.locator('#blank-dialog').waitFor({ state: 'visible' });
+  assert.equal(await page.locator('#blank-apply').isDisabled(), true);
+  assert.equal(await page.locator('#blank-count').innerText(), 'Pages to hide: 0 of 3');
+  await page.locator('#blank-cancel').click();
+  await page.locator('#blank-dialog').waitFor({ state: 'hidden' });
+  assert.equal(await page.locator('#grid li[data-hidden]').count(), 2);
   await page.locator('#undo').click();
   assert.equal(await page.locator('#grid li[data-hidden]').count(), 0);
   await page.locator('#redo').click();
