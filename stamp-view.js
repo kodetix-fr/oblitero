@@ -1,5 +1,6 @@
 import { FORMATS, POSITIONS, checkText } from './stamps.js';
-import { byId } from './dom.js';
+import { byId, setI18n } from './dom.js';
+import { t } from './i18n.js';
 
 const DEFAULTS = {
   numbers: { position: 'bottom-center', format: 'of', first: 1, size: 10, skipFirst: false },
@@ -9,9 +10,14 @@ const DEFAULTS = {
 export function initStamps() {
   const dialog = byId('stamp-dialog');
   const field = (id) => byId(id);
-  const choices = (select, entries) => select.replaceChildren(...entries.map(([value, text]) => Object.assign(document.createElement('option'), { value, textContent: text })));
-  choices(field('numbers-position'), POSITIONS);
-  choices(field('numbers-format'), FORMATS);
+  field('numbers-position').replaceChildren(
+    ...POSITIONS.map((value) => {
+      const option = Object.assign(document.createElement('option'), { value });
+      setI18n(option, `position.${value}`);
+      return option;
+    }),
+  );
+  field('numbers-format').replaceChildren(...FORMATS.map(([value, text]) => Object.assign(document.createElement('option'), { value, textContent: text })));
 
   function show(current) {
     const numbers = current.numbers ?? DEFAULTS.numbers;
@@ -68,7 +74,7 @@ export function initStamps() {
         async () => {
           const settings = read();
           if (settings.watermark && !settings.watermark.text) {
-            field('stamp-error').textContent = 'Type the text of the watermark.';
+            field('stamp-error').textContent = t('stamp.error.text');
             return;
           }
           try {

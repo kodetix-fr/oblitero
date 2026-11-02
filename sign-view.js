@@ -1,6 +1,7 @@
 import { inkBounds, whiteToTransparent } from './signature.js';
 import { checkText } from './stamps.js';
 import { byId, query } from './dom.js';
+import { t } from './i18n.js';
 
 const INK = '#12121c';
 const FONTS = '"Segoe Script", "Snell Roundhand", "Brush Script MT", "Lucida Handwriting", cursive';
@@ -106,7 +107,7 @@ export function initSign() {
   byId('sign-reset').addEventListener('click', () => clear(pad));
   for (const input of document.querySelectorAll('input[name="sign-mode"]')) input.addEventListener('change', showMode);
   byId('sign-text').addEventListener('input', renderTyped);
-  byId('sign-file').addEventListener('change', () => renderPhoto(byId('sign-file').files[0]).catch(() => (error.textContent = 'This browser cannot open that image.')));
+  byId('sign-file').addEventListener('change', () => renderPhoto(byId('sign-file').files[0]).catch(() => (error.textContent = t('sign.error-open'))));
   byId('sign-white').addEventListener('change', () => renderPhoto(byId('sign-file').files[0]).catch(() => {}));
 
   // Resolves with { png, aspect } (the height over the width), or null when the user cancels.
@@ -129,7 +130,7 @@ export function initSign() {
           const canvas = { draw: pad, type: typed, image: photo }[mode()];
           const made = await trimmed(canvas);
           if (!made) {
-            error.textContent = mode() === 'draw' ? 'Draw your signature first.' : mode() === 'type' ? 'Type your name first.' : 'Choose an image first.';
+            error.textContent = t(`sign.error-${mode()}`);
             return;
           }
           result = made;

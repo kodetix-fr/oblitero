@@ -1,5 +1,6 @@
 import { pageSize, renderPage } from './render.js';
 import { byId } from './dom.js';
+import { plural, t } from './i18n.js';
 
 const MIN_SIZE = 0.004;
 const STEP = 0.01;
@@ -48,7 +49,7 @@ export async function openRedactor(doc, entry) {
       box.className = 'box';
       box.tabIndex = 0;
       box.setAttribute('role', 'button');
-      box.setAttribute('aria-label', `Rectangle ${index + 1} of ${rectangles.length}. Arrow keys move it, Shift and arrow keys resize it, Delete removes it.`);
+      box.setAttribute('aria-label', t('redact.box-aria', { n: index + 1, total: rectangles.length }));
       box.dataset.index = String(index);
       place(box, rectangle);
       return box;
@@ -66,7 +67,7 @@ export async function openRedactor(doc, entry) {
     layer.replaceChildren(...nodes);
     undo.disabled = rectangles.length === 0;
     clear.disabled = rectangles.length === 0;
-    count.textContent = rectangles.length ? `${rectangles.length} rectangle${rectangles.length === 1 ? '' : 's'}` : '';
+    count.textContent = rectangles.length ? plural(rectangles.length, 'count.rectangle.one', 'count.rectangle.other') : '';
     if (focusIndex !== null) /** @type {HTMLElement | undefined} */ (layer.children[focusIndex])?.focus();
   }
 
@@ -85,16 +86,16 @@ export async function openRedactor(doc, entry) {
       focusIndex = null;
       if (!anchor) {
         anchor = { ...cursor };
-        say('Rectangle started. Move to the opposite corner, then press Enter.');
+        say(t('redact.say-started'));
       } else {
         const made = between(anchor, cursor);
         anchor = null;
         if (made.w >= MIN_SIZE && made.h >= MIN_SIZE) {
           rectangles.push(made);
           focusIndex = rectangles.length - 1;
-          say(`Rectangle ${rectangles.length} added.`);
+          say(t('redact.say-added', { n: rectangles.length }));
         } else {
-          say('Too small, nothing added.');
+          say(t('redact.say-small'));
         }
       }
       draw();
@@ -102,7 +103,7 @@ export async function openRedactor(doc, entry) {
       event.preventDefault();
       event.stopPropagation();
       anchor = null;
-      say('Rectangle cancelled.');
+      say(t('redact.say-cancelled'));
       draw();
     }
   }
@@ -125,7 +126,7 @@ export async function openRedactor(doc, entry) {
       event.preventDefault();
       rectangles = rectangles.filter((_, other) => other !== index);
       focusIndex = rectangles.length ? Math.min(index, rectangles.length - 1) : null;
-      say(`Rectangle removed. ${rectangles.length} left.`);
+      say(t('redact.say-removed', { n: rectangles.length }));
       draw();
       if (focusIndex === null) layer.focus();
     }

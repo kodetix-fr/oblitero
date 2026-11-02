@@ -1,9 +1,4 @@
-export const PRESETS = [
-  ['email', 'E-mail addresses'],
-  ['phone', 'Phone numbers'],
-  ['iban', 'IBAN'],
-  ['card', 'Card numbers'],
-];
+export const PRESETS = ['email', 'phone', 'iban', 'card'];
 
 const digitsOf = (text) => text.replace(/\D/g, '');
 

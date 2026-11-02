@@ -1,11 +1,12 @@
 import { PDFDocument, PDFName, PDFNumber, PDFRawStream } from './vendor/pdf-lib.esm.min.js';
+import { formatFixed, t } from './i18n.js';
 
 // Light rewrites the file compactly. Balanced and Strong also re-encode the JPEG images at a lower size and quality.
-/** @type {Array<[string, string, string, { maxSide: number, quality: number } | null]>} */
+/** @type {Array<[string, { maxSide: number, quality: number } | null]>} */
 export const LEVELS = [
-  ['light', 'Light', 'Rewrites the file more compactly. Nothing visible changes.', null],
-  ['balanced', 'Balanced', 'Re-encodes the photos at up to 1800 pixels and good quality.', { maxSide: 1800, quality: 0.7 }],
-  ['strong', 'Strong', 'Re-encodes the photos at up to 1200 pixels and lower quality.', { maxSide: 1200, quality: 0.5 }],
+  ['light', null],
+  ['balanced', { maxSide: 1800, quality: 0.7 }],
+  ['strong', { maxSide: 1200, quality: 0.5 }],
 ];
 const MIN_GAIN = 0.9;
 const name = (value) => PDFName.of(value);
@@ -45,7 +46,7 @@ export function jpegImages(document) {
  */
 export async function compressPdf(bytes, level, encode, progress = () => {}) {
   const document = await PDFDocument.load(bytes, { updateMetadata: false });
-  const settings = /** @type {{ maxSide: number, quality: number } | null} */ (LEVELS.find(([id]) => id === level)[3]);
+  const settings = /** @type {{ maxSide: number, quality: number } | null} */ (LEVELS.find(([id]) => id === level)[1]);
   if (settings) {
     const images = jpegImages(document);
     for (const [index, image] of images.entries()) {
@@ -65,7 +66,7 @@ export async function compressPdf(bytes, level, encode, progress = () => {}) {
 }
 
 export function formatSize(bytes) {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(bytes < 10240 ? 1 : 0)} KB`;
-  return `${(bytes / 1048576).toFixed(bytes < 10485760 ? 2 : 1)} MB`;
+  if (bytes < 1024) return t('size.b', { n: bytes });
+  if (bytes < 1024 * 1024) return t('size.kb', { n: formatFixed(bytes / 1024, bytes < 10240 ? 1 : 0) });
+  return t('size.mb', { n: formatFixed(bytes / 1048576, bytes < 10485760 ? 2 : 1) });
 }

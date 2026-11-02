@@ -1,6 +1,7 @@
 import { checkText } from './stamps.js';
 import { entrySize, paintEntry } from './render.js';
 import { byId, query } from './dom.js';
+import { t } from './i18n.js';
 
 const clamp = (value, low, high) => Math.min(high, Math.max(low, value));
 const STEP = 0.01;
@@ -25,7 +26,7 @@ export async function placeMark({ doc, entry, draft, number, selectedCount }) {
   canvas.width = painted.width;
   canvas.height = painted.height;
   canvas.getContext('2d').drawImage(painted, 0, 0);
-  byId('place-where').textContent = `Page ${number}`;
+  byId('place-where').textContent = t('page.n', { n: number });
   byId('scope-selection').hidden = selectedCount < 2;
   query('input[name="place-scope"][value="page"]').checked = true;
   byId('place-text-field').hidden = !isText;
@@ -52,7 +53,7 @@ export async function placeMark({ doc, entry, draft, number, selectedCount }) {
   element.className = `mark-draft${isText ? ' text' : ''}`;
   element.tabIndex = 0;
   element.setAttribute('role', 'button');
-  element.setAttribute('aria-label', isText ? 'The text. Arrow keys move it, Shift and the arrow keys change its size, Enter places it.' : 'The signature. Arrow keys move it, Shift and the arrow keys make it larger or smaller, Enter places it.');
+  element.setAttribute('aria-label', t(isText ? 'place.text-aria' : 'place.signature-aria'));
   let url = null;
   if (!isText) {
     url = URL.createObjectURL(new Blob([draft.png], { type: 'image/png' }));
@@ -146,7 +147,7 @@ export async function placeMark({ doc, entry, draft, number, selectedCount }) {
       async () => {
         if (isText) {
           if (!mark.text.trim()) {
-            error.textContent = 'Type the text first.';
+            error.textContent = t('place.error-text');
             return;
           }
           try {

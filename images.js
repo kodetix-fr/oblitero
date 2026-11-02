@@ -1,14 +1,10 @@
 import { PDFDocument } from './vendor/pdf-lib.esm.min.js';
 
-export const PAGE_SIZES = [
-  ['fit', 'Fit to the image'],
-  ['a4', 'A4'],
-  ['letter', 'Letter'],
-];
+export const PAGE_SIZES = ['fit', 'a4', 'letter'];
 export const MARGINS = [
-  ['none', 'No margin', 0],
-  ['small', 'Small margin', 18],
-  ['large', 'Large margin', 36],
+  ['none', 0],
+  ['small', 18],
+  ['large', 36],
 ];
 const SIZES = { a4: [595.28, 841.89], letter: [612, 792] };
 const PX_TO_PT = 0.75;

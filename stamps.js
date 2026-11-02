@@ -1,13 +1,8 @@
 import { PDFDocument, StandardFonts, degrees, rgb } from './vendor/pdf-lib.esm.min.js';
+import { t } from './i18n.js';
 
-export const POSITIONS = [
-  ['top-left', 'Top left'],
-  ['top-center', 'Top center'],
-  ['top-right', 'Top right'],
-  ['bottom-left', 'Bottom left'],
-  ['bottom-center', 'Bottom center'],
-  ['bottom-right', 'Bottom right'],
-];
+export const POSITIONS = ['top-left', 'top-center', 'top-right', 'bottom-left', 'bottom-center', 'bottom-right'];
+// The sample is what is drawn: the standard font only holds Latin characters, so "Page" is not translated.
 export const FORMATS = [
   ['number', '3'],
   ['of', '3 / 12'],
@@ -63,7 +58,7 @@ export async function checkText(text) {
   try {
     font.encodeText(text);
   } catch {
-    throw new Error('The standard font cannot draw one of these characters. Use letters, digits and common punctuation.');
+    throw new Error(t('error.font'));
   }
 }
 

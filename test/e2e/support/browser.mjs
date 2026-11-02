@@ -23,7 +23,8 @@ export async function launchExtension() {
     context = await chromium.launchPersistentContext(join(root, 'profile'), {
       channel: 'chromium',
       headless: true,
-      args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, '--no-first-run', '--no-default-browser-check'],
+      args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, '--no-first-run', '--no-default-browser-check', '--lang=en-US'],
+      locale: 'en-US',
       acceptDownloads: true,
       viewport: { width: 1280, height: 900 },
     });

@@ -143,6 +143,22 @@ The pictures are drawn by the Chromium of Playwright.
 Load the folder as an unpacked extension from `chrome://extensions`, then click
 the Oblitero icon. Third-party code is in `vendor/`, copied as is.
 
+## Languages
+
+The interface speaks English, French, German, Spanish, Brazilian Portuguese,
+Russian, Japanese, Simplified Chinese and Indonesian, the same list as Obturo.
+It follows the language of the browser, and a picker in the title bar changes it
+(the choice is kept on this computer, with no permission). The texts are in
+`locales/<code>.js`, one flat list of keys per language; `locales/en.js` is the
+source and the fallback. The static texts of `app.html` carry their key in a
+`data-i18n` attribute, the others are written by the scripts with `t('key')`.
+
+To add a language: its code and its name in `languages.js`, `locales/<code>.js`
+with the keys of `en.js` in the same order, and `_locales/<code>/messages.json`
+for the name and the description in the store. `npm test` checks that every
+language has the same keys and the same `{placeholders}`, that no text holds a
+long dash, and that the code only asks for keys that exist.
+
 ## Licence
 
 MIT, see `LICENSE`.

@@ -1,4 +1,5 @@
 import { byId, icon, iconButton, sortable } from './dom.js';
+import { t } from './i18n.js';
 
 // The list of files: one row for each run of pages that come from the same file. `onMove(ids, targetId, after)` follows
 // the drag of a row; the buttons of a row call `onStep(id, step)`, `onToggle(id)`, `onOpen(id)` and `onRemove(id)`.
@@ -28,12 +29,13 @@ export function initFiles({ onMove, onStep, onToggle, onOpen, onRemove }) {
     text.append(name, detail);
     const actions = document.createElement('span');
     actions.className = 'file-actions';
+    const button = (name, tip, onClick, disabled) => iconButton(name, `${run.name}: ${tip}`, onClick, disabled, tip);
     actions.append(
-      iconButton('pages', `${run.name}: Open its pages`, () => onOpen(run.id)),
-      iconButton(run.hidden ? 'eye' : 'eye-off', `${run.name}: ${run.hidden ? 'Show' : 'Hide'}`, () => onToggle(run.id)),
-      iconButton('up', `${run.name}: Up`, () => onStep(run.id, -1), index === 0),
-      iconButton('down', `${run.name}: Down`, () => onStep(run.id, 1), index === count - 1),
-      iconButton('x', `${run.name}: Remove`, () => onRemove(run.id)),
+      button('pages', t('files.open'), () => onOpen(run.id)),
+      button(run.hidden ? 'eye' : 'eye-off', t(run.hidden ? 'files.show' : 'files.hide'), () => onToggle(run.id)),
+      button('up', t('files.up'), () => onStep(run.id, -1), index === 0),
+      button('down', t('files.down'), () => onStep(run.id, 1), index === count - 1),
+      button('x', t('files.remove'), () => onRemove(run.id)),
     );
     element.append(grip, number, thumb, text, actions);
     return element;

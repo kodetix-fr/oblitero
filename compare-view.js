@@ -1,5 +1,6 @@
 import { formatSize } from './compress.js';
 import { byId } from './dom.js';
+import { t } from './i18n.js';
 import { closeRender, openRender, pageSize, renderPage } from './render.js';
 
 const COMPARE_WIDTH = 860;
@@ -42,7 +43,7 @@ export function initCompare() {
       const [before, after] = await docs;
       if (mine !== token) return;
       page = Math.min(page, before.numPages - 1);
-      byId('compare-page').textContent = `Page ${page + 1} of ${before.numPages}`;
+      byId('compare-page').textContent = t('compare.page-of', { n: page + 1, total: before.numPages });
       byId('compare-prev').disabled = page === 0;
       byId('compare-next').disabled = page === before.numPages - 1;
       const scale = (COMPARE_WIDTH * devicePixelRatio) / (await pageSize(before, page, 0)).width;

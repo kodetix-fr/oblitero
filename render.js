@@ -1,5 +1,6 @@
 import * as pdfjs from './vendor/pdfjs/pdf.min.mjs';
 import { multiply, runBox } from './find.js';
+import { t } from './i18n.js';
 
 const resource = (path) => new URL(`vendor/pdfjs/${path}`, import.meta.url).href;
 const MAX_SIDE = 8000;
@@ -97,7 +98,7 @@ export async function paintEntry(doc, entry, scale, withMarks = false) {
 
 const toBlob = async (canvas, type, quality) => {
   const blob = await new Promise((resolve) => canvas.toBlob(resolve, type, quality));
-  if (!blob) throw new Error('The page is too large to draw.');
+  if (!blob) throw new Error(t('error.page-large'));
   return blob;
 };
 

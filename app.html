@@ -57,64 +57,66 @@
       <svg class="logo" aria-hidden="true"><use href="#i-logo"/></svg>
       <h1>Oblitero</h1>
     </div>
-    <p class="tagline">PDF tools that never leave your computer</p>
+    <p class="tagline" data-i18n="app.pdf-tools-that-never">PDF tools that never leave your computer</p>
+    <span class="sep"></span>
+    <select id="language" aria-label="Language" data-i18n-aria="app.language-aria"></select>
   </header>
 
   <main class="main">
     <section class="panel" id="panel-pages" data-empty data-view="pages">
       <div class="bars">
-      <div class="props" role="toolbar" aria-label="Pages">
-        <button type="button" class="btn" id="add-files" title="Add PDF files and photos. They go after the selected page, or at the end."><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>Add files</button>
-        <div class="seg" id="view-switch" role="radiogroup" aria-label="View">
-          <label><input type="radio" name="view" value="files"><span>Files</span></label>
-          <label><input type="radio" name="view" value="pages" checked><span>Pages</span></label>
+      <div class="props" role="toolbar" aria-label="Pages" data-i18n-aria="app.pages.aria">
+        <button type="button" class="btn" id="add-files" title="Add PDF files and photos. They go after the selected page, or at the end." data-i18n-title="app.add-files.title"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg><span data-i18n="app.add-files">Add files</span></button>
+        <div class="seg" id="view-switch" role="radiogroup" aria-label="View" data-i18n-aria="app.view-switch.aria">
+          <label><input type="radio" name="view" value="files"><span data-i18n="app.view-switch-files">Files</span></label>
+          <label><input type="radio" name="view" value="pages" checked><span data-i18n="app.view-switch-pages">Pages</span></label>
         </div>
         <span class="vsep"></span>
-        <button type="button" class="btn sm icon-only" id="undo" aria-label="Undo" title="Undo (Ctrl+Z)"><svg class="ic" aria-hidden="true"><use href="#i-undo"/></svg></button>
-        <button type="button" class="btn sm icon-only" id="redo" aria-label="Redo" title="Redo (Shift+Ctrl+Z)"><svg class="ic" aria-hidden="true"><use href="#i-redo"/></svg></button>
-        <button type="button" class="btn sm ghost" id="clear-all" title="Remove every file from the screen (Undo brings them back)"><svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg>Clear</button>
+        <button type="button" class="btn sm icon-only" id="undo" aria-label="Undo" title="Undo (Ctrl+Z)" data-i18n-title="app.undo.title" data-i18n-aria="app.undo.aria"><svg class="ic" aria-hidden="true"><use href="#i-undo"/></svg></button>
+        <button type="button" class="btn sm icon-only" id="redo" aria-label="Redo" title="Redo (Shift+Ctrl+Z)" data-i18n-title="app.redo.title" data-i18n-aria="app.redo.aria"><svg class="ic" aria-hidden="true"><use href="#i-redo"/></svg></button>
+        <button type="button" class="btn sm ghost" id="clear-all" title="Remove every file from the screen (Undo brings them back)" data-i18n-title="app.clear-all.title"><svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg><span data-i18n="app.clear-all">Clear</span></button>
         <span class="vsep page-only"></span>
-        <button type="button" class="btn sm icon-only page-only" id="select-all" aria-label="Select all" title="Select all (Ctrl+A)"><svg class="ic" aria-hidden="true"><use href="#i-select"/></svg></button>
-        <button type="button" class="btn sm icon-only page-only" id="select-none" aria-label="Select none" title="Select none (Esc)"><svg class="ic" aria-hidden="true"><use href="#i-deselect"/></svg></button>
+        <button type="button" class="btn sm icon-only page-only" id="select-all" aria-label="Select all" title="Select all (Ctrl+A)" data-i18n-title="app.select-all.title" data-i18n-aria="app.select-all.aria"><svg class="ic" aria-hidden="true"><use href="#i-select"/></svg></button>
+        <button type="button" class="btn sm icon-only page-only" id="select-none" aria-label="Select none" title="Select none (Esc)" data-i18n-title="app.select-none.title" data-i18n-aria="app.select-none.aria"><svg class="ic" aria-hidden="true"><use href="#i-deselect"/></svg></button>
         <span class="vsep page-only"></span>
-        <button type="button" class="btn sm icon-only page-only" id="rotate-left" aria-label="Rotate left" title="Rotate left (Shift+R)"><svg class="ic" aria-hidden="true"><use href="#i-rot-left"/></svg></button>
-        <button type="button" class="btn sm icon-only page-only" id="rotate-right" aria-label="Rotate right" title="Rotate right (R)"><svg class="ic" aria-hidden="true"><use href="#i-rot-right"/></svg></button>
+        <button type="button" class="btn sm icon-only page-only" id="rotate-left" aria-label="Rotate left" title="Rotate left (Shift+R)" data-i18n-title="app.rotate-left.title" data-i18n-aria="app.rotate-left.aria"><svg class="ic" aria-hidden="true"><use href="#i-rot-left"/></svg></button>
+        <button type="button" class="btn sm icon-only page-only" id="rotate-right" aria-label="Rotate right" title="Rotate right (R)" data-i18n-title="app.rotate-right.title" data-i18n-aria="app.rotate-right.aria"><svg class="ic" aria-hidden="true"><use href="#i-rot-right"/></svg></button>
         <span class="vsep page-only"></span>
-        <button type="button" class="btn sm icon-only page-only" id="move-earlier" aria-label="Move earlier" title="Move earlier (Alt+Left)"><svg class="ic" aria-hidden="true"><use href="#i-left"/></svg></button>
-        <button type="button" class="btn sm icon-only page-only" id="move-later" aria-label="Move later" title="Move later (Alt+Right)"><svg class="ic" aria-hidden="true"><use href="#i-right"/></svg></button>
+        <button type="button" class="btn sm icon-only page-only" id="move-earlier" aria-label="Move earlier" title="Move earlier (Alt+Left)" data-i18n-title="app.move-earlier.title" data-i18n-aria="app.move-earlier.aria"><svg class="ic" aria-hidden="true"><use href="#i-left"/></svg></button>
+        <button type="button" class="btn sm icon-only page-only" id="move-later" aria-label="Move later" title="Move later (Alt+Right)" data-i18n-title="app.move-later.title" data-i18n-aria="app.move-later.aria"><svg class="ic" aria-hidden="true"><use href="#i-right"/></svg></button>
         <span class="vsep page-only"></span>
-        <button type="button" class="btn sm icon-only page-only" id="add-blank" aria-label="Add a blank page" title="Add a blank page after the selection"><svg class="ic" aria-hidden="true"><use href="#i-blank"/></svg></button>
-        <button type="button" class="btn sm icon-only page-only" id="duplicate" aria-label="Duplicate" title="Duplicate the selected pages"><svg class="ic" aria-hidden="true"><use href="#i-copy"/></svg></button>
+        <button type="button" class="btn sm icon-only page-only" id="add-blank" aria-label="Add a blank page" title="Add a blank page after the selection" data-i18n-title="app.add-blank.title" data-i18n-aria="app.add-blank.aria"><svg class="ic" aria-hidden="true"><use href="#i-blank"/></svg></button>
+        <button type="button" class="btn sm icon-only page-only" id="duplicate" aria-label="Duplicate" title="Duplicate the selected pages" data-i18n-title="app.duplicate.title" data-i18n-aria="app.duplicate.aria"><svg class="ic" aria-hidden="true"><use href="#i-copy"/></svg></button>
         <span class="vsep page-only"></span>
-        <button type="button" class="btn sm page-only" id="hide" title="Hide the selected pages from the result (Del)"><svg class="ic" aria-hidden="true"><use id="hide-icon" href="#i-eye-off"/></svg><span id="hide-label">Hide</span></button>
-        <button type="button" class="btn sm page-only" id="cut" title="Cut after the selected pages (C)"><svg class="ic" aria-hidden="true"><use href="#i-cut"/></svg>Cut</button>
-        <button type="button" class="btn sm page-only" id="redact" title="Hide an area: black it out, and destroy what is under it in the downloaded PDF"><svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg>Redact</button>
+        <button type="button" class="btn sm page-only" id="hide" title="Hide the selected pages from the result (Del)" data-i18n-title="app.hide.title"><svg class="ic" aria-hidden="true"><use id="hide-icon" href="#i-eye-off"/></svg><span id="hide-label">Hide</span></button>
+        <button type="button" class="btn sm page-only" id="cut" title="Cut after the selected pages (C)" data-i18n-title="app.cut.title"><svg class="ic" aria-hidden="true"><use href="#i-cut"/></svg><span data-i18n="app.cut">Cut</span></button>
+        <button type="button" class="btn sm page-only" id="redact" title="Hide an area: black it out, and destroy what is under it in the downloaded PDF" data-i18n-title="app.redact.title"><svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg><span data-i18n="app.redact">Redact</span></button>
         <span class="sep"></span>
-        <button type="button" class="btn page-only" id="download-selected" title="Download the selected pages as one PDF"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg>Selection</button>
+        <button type="button" class="btn page-only" id="download-selected" title="Download the selected pages as one PDF" data-i18n-title="app.download-selected.title"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg><span data-i18n="app.download-selected">Selection</span></button>
       </div>
       <div class="subbar page-only">
-        <label class="field">Select <input type="text" id="select-range" placeholder="1-3, 7, 10-" aria-label="Pages to select, for example 1-3, 7, 10-" spellcheck="false"></label>
-        <button type="button" class="btn sm" id="select-odd">Odd</button>
-        <button type="button" class="btn sm" id="select-even">Even</button>
+        <label class="field"><span data-i18n="app.select">Select</span> <input type="text" id="select-range" placeholder="1-3, 7, 10-" aria-label="Pages to select, for example 1-3, 7, 10-" spellcheck="false" data-i18n-aria="app.select-range.aria" data-i18n-placeholder="app.select-range.placeholder"></label>
+        <button type="button" class="btn sm" id="select-odd" data-i18n="app.select-odd">Odd</button>
+        <button type="button" class="btn sm" id="select-even" data-i18n="app.select-even">Even</button>
         <span class="vsep"></span>
-        <button type="button" class="btn sm" id="hide-blank" title="Hide the pages that hold no ink, such as the blank backs of a scan"><svg class="ic" aria-hidden="true"><use href="#i-eye-off"/></svg>Hide blank pages</button>
-        <button type="button" class="btn sm" id="export-images" title="Save the pages as PNG or JPEG pictures (the selection, or all the pages)"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg>Export images</button>
-        <button type="button" class="btn sm" id="find" title="Find e-mail addresses, phone numbers, IBAN, card numbers or words in the text, and cover them"><svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg>Find and redact</button>
-        <button type="button" class="btn sm" id="sign" title="Sign with a drawn, typed or imported signature"><svg class="ic" aria-hidden="true"><use href="#i-sign"/></svg>Sign</button>
-        <button type="button" class="btn sm" id="add-text" title="Put a line of text anywhere on a page: a name, a date, a cross"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg>Add text</button>
-        <button type="button" class="btn sm ghost" id="clear-marks" hidden title="Remove the signatures and texts of the selected pages, or of all the pages"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>Remove signatures and texts</button>
-        <button type="button" class="btn sm" id="stamps" title="Number the pages and add a watermark to what you download"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg>Numbers and watermark</button>
-        <button type="button" class="btn sm" id="properties" title="See what the files carry, and write the properties of the file you download"><svg class="ic" aria-hidden="true"><use href="#i-info"/></svg>Properties</button>
-        <button type="button" class="btn sm" id="extract-text" title="Write the text of the pages to a .txt file (the selection, or all the pages)"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg>Extract text</button>
+        <button type="button" class="btn sm" id="hide-blank" title="Hide the pages that hold no ink, such as the blank backs of a scan" data-i18n-title="app.hide-blank.title"><svg class="ic" aria-hidden="true"><use href="#i-eye-off"/></svg><span data-i18n="app.hide-blank">Hide blank pages</span></button>
+        <button type="button" class="btn sm" id="export-images" title="Save the pages as PNG or JPEG pictures (the selection, or all the pages)" data-i18n-title="app.export-images.title"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg><span data-i18n="app.export-images">Export images</span></button>
+        <button type="button" class="btn sm" id="find" title="Find e-mail addresses, phone numbers, IBAN, card numbers or words in the text, and cover them" data-i18n-title="app.find.title"><svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg><span data-i18n="app.find">Find and redact</span></button>
+        <button type="button" class="btn sm" id="sign" title="Sign with a drawn, typed or imported signature" data-i18n-title="app.sign.title"><svg class="ic" aria-hidden="true"><use href="#i-sign"/></svg><span data-i18n="app.sign">Sign</span></button>
+        <button type="button" class="btn sm" id="add-text" title="Put a line of text anywhere on a page: a name, a date, a cross" data-i18n-title="app.add-text.title"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg><span data-i18n="app.add-text">Add text</span></button>
+        <button type="button" class="btn sm ghost" id="clear-marks" hidden title="Remove the signatures and texts of the selected pages, or of all the pages" data-i18n-title="app.clear-marks.title"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span data-i18n="app.clear-marks">Remove signatures and texts</span></button>
+        <button type="button" class="btn sm" id="stamps" title="Number the pages and add a watermark to what you download" data-i18n-title="app.stamps.title"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg><span data-i18n="app.stamps">Numbers and watermark</span></button>
+        <button type="button" class="btn sm" id="properties" title="See what the files carry, and write the properties of the file you download" data-i18n-title="app.properties.title"><svg class="ic" aria-hidden="true"><use href="#i-info"/></svg><span data-i18n="app.properties">Properties</span></button>
+        <button type="button" class="btn sm" id="extract-text" title="Write the text of the pages to a .txt file (the selection, or all the pages)" data-i18n-title="app.extract-text.title"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg><span data-i18n="app.extract-text">Extract text</span></button>
       </div>
       </div>
       <div class="work">
         <div class="stage">
           <div class="state">
             <svg class="state-ic" aria-hidden="true"><use href="#i-logo"/></svg>
-            <h2 class="state-title">Put your PDF files and photos together</h2>
-            <p class="state-hint">Drop PDF files and photos anywhere on this page, or choose them. Reorder files and pages, hide what must not leave, black out what must not be shared, then download one PDF or several, compressed or not.</p>
-            <button type="button" class="btn primary state-action" id="choose-pages"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>Choose files</button>
+            <h2 class="state-title" data-i18n="app.put-your-pdf-files">Put your PDF files and photos together</h2>
+            <p class="state-hint" data-i18n="app.drop-pdf-files-and">Drop PDF files and photos anywhere on this page, or choose them. Reorder files and pages, hide what must not leave, black out what must not be shared, then download one PDF or several, compressed or not.</p>
+            <button type="button" class="btn primary state-action" id="choose-pages"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg><span data-i18n="app.choose-pages">Choose files</span></button>
             <p id="pages-note" role="status" class="state-note"></p>
           </div>
           <div class="content">
@@ -122,31 +124,31 @@
             <ol id="grid" class="grid"></ol>
           </div>
         </div>
-        <aside class="output" aria-label="Result">
-          <h2 class="out-title">Result</h2>
+        <aside class="output" aria-label="Result" data-i18n-aria="app.result.aria">
+          <h2 class="out-title" data-i18n="app.result">Result</h2>
           <section class="out-group" id="photo-settings" hidden>
-            <h3>Photos</h3>
-            <label class="field">Page <select id="images-size" aria-label="Page size of the photos"></select></label>
-            <label class="field">Margin <select id="images-margin" aria-label="Margin around the photos"></select></label>
+            <h3 data-i18n="app.photo-settings-photos">Photos</h3>
+            <label class="field"><span data-i18n="app.photo-settings-page">Page</span> <select id="images-size" aria-label="Page size of the photos" data-i18n-aria="app.images-size.aria"></select></label>
+            <label class="field"><span data-i18n="app.photo-settings-margin">Margin</span> <select id="images-margin" aria-label="Margin around the photos" data-i18n-aria="app.images-margin.aria"></select></label>
           </section>
           <section class="out-group">
-            <h3>Parts</h3>
-            <p class="hint">Click the scissors between two pages to cut the result there.</p>
+            <h3 data-i18n="app.parts">Parts</h3>
+            <p class="hint" data-i18n="app.click-the-scissors-between">Click the scissors between two pages to cut the result there.</p>
             <div class="out-row">
-              <button type="button" class="btn sm" id="cut-every"><svg class="ic" aria-hidden="true"><use href="#i-cut"/></svg>Cut every</button>
-              <input type="number" id="split-size" min="1" value="1" aria-label="Pages per part">
-              <span>pages</span>
-              <button type="button" class="btn sm ghost" id="clear-cuts" hidden>Remove cuts</button>
+              <button type="button" class="btn sm" id="cut-every"><svg class="ic" aria-hidden="true"><use href="#i-cut"/></svg><span data-i18n="app.cut-every">Cut every</span></button>
+              <input type="number" id="split-size" min="1" value="1" aria-label="Pages per part" data-i18n-aria="app.split-size.aria">
+              <span data-i18n="app.pages">pages</span>
+              <button type="button" class="btn sm ghost" id="clear-cuts" hidden data-i18n="app.clear-cuts">Remove cuts</button>
             </div>
           </section>
           <section class="out-group">
-            <h3>Compression</h3>
-            <div class="seg" role="radiogroup" aria-label="Compression" id="compress-levels"></div>
+            <h3 data-i18n="app.compression">Compression</h3>
+            <div class="seg" role="radiogroup" aria-label="Compression" id="compress-levels" data-i18n-aria="app.compress-levels.aria"></div>
             <p id="compress-describe" class="hint"></p>
-            <button type="button" class="btn sm" id="compare-open" hidden><svg class="ic" aria-hidden="true"><use href="#i-compress"/></svg>See before and after</button>
+            <button type="button" class="btn sm" id="compare-open" hidden><svg class="ic" aria-hidden="true"><use href="#i-compress"/></svg><span data-i18n="app.compare-open">See before and after</span></button>
           </section>
           <section class="out-group out-actions">
-            <button type="button" class="btn primary" id="download-all"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg>Download PDF</button>
+            <button type="button" class="btn primary" id="download-all"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg><span data-i18n="app.download-all">Download PDF</span></button>
             <button type="button" class="btn" id="download-parts" disabled><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg><span id="parts-label">Download ZIP</span></button>
           </section>
         </aside>
@@ -155,7 +157,7 @@
         <span id="pages-name" class="doc-name"></span>
         <span id="selection-summary"></span>
         <span id="pages-status" role="status"></span>
-        <label class="field page-only">Size <input type="range" id="zoom" min="90" max="260" value="150" aria-label="Size of the thumbnails"></label>
+        <label class="field page-only"><span data-i18n="app.size">Size</span> <input type="range" id="zoom" min="90" max="260" value="150" aria-label="Size of the thumbnails" data-i18n-aria="app.zoom.aria"></label>
         <span class="sep"></span>
         <button type="button" class="btn sm ghost" id="show-hidden" hidden><svg class="ic" aria-hidden="true"><use href="#i-eye"/></svg><span id="show-hidden-label">Show hidden</span></button>
       </div>
@@ -166,93 +168,93 @@
   <dialog id="redact-dialog" aria-labelledby="redact-title">
     <div class="dlg-head">
       <svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg>
-      <h2 id="redact-title">Redact page</h2>
+      <h2 id="redact-title" data-i18n="redact.redact-title">Redact page</h2>
       <span class="sep"></span>
       <span id="redact-count" class="summary"></span>
     </div>
-    <p class="hint">Drag on the page to cover what must disappear. With the keyboard, focus the page: arrows move the crosshair (Shift for bigger steps), Enter starts a rectangle and Enter again places it; Tab goes through the rectangles, which move with the arrows, resize with Shift and the arrows, and go with Delete. In the downloaded PDF the whole page becomes a picture, so the covered content no longer exists.</p>
+    <p class="hint" data-i18n="redact.drag-on-the-page">Drag on the page to cover what must disappear. With the keyboard, focus the page: arrows move the crosshair (Shift for bigger steps), Enter starts a rectangle and Enter again places it; Tab goes through the rectangles, which move with the arrows, resize with Shift and the arrows, and go with Delete. In the downloaded PDF the whole page becomes a picture, so the covered content no longer exists.</p>
     <span id="redact-live" class="vh" role="status"></span>
     <div class="dlg-stage">
       <div id="redact-stage" class="sheet-stage">
         <canvas id="redact-canvas"></canvas>
-        <div id="redact-layer" tabindex="0" role="group" aria-label="Page. Arrow keys move the crosshair, Enter starts a rectangle and Enter again places it, Tab goes to the rectangles."></div>
+        <div id="redact-layer" tabindex="0" role="group" aria-label="Page. Arrow keys move the crosshair, Enter starts a rectangle and Enter again places it, Tab goes to the rectangles." data-i18n-aria="redact.redact-layer.aria"></div>
       </div>
     </div>
     <div class="dlg-foot">
-      <button type="button" class="btn" id="redact-undo"><svg class="ic" aria-hidden="true"><use href="#i-undo"/></svg>Undo</button>
-      <button type="button" class="btn ghost" id="redact-clear"><svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg>Clear</button>
+      <button type="button" class="btn" id="redact-undo"><svg class="ic" aria-hidden="true"><use href="#i-undo"/></svg><span data-i18n="redact.redact-undo">Undo</span></button>
+      <button type="button" class="btn ghost" id="redact-clear"><svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg><span data-i18n="redact.redact-clear">Clear</span></button>
       <span class="sep"></span>
-      <button type="button" class="btn" id="redact-cancel">Cancel</button>
-      <button type="button" class="btn primary" id="redact-done"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Done</button>
+      <button type="button" class="btn" id="redact-cancel" data-i18n="redact.redact-cancel">Cancel</button>
+      <button type="button" class="btn primary" id="redact-done"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="redact.redact-done">Done</span></button>
     </div>
   </dialog>
 
   <dialog id="stamp-dialog" aria-labelledby="stamp-title">
     <div class="dlg-head">
       <svg class="ic" aria-hidden="true"><use href="#i-text"/></svg>
-      <h2 id="stamp-title">Page numbers and watermark</h2>
+      <h2 id="stamp-title" data-i18n="stamp.stamp-title">Page numbers and watermark</h2>
     </div>
     <div class="dlg-body">
       <fieldset>
-        <legend><label><input type="checkbox" id="numbers-on"> Page numbers</label></legend>
-        <label class="field">Position <select id="numbers-position"></select></label>
-        <label class="field">Format <select id="numbers-format"></select></label>
-        <label class="field">First number <input type="number" id="numbers-first" min="0" value="1"></label>
-        <label class="field">Size <input type="number" id="numbers-size" min="6" max="48" value="10"></label>
-        <label class="field wide"><input type="checkbox" id="numbers-skip"> Leave the first page without a number</label>
+        <legend><label><input type="checkbox" id="numbers-on"> <span data-i18n="stamp.page-numbers">Page numbers</span></label></legend>
+        <label class="field"><span data-i18n="stamp.position">Position</span> <select id="numbers-position"></select></label>
+        <label class="field"><span data-i18n="stamp.format">Format</span> <select id="numbers-format"></select></label>
+        <label class="field"><span data-i18n="stamp.first-number">First number</span> <input type="number" id="numbers-first" min="0" value="1"></label>
+        <label class="field"><span data-i18n="stamp.size">Size</span> <input type="number" id="numbers-size" min="6" max="48" value="10"></label>
+        <label class="field wide"><input type="checkbox" id="numbers-skip"> <span data-i18n="stamp.leave-the-first-page">Leave the first page without a number</span></label>
       </fieldset>
       <fieldset>
-        <legend><label><input type="checkbox" id="watermark-on"> Watermark</label></legend>
-        <label class="field wide">Text <input type="text" id="watermark-text" value="DRAFT" maxlength="60" spellcheck="false"></label>
-        <label class="field">Size <input type="number" id="watermark-size" min="12" max="200" value="72"></label>
-        <label class="field">Angle <input type="number" id="watermark-angle" min="-90" max="90" value="45"></label>
-        <label class="field wide">Opacity <input type="range" id="watermark-opacity" min="5" max="80" value="25"></label>
+        <legend><label><input type="checkbox" id="watermark-on"> <span data-i18n="stamp.watermark">Watermark</span></label></legend>
+        <label class="field wide"><span data-i18n="stamp.text">Text</span> <input type="text" id="watermark-text" value="DRAFT" maxlength="60" spellcheck="false"></label>
+        <label class="field"><span data-i18n="stamp.size-2">Size</span> <input type="number" id="watermark-size" min="12" max="200" value="72"></label>
+        <label class="field"><span data-i18n="stamp.angle">Angle</span> <input type="number" id="watermark-angle" min="-90" max="90" value="45"></label>
+        <label class="field wide"><span data-i18n="stamp.opacity">Opacity</span> <input type="range" id="watermark-opacity" min="5" max="80" value="25"></label>
       </fieldset>
       <p id="stamp-error" role="alert" class="hint"></p>
     </div>
     <div class="dlg-foot">
-      <button type="button" class="btn ghost" id="stamp-clear">Remove both</button>
+      <button type="button" class="btn ghost" id="stamp-clear" data-i18n="stamp.stamp-clear">Remove both</button>
       <span class="sep"></span>
-      <button type="button" class="btn" id="stamp-cancel">Cancel</button>
-      <button type="button" class="btn primary" id="stamp-apply"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Apply</button>
+      <button type="button" class="btn" id="stamp-cancel" data-i18n="stamp.stamp-cancel">Cancel</button>
+      <button type="button" class="btn primary" id="stamp-apply"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="stamp.stamp-apply">Apply</span></button>
     </div>
   </dialog>
 
   <dialog id="export-dialog" aria-labelledby="export-title">
     <div class="dlg-head">
       <svg class="ic" aria-hidden="true"><use href="#i-image"/></svg>
-      <h2 id="export-title">Export the pages as images</h2>
+      <h2 id="export-title" data-i18n="export.export-title">Export the pages as images</h2>
     </div>
     <div class="dlg-body">
-      <label class="field">Format <select id="export-format"><option value="image/png">PNG</option><option value="image/jpeg">JPEG</option></select></label>
-      <label class="field">Resolution <select id="export-dpi"><option value="72">72 dpi (screen)</option><option value="150" selected>150 dpi</option><option value="300">300 dpi (print)</option></select></label>
+      <label class="field"><span data-i18n="export.format">Format</span> <select id="export-format"><option value="image/png">PNG</option><option value="image/jpeg">JPEG</option></select></label>
+      <label class="field"><span data-i18n="export.resolution">Resolution</span> <select id="export-dpi"><option value="72" data-i18n="export.export-dpi-72-dpi-screen">72 dpi (screen)</option><option value="150" selected data-i18n="export.export-dpi-150-dpi">150 dpi</option><option value="300" data-i18n="export.export-dpi-300-dpi-print">300 dpi (print)</option></select></label>
       <p class="hint" id="export-note"></p>
     </div>
     <div class="dlg-foot">
       <span class="sep"></span>
-      <button type="button" class="btn" id="export-cancel">Cancel</button>
-      <button type="button" class="btn primary" id="export-go"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg>Export</button>
+      <button type="button" class="btn" id="export-cancel" data-i18n="export.export-cancel">Cancel</button>
+      <button type="button" class="btn primary" id="export-go"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg><span data-i18n="export.export-go">Export</span></button>
     </div>
   </dialog>
 
   <dialog id="find-dialog" aria-labelledby="find-title">
     <div class="dlg-head">
       <svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg>
-      <h2 id="find-title">Find text and redact it</h2>
+      <h2 id="find-title" data-i18n="find.find-title">Find text and redact it</h2>
       <span class="sep"></span>
       <span id="find-count" class="summary"></span>
     </div>
     <div class="dlg-body">
-      <fieldset class="presets" id="find-presets"><legend>Look for</legend></fieldset>
-      <label class="field wide">Words <input type="text" id="find-words" placeholder="Jean Dupont, Acme" spellcheck="false" aria-label="Words to find, separated by commas"></label>
-      <div><button type="button" class="btn" id="find-run"><svg class="ic" aria-hidden="true"><use href="#i-select"/></svg>Search the pages</button></div>
-      <ul id="find-results" class="results" aria-label="Matches"></ul>
+      <fieldset class="presets" id="find-presets"><legend data-i18n="find.find-presets-look-for">Look for</legend></fieldset>
+      <label class="field wide"><span data-i18n="find.words">Words</span> <input type="text" id="find-words" placeholder="Jean Dupont, Acme" spellcheck="false" aria-label="Words to find, separated by commas" data-i18n-aria="find.find-words.aria" data-i18n-placeholder="find.find-words.placeholder"></label>
+      <div><button type="button" class="btn" id="find-run"><svg class="ic" aria-hidden="true"><use href="#i-select"/></svg><span data-i18n="find.find-run">Search the pages</span></button></div>
+      <ul id="find-results" class="results" aria-label="Matches" data-i18n-aria="find.find-results.aria"></ul>
       <p id="find-note" role="status" class="hint"></p>
     </div>
     <div class="dlg-foot">
-      <button type="button" class="btn ghost" id="find-toggle">Select none</button>
+      <button type="button" class="btn ghost" id="find-toggle" data-i18n="find.find-toggle">Select none</button>
       <span class="sep"></span>
-      <button type="button" class="btn" id="find-cancel">Cancel</button>
+      <button type="button" class="btn" id="find-cancel" data-i18n="find.find-cancel">Cancel</button>
       <button type="button" class="btn primary" id="find-apply" disabled><svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg><span id="find-apply-label">Redact</span></button>
     </div>
   </dialog>
@@ -260,51 +262,51 @@
   <dialog id="sign-dialog" aria-labelledby="sign-title">
     <div class="dlg-head">
       <svg class="ic" aria-hidden="true"><use href="#i-sign"/></svg>
-      <h2 id="sign-title">Your signature</h2>
+      <h2 id="sign-title" data-i18n="sign.sign-title">Your signature</h2>
     </div>
     <div class="dlg-body">
-      <div class="seg" role="radiogroup" aria-label="How to make the signature">
-        <label><input type="radio" name="sign-mode" value="draw" checked><span>Draw</span></label>
-        <label><input type="radio" name="sign-mode" value="type"><span>Type</span></label>
-        <label><input type="radio" name="sign-mode" value="image"><span>Image</span></label>
+      <div class="seg" role="radiogroup" aria-label="How to make the signature" data-i18n-aria="sign.how-to-make-the.aria">
+        <label><input type="radio" name="sign-mode" value="draw" checked><span data-i18n="sign.draw">Draw</span></label>
+        <label><input type="radio" name="sign-mode" value="type"><span data-i18n="sign.type">Type</span></label>
+        <label><input type="radio" name="sign-mode" value="image"><span data-i18n="sign.image">Image</span></label>
       </div>
       <div id="sign-draw" class="sign-pane">
-        <canvas id="sign-pad" width="640" height="220" aria-label="Signature pad: draw with the pointer"></canvas>
-        <div class="sign-row"><button type="button" class="btn sm ghost" id="sign-reset">Clear</button><span class="hint">No pointer? Use Type or Image.</span></div>
+        <canvas id="sign-pad" width="640" height="220" aria-label="Signature pad: draw with the pointer" data-i18n-aria="sign.sign-pad.aria"></canvas>
+        <div class="sign-row"><button type="button" class="btn sm ghost" id="sign-reset" data-i18n="sign.sign-reset">Clear</button><span class="hint" data-i18n="sign.sign-draw-no-pointer-use-type">No pointer? Use Type or Image.</span></div>
       </div>
       <div id="sign-type" class="sign-pane" hidden>
-        <label class="field wide">Name <input type="text" id="sign-text" maxlength="40" spellcheck="false"></label>
+        <label class="field wide"><span data-i18n="sign.sign-type-name">Name</span> <input type="text" id="sign-text" maxlength="40" spellcheck="false"></label>
         <canvas id="sign-typed" width="640" height="220" aria-hidden="true"></canvas>
       </div>
       <div id="sign-image" class="sign-pane" hidden>
-        <label class="field wide">Image <input type="file" id="sign-file" accept="image/*"></label>
-        <label class="field wide"><input type="checkbox" id="sign-white" checked> Make the white of the paper transparent</label>
+        <label class="field wide"><span data-i18n="sign.sign-image-image">Image</span> <input type="file" id="sign-file" accept="image/*"></label>
+        <label class="field wide"><input type="checkbox" id="sign-white" checked> <span data-i18n="sign.sign-image-make-the-white-of">Make the white of the paper transparent</span></label>
         <canvas id="sign-photo" width="640" height="220" aria-hidden="true"></canvas>
       </div>
-      <p class="hint">It is a picture of a signature, not a digital signature with a certificate.</p>
+      <p class="hint" data-i18n="sign.it-is-a-picture">It is a picture of a signature, not a digital signature with a certificate.</p>
       <p id="sign-error" role="alert" class="hint"></p>
     </div>
     <div class="dlg-foot">
       <span class="sep"></span>
-      <button type="button" class="btn" id="sign-cancel">Cancel</button>
-      <button type="button" class="btn primary" id="sign-use"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Use this signature</button>
+      <button type="button" class="btn" id="sign-cancel" data-i18n="sign.sign-cancel">Cancel</button>
+      <button type="button" class="btn primary" id="sign-use"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="sign.sign-use">Use this signature</span></button>
     </div>
   </dialog>
 
   <dialog id="place-dialog" aria-labelledby="place-title">
     <div class="dlg-head">
       <svg class="ic" aria-hidden="true"><use href="#i-sign"/></svg>
-      <h2 id="place-title">Place it on the page</h2>
+      <h2 id="place-title" data-i18n="place.place-title">Place it on the page</h2>
       <span class="sep"></span>
       <span id="place-where" class="summary"></span>
     </div>
     <div class="place-options">
-      <label class="field" id="place-text-field" hidden>Text <input type="text" id="place-text" maxlength="80" spellcheck="false"></label>
-      <button type="button" class="btn sm" id="place-date" hidden>Today</button>
-      <label class="field" id="place-size-field" hidden>Size <input type="range" id="place-size" min="12" max="70" value="25" aria-label="Size of the text"></label>
+      <label class="field" id="place-text-field" hidden><span data-i18n="place.place-text-field">Text</span> <input type="text" id="place-text" maxlength="80" spellcheck="false"></label>
+      <button type="button" class="btn sm" id="place-date" hidden data-i18n="place.place-date">Today</button>
+      <label class="field" id="place-size-field" hidden><span data-i18n="place.place-size-field">Size</span> <input type="range" id="place-size" min="12" max="70" value="25" aria-label="Size of the text" data-i18n-aria="place.place-size.aria"></label>
       <span id="place-error" role="alert" class="hint"></span>
     </div>
-    <p class="hint">Drag it where it belongs. With the keyboard, focus it: arrows move it, Shift and the arrows make it larger or smaller, Enter places it.</p>
+    <p class="hint" data-i18n="place.drag-it-where-it">Drag it where it belongs. With the keyboard, focus it: arrows move it, Shift and the arrows make it larger or smaller, Enter places it.</p>
     <div class="dlg-stage">
       <div id="place-stage" class="sheet-stage">
         <canvas id="place-canvas"></canvas>
@@ -312,74 +314,74 @@
       </div>
     </div>
     <div class="dlg-foot">
-      <div class="scope" role="radiogroup" aria-label="Where to put it">
-        <label><input type="radio" name="place-scope" value="page" checked> This page</label>
-        <label id="scope-selection"><input type="radio" name="place-scope" value="selection"> The selected pages</label>
-        <label><input type="radio" name="place-scope" value="all"> All the pages</label>
+      <div class="scope" role="radiogroup" aria-label="Where to put it" data-i18n-aria="place.where-to-put-it.aria">
+        <label><input type="radio" name="place-scope" value="page" checked> <span data-i18n="place.this-page">This page</span></label>
+        <label id="scope-selection"><input type="radio" name="place-scope" value="selection"> <span data-i18n="place.scope-selection">The selected pages</span></label>
+        <label><input type="radio" name="place-scope" value="all"> <span data-i18n="place.all-the-pages">All the pages</span></label>
       </div>
       <span class="sep"></span>
-      <button type="button" class="btn" id="place-cancel">Cancel</button>
-      <button type="button" class="btn primary" id="place-go"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Place</button>
+      <button type="button" class="btn" id="place-cancel" data-i18n="place.place-cancel">Cancel</button>
+      <button type="button" class="btn primary" id="place-go"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="place.place-go">Place</span></button>
     </div>
   </dialog>
 
   <dialog id="compare-dialog" aria-labelledby="compare-title">
     <div class="dlg-head">
       <svg class="ic" aria-hidden="true"><use href="#i-compress"/></svg>
-      <h2 id="compare-title">Before and after compression</h2>
+      <h2 id="compare-title" data-i18n="compare.compare-title">Before and after compression</h2>
       <span class="sep"></span>
       <span id="compare-caption" class="summary"></span>
     </div>
     <div class="dlg-body compare">
       <div class="compare-bar">
-        <span class="compare-tag">Before <strong id="compare-before-size"></strong></span>
+        <span class="compare-tag"><span data-i18n="compare.before">Before</span> <strong id="compare-before-size"></strong></span>
         <span class="compare-pager">
-          <button type="button" class="btn ghost icon" id="compare-prev" aria-label="Previous page" title="Previous page"><svg class="ic" aria-hidden="true"><use href="#i-left"/></svg></button>
+          <button type="button" class="btn ghost icon" id="compare-prev" aria-label="Previous page" title="Previous page" data-i18n-title="compare.compare-prev.title" data-i18n-aria="compare.compare-prev.aria"><svg class="ic" aria-hidden="true"><use href="#i-left"/></svg></button>
           <span id="compare-page" role="status"></span>
-          <button type="button" class="btn ghost icon" id="compare-next" aria-label="Next page" title="Next page"><svg class="ic" aria-hidden="true"><use href="#i-right"/></svg></button>
+          <button type="button" class="btn ghost icon" id="compare-next" aria-label="Next page" title="Next page" data-i18n-title="compare.compare-next.title" data-i18n-aria="compare.compare-next.aria"><svg class="ic" aria-hidden="true"><use href="#i-right"/></svg></button>
         </span>
-        <span class="compare-tag">After <strong id="compare-after-size"></strong></span>
+        <span class="compare-tag"><span data-i18n="compare.after">After</span> <strong id="compare-after-size"></strong></span>
       </div>
       <div class="compare-scroll">
         <div class="compare-stage" id="compare-stage">
           <div class="compare-pages" id="compare-pages"></div>
-          <div class="compare-handle" id="compare-handle" role="slider" tabindex="0" aria-label="Before and after" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"></div>
+          <div class="compare-handle" id="compare-handle" role="slider" tabindex="0" aria-label="Before and after" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" data-i18n-aria="compare.compare-handle.aria"></div>
         </div>
       </div>
-      <p class="hint">Drag the line, or use the arrow keys, to compare the same page before and after.</p>
+      <p class="hint" data-i18n="compare.drag-the-line-or">Drag the line, or use the arrow keys, to compare the same page before and after.</p>
     </div>
     <div class="dlg-foot">
       <span class="sep"></span>
-      <button type="button" class="btn primary" id="compare-close"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Close</button>
+      <button type="button" class="btn primary" id="compare-close"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="compare.compare-close">Close</span></button>
     </div>
   </dialog>
 
   <dialog id="props-dialog" aria-labelledby="props-title">
     <div class="dlg-head">
       <svg class="ic" aria-hidden="true"><use href="#i-info"/></svg>
-      <h2 id="props-title">Properties and hidden data</h2>
+      <h2 id="props-title" data-i18n="props.props-title">Properties and hidden data</h2>
     </div>
     <div class="dlg-body">
       <section>
-        <h3 class="section-title">What your files carry</h3>
+        <h3 class="section-title" data-i18n="props.what-your-files-carry">What your files carry</h3>
         <div id="props-report" class="report"></div>
-        <p class="hint">The file you download is a new document: the properties, embedded files, scripts, bookmarks and layers of your files are not copied into it. The links and comments stay on the pages that are copied, unless you remove them below.</p>
+        <p class="hint" data-i18n="props.the-file-you-download">The file you download is a new document: the properties, embedded files, scripts, bookmarks and layers of your files are not copied into it. The links and comments stay on the pages that are copied, unless you remove them below.</p>
       </section>
       <fieldset>
-        <legend>The file you download</legend>
-        <label class="field wide">Title <input type="text" id="props-title-input" maxlength="200" spellcheck="false"></label>
-        <label class="field wide">Author <input type="text" id="props-author" maxlength="200" spellcheck="false"></label>
-        <label class="field wide">Subject <input type="text" id="props-subject" maxlength="200" spellcheck="false"></label>
-        <label class="field wide">Keywords <input type="text" id="props-keywords" maxlength="300" spellcheck="false" placeholder="separated by commas"></label>
-        <label class="field wide"><input type="checkbox" id="props-dates"> Write the creation and modification dates</label>
-        <label class="field wide"><input type="checkbox" id="props-strip"> Remove the links and comments from the pages</label>
+        <legend data-i18n="props.the-file-you-download-2">The file you download</legend>
+        <label class="field wide"><span data-i18n="props.title">Title</span> <input type="text" id="props-title-input" maxlength="200" spellcheck="false"></label>
+        <label class="field wide"><span data-i18n="props.author">Author</span> <input type="text" id="props-author" maxlength="200" spellcheck="false"></label>
+        <label class="field wide"><span data-i18n="props.subject">Subject</span> <input type="text" id="props-subject" maxlength="200" spellcheck="false"></label>
+        <label class="field wide"><span data-i18n="props.keywords">Keywords</span> <input type="text" id="props-keywords" maxlength="300" spellcheck="false" placeholder="separated by commas" data-i18n-placeholder="props.props-keywords.placeholder"></label>
+        <label class="field wide"><input type="checkbox" id="props-dates"> <span data-i18n="props.write-the-creation-and">Write the creation and modification dates</span></label>
+        <label class="field wide"><input type="checkbox" id="props-strip"> <span data-i18n="props.remove-the-links-and">Remove the links and comments from the pages</span></label>
       </fieldset>
     </div>
     <div class="dlg-foot">
-      <button type="button" class="btn ghost" id="props-reset">Reset</button>
+      <button type="button" class="btn ghost" id="props-reset" data-i18n="props.props-reset">Reset</button>
       <span class="sep"></span>
-      <button type="button" class="btn" id="props-cancel">Cancel</button>
-      <button type="button" class="btn primary" id="props-apply"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Apply</button>
+      <button type="button" class="btn" id="props-cancel" data-i18n="props.props-cancel">Cancel</button>
+      <button type="button" class="btn primary" id="props-apply"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="props.props-apply">Apply</span></button>
     </div>
   </dialog>
 

@@ -1,27 +1,28 @@
 import { DEFAULT_PROPERTIES, inspectPdf } from './properties.js';
 import { byId } from './dom.js';
+import { plural, t } from './i18n.js';
 
-const plural = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`;
 const day = (date) => (date ? date.toISOString().slice(0, 10) : '');
 
 // The lines of the report: a label, the value, and whether there is anything.
 function facts(report) {
   const { annotations: found } = report;
+  const yes = t('props.yes');
   return [
-    ['Title', report.title],
-    ['Author', report.author],
-    ['Subject', report.subject],
-    ['Keywords', report.keywords],
-    ['Created with', [report.creator, report.producer].filter(Boolean).join(' / ')],
-    ['Dates', [day(report.created), day(report.modified)].filter(Boolean).join(', ')],
-    ['XMP metadata', report.xmp ? 'yes' : ''],
-    ['Embedded files', report.files.join(', ')],
-    ['Scripts', report.scripts ? 'yes' : ''],
-    ['Bookmarks', report.bookmarks ? 'yes' : ''],
-    ['Hidden layers', report.layers ? 'yes' : ''],
-    ['Links', found.links ? String(found.links) : ''],
-    ['Comments and other notes', found.others ? String(found.others) : ''],
-    ['Form fields', report.fields ? plural(report.fields, 'field') : ''],
+    [t('props.fact-title'), report.title],
+    [t('props.fact-author'), report.author],
+    [t('props.fact-subject'), report.subject],
+    [t('props.fact-keywords'), report.keywords],
+    [t('props.fact-created-with'), [report.creator, report.producer].filter(Boolean).join(' / ')],
+    [t('props.fact-dates'), [day(report.created), day(report.modified)].filter(Boolean).join(', ')],
+    [t('props.fact-xmp'), report.xmp ? yes : ''],
+    [t('props.fact-files'), report.files.join(', ')],
+    [t('props.fact-scripts'), report.scripts ? yes : ''],
+    [t('props.fact-bookmarks'), report.bookmarks ? yes : ''],
+    [t('props.fact-layers'), report.layers ? yes : ''],
+    [t('props.fact-links'), found.links ? String(found.links) : ''],
+    [t('props.fact-notes'), found.others ? String(found.others) : ''],
+    [t('props.fact-fields'), report.fields ? plural(report.fields, 'count.field.one', 'count.field.other') : ''],
   ];
 }
 
@@ -33,12 +34,12 @@ export function initProperties() {
     const element = document.createElement('div');
     element.className = 'report-card';
     const title = document.createElement('h4');
-    title.textContent = `${file.name}${info ? `, ${plural(info.pages, 'page')}` : ''}`;
+    title.textContent = info ? t('props.card-title', { name: file.name, pages: plural(info.pages, 'count.page.one', 'count.page.other') }) : file.name;
     element.append(title);
     const list = document.createElement('dl');
-    for (const [label, value] of info ? facts(info) : [['Error', 'This file could not be read.']]) {
+    for (const [label, value] of info ? facts(info) : [[t('props.error'), t('props.unreadable')]]) {
       const term = Object.assign(document.createElement('dt'), { textContent: label });
-      const detail = Object.assign(document.createElement('dd'), { textContent: value || 'none', className: value ? '' : 'none' });
+      const detail = Object.assign(document.createElement('dd'), { textContent: value || t('props.none'), className: value ? '' : 'none' });
       list.append(term, detail);
     }
     element.append(list);

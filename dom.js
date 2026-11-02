@@ -1,3 +1,5 @@
+import { getLanguage, t } from './i18n.js';
+
 const SVG = 'http://www.w3.org/2000/svg';
 
 export const byId = (id) => /** @type {any} */ (document.getElementById(id));
@@ -13,11 +15,11 @@ export function icon(name) {
   return svg;
 }
 
-export function iconButton(name, label, onClick, disabled = false) {
+export function iconButton(name, label, onClick, disabled = false, title = label) {
   const element = document.createElement('button');
   element.type = 'button';
   element.className = 'btn ghost icon';
-  element.title = label.includes(': ') ? label.split(': ')[1] : label;
+  element.title = title;
   element.setAttribute('aria-label', label);
   element.disabled = disabled;
   element.append(icon(name));
@@ -114,4 +116,25 @@ export function sortable(container, { entry, idOf, axis, state, group = (id) => 
     event.preventDefault();
     onMove(moving, hit.id, hit.after);
   });
+}
+
+const MARKED = '[data-i18n],[data-i18n-title],[data-i18n-aria],[data-i18n-placeholder]';
+
+// An element carries its key in a data attribute, so that a language change translates the whole page again:
+// data-i18n the text, data-i18n-title the tooltip, data-i18n-aria the aria-label, data-i18n-placeholder the placeholder.
+// Sets the text of `element` from a key and remembers it for the next language change.
+export function setI18n(element, key) {
+  element.dataset.i18n = key;
+  element.textContent = t(key);
+}
+
+export function applyDom(root = document) {
+  document.documentElement.lang = getLanguage();
+  for (const element of /** @type {NodeListOf<HTMLElement>} */ (root.querySelectorAll(MARKED))) {
+    const { i18n, i18nTitle, i18nAria, i18nPlaceholder } = element.dataset;
+    if (i18n) element.textContent = t(i18n);
+    if (i18nTitle) element.title = t(i18nTitle);
+    if (i18nAria) element.setAttribute('aria-label', t(i18nAria));
+    if (i18nPlaceholder) element.setAttribute('placeholder', t(i18nPlaceholder));
+  }
 }

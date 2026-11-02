@@ -235,7 +235,7 @@ dialog::backdrop { background: var(--shade); }
 .out-group { display: grid; gap: 8px; }
 .out-group h3 { font-size: 12px; font-weight: 650; letter-spacing: .02em; text-transform: uppercase; color: var(--muted); }
 .out-group .hint { padding: 0; }
-.out-group select { height: 28px; padding: 0 8px; border: 1px solid var(--field-line); border-radius: var(--r-s); background: var(--surface); }
+.out-group select, #language { height: 28px; padding: 0 8px; border: 1px solid var(--field-line); border-radius: var(--r-s); background: var(--surface); }
 .out-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
 .out-actions { padding-top: 4px; border-top: 1px solid var(--line); }
 .out-actions .btn { width: 100%; }

@@ -71,7 +71,7 @@ test('photos become the pages of a PDF, in the order of the list, whatever their
   await page.locator('#grid li').nth(2).waitFor();
   assert.equal(await page.locator('#photo-settings').isVisible(), true);
   await page.getByRole('radio', { name: 'Files' }).check();
-  assert.deepEqual(await page.locator('#file-list .pages').allInnerTexts(), ['1 page (photo)', '1 page (photo)', '1 page (photo)']);
+  assert.deepEqual(await page.locator('#file-list .pages').allInnerTexts(), ['1 page, photo', '1 page, photo', '1 page, photo']);
 
   await page.getByRole('button', { name: 'red.png: Down' }).click();
   await page.getByRole('button', { name: 'red.png: Down' }).click();
