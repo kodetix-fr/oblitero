@@ -119,7 +119,7 @@ export function initStamps() {
     return new Promise((resolve) => {
       const session = new AbortController();
       const { signal } = session;
-      let timer = 0;
+      let timer;
       let latest = 0;
       const drawPreview = async () => {
         const ticket = ++latest;

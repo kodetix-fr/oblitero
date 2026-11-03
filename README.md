@@ -45,7 +45,8 @@ Status: under construction, private until the first release.
   rotated pages too. The watermark is a text (size) or an image (a share of the
   page width), with an angle and an opacity, centered or repeated across the
   page. A list of pages such as `2-5, 8` limits all four to those pages of each
-  file you download.
+  file you download. The dialog previews the first page reached, stamped the way
+  the single PDF is.
 - **Redact**: draw rectangles on a page. In the downloaded PDF that page becomes a
   picture with the rectangles painted black, so the text, the vectors and the
   links under them no longer exist. The other pages are copied untouched. The
