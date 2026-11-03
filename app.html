@@ -50,6 +50,11 @@
     <symbol id="i-sign" viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17z"/><path d="M13.5 7.5l3 3M12 20h8"/></symbol>
     <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8v.1"/></symbol>
     <symbol id="i-form" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2.6"/><path d="M8 9h8M8 13h8M8 17h4"/></symbol>
+    <symbol id="i-hash" viewBox="0 0 24 24"><path d="M9.5 4L7.5 20M16.5 4l-2 16M4.5 9h15.5M4 15h15.5"/></symbol>
+    <symbol id="i-file-text" viewBox="0 0 24 24"><path d="M7 3.5h6.5L18.5 8.5v11a1.5 1.5 0 0 1-1.5 1.5H7a1.5 1.5 0 0 1-1.5-1.5V5A1.5 1.5 0 0 1 7 3.5z"/><path d="M13.5 3.5v5h5M9 13h6M9 16.5h4"/></symbol>
+    <symbol id="i-blank-off" viewBox="0 0 24 24"><rect x="6" y="3.5" width="12" height="17" rx="1.6" stroke-dasharray="3 2.4"/><path d="M3.5 3.5l17 17"/></symbol>
+    <symbol id="i-find" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5l5 5"/><path d="M8 10.5h5" stroke-width="3.5"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.4 3.7 5.2 3.7 8.5s-1.2 6.1-3.7 8.5c-2.5-2.4-3.7-5.2-3.7-8.5s1.2-6.1 3.7-8.5z"/></symbol>
     <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17.2v.1"/></symbol>
   </svg>
 
@@ -60,7 +65,7 @@
     </div>
     <p class="tagline" data-i18n="app.pdf-tools-that-never">PDF tools that never leave your computer</p>
     <span class="sep"></span>
-    <select id="language" aria-label="Language" data-i18n-aria="app.language-aria"></select>
+    <span class="lang"><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg><select id="language" aria-label="Language" data-i18n-aria="app.language-aria"></select></span>
   </header>
 
   <main class="main">
@@ -75,41 +80,53 @@
         <span class="vsep"></span>
         <button type="button" class="btn sm icon-only" id="undo" aria-label="Undo" title="Undo (Ctrl+Z)" data-i18n-title="app.undo.title" data-i18n-aria="app.undo.aria"><svg class="ic" aria-hidden="true"><use href="#i-undo"/></svg></button>
         <button type="button" class="btn sm icon-only" id="redo" aria-label="Redo" title="Redo (Shift+Ctrl+Z)" data-i18n-title="app.redo.title" data-i18n-aria="app.redo.aria"><svg class="ic" aria-hidden="true"><use href="#i-redo"/></svg></button>
-        <button type="button" class="btn sm ghost" id="clear-all" title="Remove every file from the screen (Undo brings them back)" data-i18n-title="app.clear-all.title"><svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg><span data-i18n="app.clear-all">Clear</span></button>
-        <span class="vsep page-only"></span>
-        <button type="button" class="btn sm icon-only page-only" id="select-all" aria-label="Select all" title="Select all (Ctrl+A)" data-i18n-title="app.select-all.title" data-i18n-aria="app.select-all.aria"><svg class="ic" aria-hidden="true"><use href="#i-select"/></svg></button>
-        <button type="button" class="btn sm icon-only page-only" id="select-none" aria-label="Select none" title="Select none (Esc)" data-i18n-title="app.select-none.title" data-i18n-aria="app.select-none.aria"><svg class="ic" aria-hidden="true"><use href="#i-deselect"/></svg></button>
-        <span class="vsep page-only"></span>
-        <button type="button" class="btn sm icon-only page-only" id="rotate-left" aria-label="Rotate left" title="Rotate left (Shift+R)" data-i18n-title="app.rotate-left.title" data-i18n-aria="app.rotate-left.aria"><svg class="ic" aria-hidden="true"><use href="#i-rot-left"/></svg></button>
-        <button type="button" class="btn sm icon-only page-only" id="rotate-right" aria-label="Rotate right" title="Rotate right (R)" data-i18n-title="app.rotate-right.title" data-i18n-aria="app.rotate-right.aria"><svg class="ic" aria-hidden="true"><use href="#i-rot-right"/></svg></button>
-        <span class="vsep page-only"></span>
-        <button type="button" class="btn sm icon-only page-only" id="move-earlier" aria-label="Move earlier" title="Move earlier (Alt+Left)" data-i18n-title="app.move-earlier.title" data-i18n-aria="app.move-earlier.aria"><svg class="ic" aria-hidden="true"><use href="#i-left"/></svg></button>
-        <button type="button" class="btn sm icon-only page-only" id="move-later" aria-label="Move later" title="Move later (Alt+Right)" data-i18n-title="app.move-later.title" data-i18n-aria="app.move-later.aria"><svg class="ic" aria-hidden="true"><use href="#i-right"/></svg></button>
-        <span class="vsep page-only"></span>
-        <button type="button" class="btn sm icon-only page-only" id="add-blank" aria-label="Add a blank page" title="Add a blank page after the selection" data-i18n-title="app.add-blank.title" data-i18n-aria="app.add-blank.aria"><svg class="ic" aria-hidden="true"><use href="#i-blank"/></svg></button>
-        <button type="button" class="btn sm icon-only page-only" id="duplicate" aria-label="Duplicate" title="Duplicate the selected pages" data-i18n-title="app.duplicate.title" data-i18n-aria="app.duplicate.aria"><svg class="ic" aria-hidden="true"><use href="#i-copy"/></svg></button>
-        <span class="vsep page-only"></span>
-        <button type="button" class="btn sm page-only" id="hide" title="Hide the selected pages from the result (Del)" data-i18n-title="app.hide.title"><svg class="ic" aria-hidden="true"><use id="hide-icon" href="#i-eye-off"/></svg><span id="hide-label">Hide</span></button>
-        <button type="button" class="btn sm page-only" id="cut" title="Cut after the selected pages (C)" data-i18n-title="app.cut.title"><svg class="ic" aria-hidden="true"><use href="#i-cut"/></svg><span data-i18n="app.cut">Cut</span></button>
-        <button type="button" class="btn sm page-only" id="redact" title="Hide an area: black it out, and destroy what is under it in the downloaded PDF" data-i18n-title="app.redact.title"><svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg><span data-i18n="app.redact">Redact</span></button>
         <span class="sep"></span>
-        <button type="button" class="btn page-only" id="download-selected" title="Download the selected pages as one PDF" data-i18n-title="app.download-selected.title"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg><span data-i18n="app.download-selected">Selection</span></button>
+        <div class="group page-only" data-tone="export" role="group" aria-label="Export" data-i18n-aria="app.group-export">
+          <span class="group-name" aria-hidden="true" data-i18n="app.group-export">Export</span>
+          <button type="button" class="btn sm" id="export-images" title="Save the pages as PNG or JPEG pictures (the selection, or all the pages)" data-i18n-title="app.export-images.title"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg><span data-i18n="app.export-images">Export images</span></button>
+          <button type="button" class="btn sm" id="extract-text" title="Write the text of the pages to a .txt file (the selection, or all the pages)" data-i18n-title="app.extract-text.title"><svg class="ic" aria-hidden="true"><use href="#i-file-text"/></svg><span data-i18n="app.extract-text">Extract text</span></button>
+        </div>
+        <span class="vsep"></span>
+        <button type="button" class="btn sm ghost danger" id="clear-all" title="Remove every file from the screen (Undo brings them back)" data-i18n-title="app.clear-all.title"><svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg><span data-i18n="app.clear-all">Clear</span></button>
       </div>
       <div class="subbar page-only">
-        <label class="field"><span data-i18n="app.select">Select</span> <input type="text" id="select-range" placeholder="1-3, 7, 10-" aria-label="Pages to select, for example 1-3, 7, 10-" spellcheck="false" data-i18n-aria="app.select-range.aria" data-i18n-placeholder="app.select-range.placeholder"></label>
-        <button type="button" class="btn sm" id="select-odd" data-i18n="app.select-odd">Odd</button>
-        <button type="button" class="btn sm" id="select-even" data-i18n="app.select-even">Even</button>
-        <span class="vsep"></span>
-        <button type="button" class="btn sm" id="hide-blank" title="Hide the pages that hold no ink, such as the blank backs of a scan" data-i18n-title="app.hide-blank.title"><svg class="ic" aria-hidden="true"><use href="#i-eye-off"/></svg><span data-i18n="app.hide-blank">Hide blank pages</span></button>
-        <button type="button" class="btn sm" id="export-images" title="Save the pages as PNG or JPEG pictures (the selection, or all the pages)" data-i18n-title="app.export-images.title"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg><span data-i18n="app.export-images">Export images</span></button>
-        <button type="button" class="btn sm" id="find" title="Find e-mail addresses, phone numbers, IBAN, card numbers or words in the text, and cover them" data-i18n-title="app.find.title"><svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg><span data-i18n="app.find">Find and redact</span></button>
-        <button type="button" class="btn sm" id="sign" title="Sign with a drawn, typed or imported signature" data-i18n-title="app.sign.title"><svg class="ic" aria-hidden="true"><use href="#i-sign"/></svg><span data-i18n="app.sign">Sign</span></button>
-        <button type="button" class="btn sm" id="add-text" title="Put a line of text anywhere on a page: a name, a date, a cross" data-i18n-title="app.add-text.title"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg><span data-i18n="app.add-text">Add text</span></button>
-        <button type="button" class="btn sm" id="fill-form" title="Fill the fields of a form: text, check boxes and lists. The values are written on the page." data-i18n-title="app.fill-form.title"><svg class="ic" aria-hidden="true"><use href="#i-form"/></svg><span data-i18n="app.fill-form">Fill form</span></button>
-        <button type="button" class="btn sm ghost" id="clear-marks" hidden title="Remove the signatures and texts of the selected pages, or of all the pages" data-i18n-title="app.clear-marks.title"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span data-i18n="app.clear-marks">Remove signatures and texts</span></button>
-        <button type="button" class="btn sm" id="stamps" title="Number the pages and add a watermark to what you download" data-i18n-title="app.stamps.title"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg><span data-i18n="app.stamps">Numbers and watermark</span></button>
-        <button type="button" class="btn sm" id="properties" title="See what the files carry, and write the properties of the file you download" data-i18n-title="app.properties.title"><svg class="ic" aria-hidden="true"><use href="#i-info"/></svg><span data-i18n="app.properties">Properties</span></button>
-        <button type="button" class="btn sm" id="extract-text" title="Write the text of the pages to a .txt file (the selection, or all the pages)" data-i18n-title="app.extract-text.title"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg><span data-i18n="app.extract-text">Extract text</span></button>
+        <div class="group" data-tone="protect" role="group" aria-label="Protect" data-i18n-aria="app.group-protect">
+          <span class="group-name" aria-hidden="true" data-i18n="app.group-protect">Protect</span>
+          <button type="button" class="btn sm ink" id="find" title="Find e-mail addresses, phone numbers, IBAN, card numbers or words in the text, and cover them" data-i18n-title="app.find.title"><svg class="ic" aria-hidden="true"><use href="#i-find"/></svg><span data-i18n="app.find">Find and redact</span></button>
+          <button type="button" class="btn sm" id="hide-blank" title="Hide the pages that hold no ink, such as the blank backs of a scan" data-i18n-title="app.hide-blank.title"><svg class="ic" aria-hidden="true"><use href="#i-blank-off"/></svg><span data-i18n="app.hide-blank">Hide blank pages</span></button>
+          <button type="button" class="btn sm" id="properties" title="See what the files carry, and write the properties of the file you download" data-i18n-title="app.properties.title"><svg class="ic" aria-hidden="true"><use href="#i-info"/></svg><span data-i18n="app.properties">Properties</span></button>
+        </div>
+        <div class="group" data-tone="add" role="group" aria-label="Add" data-i18n-aria="app.group-add">
+          <span class="group-name" aria-hidden="true" data-i18n="app.group-add">Add</span>
+          <button type="button" class="btn sm" id="sign" title="Sign with a drawn, typed or imported signature" data-i18n-title="app.sign.title"><svg class="ic" aria-hidden="true"><use href="#i-sign"/></svg><span data-i18n="app.sign">Sign</span></button>
+          <button type="button" class="btn sm" id="add-text" title="Put a line of text anywhere on a page: a name, a date, a cross" data-i18n-title="app.add-text.title"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg><span data-i18n="app.add-text">Add text</span></button>
+          <button type="button" class="btn sm" id="fill-form" title="Fill the fields of a form: text, check boxes and lists. The values are written on the page." data-i18n-title="app.fill-form.title"><svg class="ic" aria-hidden="true"><use href="#i-form"/></svg><span data-i18n="app.fill-form">Fill form</span></button>
+          <button type="button" class="btn sm" id="add-blank" title="Add a blank page after the selection" data-i18n-title="app.add-blank.title"><svg class="ic" aria-hidden="true"><use href="#i-file-plus"/></svg><span data-i18n="app.add-blank.label">Blank page</span></button>
+          <button type="button" class="btn sm" id="stamps" title="Number the pages and add a watermark to what you download" data-i18n-title="app.stamps.title"><svg class="ic" aria-hidden="true"><use href="#i-hash"/></svg><span data-i18n="app.stamps">Numbers and watermark</span></button>
+          <button type="button" class="btn sm ghost danger" id="clear-marks" hidden title="Remove the signatures and texts of the selected pages, or of all the pages" data-i18n-title="app.clear-marks.title"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span data-i18n="app.clear-marks">Remove signatures and texts</span></button>
+        </div>
+      </div>
+      <div class="subbar selbar page-only">
+        <div class="group">
+          <label class="field"><span class="group-name" data-i18n="app.select">Select</span> <input type="text" id="select-range" placeholder="1-3, 7, 10-" aria-label="Pages to select, for example 1-3, 7, 10-" spellcheck="false" data-i18n-aria="app.select-range.aria" data-i18n-placeholder="app.select-range.placeholder"></label>
+          <button type="button" class="btn sm" id="select-odd" data-i18n="app.select-odd">Odd</button>
+          <button type="button" class="btn sm" id="select-even" data-i18n="app.select-even">Even</button>
+          <button type="button" class="btn sm icon-only" id="select-all" aria-label="Select all" title="Select all (Ctrl+A)" data-i18n-title="app.select-all.title" data-i18n-aria="app.select-all.aria"><svg class="ic" aria-hidden="true"><use href="#i-select"/></svg></button>
+          <button type="button" class="btn sm icon-only" id="select-none" aria-label="Select none" title="Select none (Esc)" data-i18n-title="app.select-none.title" data-i18n-aria="app.select-none.aria"><svg class="ic" aria-hidden="true"><use href="#i-deselect"/></svg></button>
+        </div>
+        <p class="sel-hint" data-i18n="app.select-hint">Click a page to select it, or drag across the background to select several. The page actions appear here.</p>
+        <div class="group sel-actions">
+          <button type="button" class="btn sm icon-only" id="rotate-left" aria-label="Rotate left" title="Rotate left (Shift+R)" data-i18n-title="app.rotate-left.title" data-i18n-aria="app.rotate-left.aria"><svg class="ic" aria-hidden="true"><use href="#i-rot-left"/></svg></button>
+          <button type="button" class="btn sm icon-only" id="rotate-right" aria-label="Rotate right" title="Rotate right (R)" data-i18n-title="app.rotate-right.title" data-i18n-aria="app.rotate-right.aria"><svg class="ic" aria-hidden="true"><use href="#i-rot-right"/></svg></button>
+          <span class="vsep"></span>
+          <button type="button" class="btn sm icon-only" id="move-earlier" aria-label="Move earlier" title="Move earlier (Alt+Left)" data-i18n-title="app.move-earlier.title" data-i18n-aria="app.move-earlier.aria"><svg class="ic" aria-hidden="true"><use href="#i-left"/></svg></button>
+          <button type="button" class="btn sm icon-only" id="move-later" aria-label="Move later" title="Move later (Alt+Right)" data-i18n-title="app.move-later.title" data-i18n-aria="app.move-later.aria"><svg class="ic" aria-hidden="true"><use href="#i-right"/></svg></button>
+          <button type="button" class="btn sm icon-only" id="duplicate" aria-label="Duplicate" title="Duplicate the selected pages" data-i18n-title="app.duplicate.title" data-i18n-aria="app.duplicate.aria"><svg class="ic" aria-hidden="true"><use href="#i-copy"/></svg></button>
+          <span class="vsep"></span>
+          <button type="button" class="btn sm" id="hide" title="Hide the selected pages from the result (Del)" data-i18n-title="app.hide.title"><svg class="ic" aria-hidden="true"><use id="hide-icon" href="#i-eye-off"/></svg><span id="hide-label">Hide</span></button>
+          <button type="button" class="btn sm" id="cut" title="Cut after the selected pages (C)" data-i18n-title="app.cut.title"><svg class="ic" aria-hidden="true"><use href="#i-cut"/></svg><span data-i18n="app.cut">Cut</span></button>
+          <button type="button" class="btn sm ink" id="redact" title="Hide an area: black it out, and destroy what is under it in the downloaded PDF" data-i18n-title="app.redact.title"><svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg><span data-i18n="app.redact">Redact</span></button>
+        </div>
       </div>
       </div>
       <div class="work">
@@ -117,9 +134,17 @@
           <div class="state">
             <svg class="state-ic" aria-hidden="true"><use href="#i-logo"/></svg>
             <h2 class="state-title" data-i18n="app.put-your-pdf-files">Put your PDF files and photos together</h2>
-            <p class="state-hint" data-i18n="app.drop-pdf-files-and">Drop PDF files and photos anywhere on this page, or choose them. Reorder files and pages, hide what must not leave, black out what must not be shared, then download one PDF or several, compressed or not.</p>
+            <p class="state-hint" data-i18n="app.drop-pdf-files-and">Drop them anywhere on this page, or choose them. Nothing leaves your computer.</p>
             <button type="button" class="btn primary state-action" id="choose-pages"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg><span data-i18n="app.choose-pages">Choose files</span></button>
             <p id="pages-note" role="status" class="state-note"></p>
+            <ul class="state-tools">
+              <li><svg class="ic" aria-hidden="true"><use href="#i-pages"/></svg><span data-i18n="app.tool-merge">Merge</span></li>
+              <li><svg class="ic" aria-hidden="true"><use href="#i-grip"/></svg><span data-i18n="app.tool-reorder">Reorder pages</span></li>
+              <li data-ink><svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg><span data-i18n="app.tool-redact">Redact</span></li>
+              <li><svg class="ic" aria-hidden="true"><use href="#i-sign"/></svg><span data-i18n="app.tool-sign">Sign</span></li>
+              <li><svg class="ic" aria-hidden="true"><use href="#i-compress"/></svg><span data-i18n="app.tool-compress">Compress</span></li>
+              <li><svg class="ic" aria-hidden="true"><use href="#i-hash"/></svg><span data-i18n="app.tool-number">Number pages</span></li>
+            </ul>
           </div>
           <div class="content">
             <ol id="file-list" class="files" hidden></ol>
@@ -127,7 +152,10 @@
           </div>
         </div>
         <aside class="output" aria-label="Result" data-i18n-aria="app.result.aria">
-          <h2 class="out-title" data-i18n="app.result">Result</h2>
+          <div class="out-head">
+            <h2 class="out-title" data-i18n="app.result">Result</h2>
+            <p id="result-summary" class="out-summary" role="status"></p>
+          </div>
           <section class="out-group" id="photo-settings" hidden>
             <h3 data-i18n="app.photo-settings-photos">Photos</h3>
             <label class="field"><span data-i18n="app.photo-settings-page">Page</span> <select id="images-size" aria-label="Page size of the photos" data-i18n-aria="app.images-size.aria"></select></label>
@@ -151,6 +179,7 @@
           </section>
           <section class="out-group out-actions">
             <button type="button" class="btn primary" id="download-all"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg><span data-i18n="app.download-all">Download PDF</span></button>
+            <button type="button" class="btn page-only sel-only" id="download-selected" title="Download the selected pages as one PDF" data-i18n-title="app.download-selected.title"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg><span data-i18n="app.download-selected">Download selection</span></button>
             <button type="button" class="btn" id="download-parts" disabled><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg><span id="parts-label">Download ZIP</span></button>
           </section>
         </aside>
@@ -193,10 +222,12 @@
 
   <dialog id="stamp-dialog" aria-labelledby="stamp-title">
     <div class="dlg-head">
-      <svg class="ic" aria-hidden="true"><use href="#i-text"/></svg>
+      <svg class="ic" aria-hidden="true"><use href="#i-hash"/></svg>
       <h2 id="stamp-title" data-i18n="stamp.stamp-title">Page numbers and watermark</h2>
     </div>
+    <div class="stamp-main">
     <div class="dlg-body">
+      <label class="field"><span data-i18n="stamp.pages">Pages</span> <input type="text" id="stamp-range" placeholder="2-5, 8" aria-label="Pages that get the numbers, the header, the footer and the watermark: empty for all, or a list such as 2-5, 8" data-i18n-aria="stamp.pages-aria" spellcheck="false"></label>
       <fieldset>
         <legend><label><input type="checkbox" id="numbers-on"> <span data-i18n="stamp.page-numbers">Page numbers</span></label></legend>
         <label class="field"><span data-i18n="stamp.position">Position</span> <select id="numbers-position"></select></label>
@@ -229,9 +260,14 @@
         <label class="field wide"><span data-i18n="stamp.opacity">Opacity</span> <input type="range" id="watermark-opacity" min="5" max="80" value="25"></label>
         <label class="field wide"><input type="checkbox" id="watermark-tile"> <span data-i18n="stamp.tile">Repeat across the page</span></label>
       </fieldset>
-      <label class="field"><span data-i18n="stamp.pages">Pages</span> <input type="text" id="stamp-range" placeholder="2-5, 8" aria-label="Pages that get the numbers, the header, the footer and the watermark: empty for all, or a list such as 2-5, 8" data-i18n-aria="stamp.pages-aria" spellcheck="false"></label>
       <p class="hint" data-i18n="stamp.hint">In a header or a footer, {page} is replaced by the number of the page and {pages} by the number of pages. The Pages field limits all four to a list such as 2-5, 8.</p>
       <p id="stamp-error" role="alert" class="hint"></p>
+    </div>
+    <aside class="stamp-preview">
+      <h3 data-i18n="stamp.preview">Preview</h3>
+      <div id="stamp-canvas" class="stamp-canvas"></div>
+      <p id="stamp-preview-page" class="summary"></p>
+    </aside>
     </div>
     <div class="dlg-foot">
       <button type="button" class="btn ghost" id="stamp-clear" data-i18n="stamp.stamp-clear">Remove both</button>
@@ -260,7 +296,7 @@
 
   <dialog id="find-dialog" aria-labelledby="find-title">
     <div class="dlg-head">
-      <svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg>
+      <svg class="ic" aria-hidden="true"><use href="#i-find"/></svg>
       <h2 id="find-title" data-i18n="find.find-title">Find text and redact it</h2>
       <span class="sep"></span>
       <span id="find-count" class="summary"></span>
@@ -348,7 +384,7 @@
 
   <dialog id="blank-dialog" aria-labelledby="blank-title">
     <div class="dlg-head">
-      <svg class="ic" aria-hidden="true"><use href="#i-eye-off"/></svg>
+      <svg class="ic" aria-hidden="true"><use href="#i-blank-off"/></svg>
       <h2 id="blank-title" data-i18n="blank.title">Hide the blank pages</h2>
       <span class="sep"></span>
       <span id="blank-count" class="summary" role="status"></span>

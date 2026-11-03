@@ -13,6 +13,10 @@ export function initFiles({ onMove, onStep, onToggle, onOpen, onRemove }) {
     element.draggable = true;
     element.dataset.id = String(run.id);
     if (run.hidden) element.dataset.hidden = '';
+    if (run.tone !== null) {
+      element.dataset.file = '';
+      element.style.setProperty('--file-tone', String(run.tone));
+    }
     const grip = document.createElement('span');
     grip.className = 'grip';
     grip.append(icon('grip'));

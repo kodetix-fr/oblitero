@@ -24,6 +24,7 @@ export function initStamps() {
   field('numbers-format').replaceChildren(...FORMATS.map(([value, text]) => Object.assign(document.createElement('option'), { value, textContent: text })));
 
   let image = null;
+  let schedulePreview = () => {};
   const syncKind = () => {
     const picture = field('watermark-kind').value === 'image';
     for (const id of ['watermark-text-field', 'watermark-size-field']) byId(id).hidden = picture;
@@ -44,6 +45,7 @@ export function initStamps() {
     }
     field('watermark-file').value = '';
     showImageName();
+    schedulePreview();
   });
 
   function show(current) {
@@ -112,11 +114,29 @@ export function initStamps() {
   }
 
   // Resolves with the settings the user applied, or null when they cancel.
-  function edit(current) {
+  function edit(current, preview) {
     show(current);
     return new Promise((resolve) => {
       const session = new AbortController();
       const { signal } = session;
+      let timer = 0;
+      let latest = 0;
+      const drawPreview = async () => {
+        const ticket = ++latest;
+        // Text the font cannot draw keeps the last preview: Apply is what reports it.
+        const drawn = await preview(read()).catch(() => null);
+        if (!drawn || ticket !== latest) return;
+        byId('stamp-canvas').replaceChildren(drawn.canvas);
+        byId('stamp-preview-page').textContent = drawn.caption;
+      };
+      schedulePreview = () => {
+        clearTimeout(timer);
+        timer = setTimeout(drawPreview, 250);
+      };
+      dialog.addEventListener('input', schedulePreview, { signal });
+      dialog.addEventListener('change', schedulePreview, { signal });
+      signal.addEventListener('abort', () => clearTimeout(timer));
+      drawPreview();
       let result = null;
       byId('stamp-cancel').addEventListener('click', () => dialog.close(), { signal });
       byId('stamp-clear').addEventListener('click', () => ((result = { ...NO_STAMPS }), dialog.close()), { signal });

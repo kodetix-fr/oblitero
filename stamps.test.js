@@ -112,3 +112,15 @@ test('an image watermark is drawn once on each page of the range, with the opaci
   assert.deepEqual(stronger.draws, [1, 1, 1]);
   assert.ok(stronger.opacities.every((value) => Math.abs(value - 0.8) < 1e-9));
 });
+
+test('applyStamps can stamp a one-page output as a given page of a longer document', async () => {
+  const output = await PDFDocument.create();
+  output.addPage([300, 300]);
+  await applyStamps(output, { ...NO_STAMPS, numbers: { position: 'bottom-center', format: 'of', first: 1, size: 10, skipFirst: false } }, { index: 6, total: 12 });
+  const skipped = await PDFDocument.create();
+  skipped.addPage([300, 300]);
+  await applyStamps(skipped, { ...NO_STAMPS, numbers: { position: 'bottom-center', format: 'of', first: 1, size: 10, skipFirst: true } }, { index: 0, total: 12 });
+  const contents = (document) => document.getPages()[0].node.Contents();
+  assert.ok(contents(output));
+  assert.equal(contents(skipped), undefined);
+});

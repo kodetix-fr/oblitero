@@ -42,6 +42,7 @@ export function initPages() {
   const name = byId('pages-name');
   const summary = byId('selection-summary');
   const partsLabel = byId('parts-label');
+  const resultSummary = byId('result-summary');
   const hideLabel = byId('hide-label');
   const hideIcon = byId('hide-icon');
   const showHiddenLabel = byId('show-hidden-label');
@@ -153,6 +154,8 @@ export function initPages() {
   const nameOf = (page) => (page.file === null ? t('page.blank') : documents[page.file].name);
   const used = () => documents.filter((_, file) => pages.some((page) => page.file === file));
   let tagged = new Set();
+  let toned = false;
+  const toneOf = (file) => (210 + file * 137.5) % 360;
 
   // ---------- thumbnails, drawn when they come into view ----------
 
@@ -222,6 +225,10 @@ export function initPages() {
     if (parted) {
       item.dataset.part = String(part);
       item.style.setProperty('--tone', String(((part * 360) / TONES) | 0));
+    }
+    if (toned && page.file !== null) {
+      item.dataset.file = String(page.file);
+      item.style.setProperty('--file-tone', String(toneOf(page.file)));
     }
     const toggle = document.createElement('button');
     toggle.type = 'button';
@@ -324,6 +331,7 @@ export function initPages() {
     parts.forEach((part, index) => part.forEach((page) => partOf.set(page.id, index)));
     const runs = runsOf(pages);
     tagged = runs.length > 1 ? new Set(runs.map((run) => run.pages[0].id)) : new Set();
+    toned = new Set(pages.map((page) => page.file).filter((file) => file !== null)).size > 1;
     grid.replaceChildren(...pages.map((page, index) => card(page, index, index === pages.length - 1, partOf.get(page.id), parts.length > 1)));
     if (view === 'files') renderFiles(runs);
     refresh();
@@ -342,6 +350,8 @@ export function initPages() {
     const allHidden = chosen.length > 0 && chosen.every((page) => page.hidden);
     panel.toggleAttribute('data-empty', empty);
     panel.toggleAttribute('data-fresh', empty && !history.canUndo);
+    panel.toggleAttribute('data-selected', !none);
+    panel.toggleAttribute('data-parted', parts > 1);
     controls.undo.disabled = !history.canUndo;
     controls.redo.disabled = !history.canRedo;
     controls.selectAll.disabled = empty;
@@ -350,6 +360,7 @@ export function initPages() {
     controls.downloadSelected.disabled = chosen.every((page) => page.hidden);
     controls.cut.disabled = none || pages.length < 2;
     controls.redact.disabled = chosen.length !== 1 || chosen[0].hidden || !!chosen[0].blank;
+    controls.redact.title = t(controls.redact.disabled ? 'redact.one-page-title' : 'app.redact.title');
     controls.duplicate.disabled = none;
     controls.addFiles.disabled = false;
     controls.clearAll.disabled = empty;
@@ -384,6 +395,7 @@ export function initPages() {
     controls.clearCuts.hidden = cuts.size === 0;
     controls.downloadParts.disabled = parts < 2;
     partsLabel.textContent = parts < 2 ? t('parts.zip') : t('parts.zip-n', { n: parts });
+    resultSummary.textContent = [pagesOf(shown), parts < 2 ? t('result.one-file') : t('result.files', { n: parts })].join(t('list-gap'));
     const names = used();
     const title = names.length > 1 ? plural(names.length - 1, 'name.more-one', 'name.more-other', { name: names[0].name }) : (names[0]?.name ?? '');
     name.textContent = title;
@@ -871,8 +883,30 @@ export function initPages() {
     commit({ pages: pages.map((page) => (added.has(page.id) ? { ...page, redactions: [...page.redactions, ...added.get(page.id)] } : page)) });
     setStatus(() => t('status.found-added', { rectangles: plural(count, 'count.rectangle.one', 'count.rectangle.other'), pages: pagesOf(added.size) }));
   });
+  // The page the settings reach first, built and stamped the way the download is, so the preview cannot disagree with it.
+  async function previewStamps(settings) {
+    const shownPages = visible(pages);
+    const reached = settings.range ? (parseRange(settings.range, shownPages.length) ?? []) : shownPages.map((_, index) => index);
+    const index = reached.find((position) => !(settings.numbers?.skipFirst && position === 0)) ?? reached[0] ?? 0;
+    const marked = settings.watermark?.kind === 'image' && !settings.watermark.image ? { ...settings, watermark: null } : settings;
+    const bytes = await buildPdf(
+      documents.map((document) => document.bytes),
+      [shownPages[index]],
+      (entry) => burnPage(documents[entry.file].doc, entry),
+      (output) => applyStamps(output, { ...marked, range: '' }, { index, total: shownPages.length }),
+    );
+    const doc = await openRender(bytes);
+    try {
+      const { width } = await pageSize(doc, 0, 0);
+      const canvas = document.createElement('canvas');
+      await renderPage(doc, 0, 0, canvas, Math.min(2, 520 / width));
+      return { canvas, caption: t('page.n', { n: index + 1 }) };
+    } finally {
+      closeRender(doc);
+    }
+  }
   controls.stamps.addEventListener('click', async () => {
-    const result = await stampDialog.edit(stamps);
+    const result = await stampDialog.edit(stamps, previewStamps);
     if (result) {
       stamps = result;
       refresh();
@@ -989,6 +1023,7 @@ export function initPages() {
       detail: [pagesOf(run.pages.length), run.file !== null && documents[run.file].photo ? t('files.photo') : '', hiddenCount ? t('summary.hidden', { n: hiddenCount }) : ''].filter(Boolean).join(t('list-gap')),
       hidden: hiddenCount === run.pages.length,
       thumb: () => runThumb(run.pages[0]),
+      tone: toned && run.file !== null ? toneOf(run.file) : null,
     };
   };
   const idsOf = (key) => new Set((runsOf(pages).find((run) => runKey(run) === key)?.pages ?? []).map((page) => page.id));

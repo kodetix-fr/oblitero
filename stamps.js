@@ -104,17 +104,20 @@ export async function checkText(text) {
 
 // settings: { numbers: null | { position, format, first, size, skipFirst }, header: null | { text, align, size }, footer: the same,
 // watermark: null | { text, size, opacity, angle }, range: '' for every page, or a list of pages such as 2-5, 8 }
-export async function applyStamps(output, settings) {
+// place: { index, total } stamps a one-page output as that page of a longer document.
+export async function applyStamps(output, settings, place = null) {
   if (!settings.numbers && !settings.header && !settings.footer && !settings.watermark) return;
   const font = await output.embedFont(StandardFonts.Helvetica);
   const pages = output.getPages();
-  const chosen = settings.range ? parseRange(settings.range, pages.length) : null;
+  const total = place?.total ?? pages.length;
+  const placed = pages.map((page, index) => [page, place?.index ?? index]);
+  const chosen = settings.range ? parseRange(settings.range, total) : null;
   const reaches = (index) => !chosen || chosen.includes(index);
   if (settings.numbers) {
     const { position, format, first, size, skipFirst } = settings.numbers;
-    pages.forEach((page, index) => {
+    placed.forEach(([page, index]) => {
       if ((skipFirst && index === 0) || !reaches(index)) return;
-      const text = label(format, first + index, first + pages.length - 1);
+      const text = label(format, first + index, first + total - 1);
       const box = displaySize(page);
       const at = anchor(position, box.width, box.height, font.widthOfTextAtSize(text, size), size);
       drawTextAt(page, font, text, size, at.x, at.y, 0);
@@ -122,9 +125,9 @@ export async function applyStamps(output, settings) {
   }
   for (const [band, edge] of [[settings.header, 'top'], [settings.footer, 'bottom']]) {
     if (!band) continue;
-    pages.forEach((page, index) => {
+    placed.forEach(([page, index]) => {
       if (!reaches(index)) return;
-      const text = bandText(band.text, index + 1, pages.length);
+      const text = bandText(band.text, index + 1, total);
       const box = displaySize(page);
       const at = anchor(`${edge}-${band.align}`, box.width, box.height, font.widthOfTextAtSize(text, band.size), band.size);
       drawTextAt(page, font, text, band.size, at.x, at.y, 0);
@@ -134,7 +137,7 @@ export async function applyStamps(output, settings) {
     const mark = settings.watermark;
     const { angle, opacity } = mark;
     const image = mark.kind === 'image' ? await (mark.image.kind === 'png' ? output.embedPng(mark.image.bytes) : output.embedJpg(mark.image.bytes)) : null;
-    for (const [index, page] of pages.entries()) {
+    for (const [page, index] of placed) {
       if (!reaches(index)) continue;
       const box = displaySize(page);
       const width = image ? (box.width * mark.scale) / 100 : font.widthOfTextAtSize(mark.text, mark.size);
