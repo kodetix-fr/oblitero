@@ -4,6 +4,7 @@ import { LEVELS, compressPdf, formatSize } from './compress.js';
 import { MARGINS, PAGE_SIZES, imagesToPdf } from './images.js';
 import { readPhoto, recode } from './photo.js';
 import { initCompare } from './compare-view.js';
+import { initPreview } from './preview-view.js';
 import { initFiles } from './files-view.js';
 import { buildZip } from './zip.js';
 import { burnPage, closeRender, entryImage, inkOf, openRender, pageRuns, pageSize, renderPage, textOf } from './render.js';
@@ -61,6 +62,7 @@ export function initPages() {
     fillForm: byId('fill-form'),
     clearAll: byId('clear-all'),
     compare: byId('compare-open'),
+    preview: byId('preview-open'),
     addBlank: byId('add-blank'),
     duplicate: byId('duplicate'),
     selectOdd: byId('select-odd'),
@@ -97,6 +99,7 @@ export function initPages() {
   let view = 'pages';
   let compression = 'none';
   const comparer = initCompare();
+  const previewer = initPreview();
   const choices = (select, prefix, ids) =>
     select.replaceChildren(
       ...ids.map((value) => {
@@ -367,6 +370,7 @@ export function initPages() {
     controls.addBlank.disabled = empty;
     controls.compare.hidden = compression === 'none';
     controls.compare.disabled = shown === 0;
+    controls.preview.disabled = shown === 0;
     photoSettings.hidden = !used().some((document) => document.photo);
     controls.selectOdd.disabled = empty;
     controls.selectEven.disabled = empty;
@@ -953,6 +957,13 @@ export function initPages() {
       say('status.cannot-open-page', { message: error.message });
     }
   });
+  controls.preview.addEventListener('click', () =>
+    run('status.preview', async () => {
+      const entries = visible(pages);
+      const blob = await asPdf(entries);
+      await previewer.open(new Uint8Array(await blob.arrayBuffer()), [pagesOf(entries.length), formatSize(blob.size)].join(t('list-gap')));
+    }),
+  );
   controls.downloadAll.addEventListener('click', () =>
     run('status.preparing', async () => {
       download(await asPdf(visible(pages)), `${stem()}-edited.pdf`);

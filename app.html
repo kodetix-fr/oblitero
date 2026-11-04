@@ -178,6 +178,7 @@
             <button type="button" class="btn sm" id="compare-open" hidden><svg class="ic" aria-hidden="true"><use href="#i-compress"/></svg><span data-i18n="app.compare-open">See before and after</span></button>
           </section>
           <section class="out-group out-actions">
+            <button type="button" class="btn" id="preview-open" title="See the PDF as it will be downloaded" data-i18n-title="app.preview.title"><svg class="ic" aria-hidden="true"><use href="#i-eye"/></svg><span data-i18n="app.preview">Preview</span></button>
             <button type="button" class="btn primary" id="download-all"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg><span data-i18n="app.download-all">Download PDF</span></button>
             <button type="button" class="btn page-only sel-only" id="download-selected" title="Download the selected pages as one PDF" data-i18n-title="app.download-selected.title"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg><span data-i18n="app.download-selected">Download selection</span></button>
             <button type="button" class="btn" id="download-parts" disabled><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg><span id="parts-label">Download ZIP</span></button>
@@ -451,6 +452,31 @@
     <div class="dlg-foot">
       <span class="sep"></span>
       <button type="button" class="btn primary" id="compare-close"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="compare.compare-close">Close</span></button>
+    </div>
+  </dialog>
+
+  <dialog id="preview-dialog" aria-labelledby="preview-title">
+    <div class="dlg-head">
+      <svg class="ic" aria-hidden="true"><use href="#i-eye"/></svg>
+      <h2 id="preview-title" data-i18n="preview.title">Preview of the PDF</h2>
+      <span class="sep"></span>
+      <span id="preview-caption" class="summary"></span>
+    </div>
+    <div class="dlg-body compare">
+      <div class="compare-bar">
+        <span class="compare-pager">
+          <button type="button" class="btn ghost icon" id="preview-prev" aria-label="Previous page" title="Previous page" data-i18n-title="compare.compare-prev.title" data-i18n-aria="compare.compare-prev.aria"><svg class="ic" aria-hidden="true"><use href="#i-left"/></svg></button>
+          <span id="preview-count" role="status"></span>
+          <button type="button" class="btn ghost icon" id="preview-next" aria-label="Next page" title="Next page" data-i18n-title="compare.compare-next.title" data-i18n-aria="compare.compare-next.aria"><svg class="ic" aria-hidden="true"><use href="#i-right"/></svg></button>
+        </span>
+      </div>
+      <div class="compare-scroll">
+        <div class="compare-pages" id="preview-page"></div>
+      </div>
+    </div>
+    <div class="dlg-foot">
+      <span class="sep"></span>
+      <button type="button" class="btn primary" id="preview-close"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="compare.compare-close">Close</span></button>
     </div>
   </dialog>
 

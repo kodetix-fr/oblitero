@@ -85,3 +85,28 @@ test('the stamps dialog folds what is off and previews what is on', async () => 
     await app.close();
   }
 });
+
+test('the preview shows the PDF that will be downloaded, without the hidden pages', async () => {
+  const app = await launchExtension();
+  try {
+    const page = await app.openApp();
+    await twoFiles(app, page);
+    await page.locator('#grid .card').nth(0).click();
+    await page.locator('#hide').click();
+    await page.locator('#preview-open').click();
+    await page.locator('#preview-page canvas').waitFor();
+    assert.match(await page.locator('#preview-caption').innerText(), /^2 pages, [\d.]+ K?B$/);
+    assert.equal(await page.locator('#preview-count').innerText(), 'Page 1 of 2');
+    assert.equal(await page.locator('#preview-prev').isDisabled(), true);
+
+    await page.locator('#preview-next').click();
+    await page.getByText('Page 2 of 2').waitFor();
+    assert.equal(await page.locator('#preview-next').isDisabled(), true);
+
+    await page.locator('#preview-close').click();
+    assert.equal(await page.locator('#preview-dialog').isVisible(), false);
+    assert.equal(await page.locator('#preview-open').isDisabled(), false);
+  } finally {
+    await app.close();
+  }
+});

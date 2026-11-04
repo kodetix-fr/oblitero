@@ -33,6 +33,9 @@ Status: under construction, private until the first release.
   The parts get their own color, and one click downloads them as a ZIP. "Cut
   every N pages" places the cuts for you, and they can be moved or removed one
   by one.
+- **Preview**: the result panel shows the PDF that "Download PDF" would give,
+  page by page and with its real size: hidden pages left out, redactions, stamps
+  and compression applied.
 - **Hide blank pages**: every page is measured and shown in a dialog; a slider sets
   how much ink a page may hold and still count as blank (faint scan noise and dust,
   or only the empty pages), and the pages that would be hidden are dimmed as you
