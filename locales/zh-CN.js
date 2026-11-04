@@ -396,4 +396,6 @@ export default {
   'app.preview': '预览',
   'app.preview.title': '查看将要下载的 PDF',
   'preview.title': 'PDF 预览',
+
+  'preview.selection': '所选页面预览',
 };

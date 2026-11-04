@@ -3,6 +3,8 @@ import { t } from './i18n.js';
 import { closeRender, openRender, pageSize, renderPage } from './render.js';
 
 const PREVIEW_WIDTH = 860;
+const WHEEL_STEP = 80;
+const WHEEL_PAUSE_MS = 200;
 
 export function initPreview() {
   const dialog = byId('preview-dialog');
@@ -10,6 +12,8 @@ export function initPreview() {
   let doc = null;
   let page = 0;
   let token = 0;
+  let wheel = 0;
+  let flipped = 0;
 
   async function paint() {
     const mine = ++token;
@@ -33,6 +37,20 @@ export function initPreview() {
     });
   }
 
+  // A trackpad keeps sending wheel events after the swipe, so one page turn waits for a pause.
+  dialog.addEventListener('wheel', (event) => {
+    event.preventDefault();
+    if (event.timeStamp - flipped < WHEEL_PAUSE_MS) return;
+    wheel += event.deltaY;
+    if (Math.abs(wheel) < WHEEL_STEP) return;
+    const next = Math.max(0, Math.min(doc.numPages - 1, page + Math.sign(wheel)));
+    wheel = 0;
+    flipped = event.timeStamp;
+    if (next === page) return;
+    page = next;
+    paint();
+  }, { passive: false });
+
   dialog.addEventListener('close', () => {
     token += 1;
     closeRender(doc);
@@ -40,9 +58,11 @@ export function initPreview() {
   byId('preview-close').addEventListener('click', () => dialog.close());
 
   return {
-    async open(bytes, caption) {
+    async open(bytes, title, caption) {
       doc = await openRender(bytes);
       page = 0;
+      wheel = 0;
+      byId('preview-title').textContent = title;
       byId('preview-caption').textContent = caption;
       stage.replaceChildren();
       dialog.showModal();

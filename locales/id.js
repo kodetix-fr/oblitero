@@ -396,4 +396,6 @@ export default {
   'app.preview': 'Pratinjau',
   'app.preview.title': 'Lihat PDF seperti yang akan diunduh',
   'preview.title': 'Pratinjau PDF',
+
+  'preview.selection': 'Pratinjau pilihan',
 };

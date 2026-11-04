@@ -396,4 +396,6 @@ export default {
   'app.preview': 'Aperçu',
   'app.preview.title': 'Voir le PDF tel qu\'il sera téléchargé',
   'preview.title': 'Aperçu du PDF',
+
+  'preview.selection': 'Aperçu de la sélection',
 };

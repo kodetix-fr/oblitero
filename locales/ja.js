@@ -401,4 +401,6 @@ export default {
   'app.preview': 'プレビュー',
   'app.preview.title': 'ダウンロードされる PDF をそのまま確認します',
   'preview.title': 'PDF のプレビュー',
+
+  'preview.selection': '選択分のプレビュー',
 };

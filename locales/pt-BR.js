@@ -401,4 +401,6 @@ export default {
   'app.preview': 'Prévia',
   'app.preview.title': 'Ver o PDF como será baixado',
   'preview.title': 'Prévia do PDF',
+
+  'preview.selection': 'Prévia da seleção',
 };

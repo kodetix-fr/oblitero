@@ -110,3 +110,34 @@ test('the preview shows the PDF that will be downloaded, without the hidden page
     await app.close();
   }
 });
+
+test('the preview follows the selection and turns pages with the mouse wheel', async () => {
+  const app = await launchExtension();
+  try {
+    const page = await app.openApp();
+    await twoFiles(app, page);
+    await page.locator('#select-odd').click();
+    await page.locator('#preview-open').click();
+    await page.locator('#preview-page canvas').waitFor();
+    assert.equal(await page.locator('#preview-title').innerText(), 'Preview of the selection');
+    assert.match(await page.locator('#preview-caption').innerText(), /^2 pages, /);
+
+    const box = await page.locator('#preview-page canvas').boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.wheel(0, 120);
+    await page.getByText('Page 2 of 2').waitFor();
+    await page.waitForTimeout(250);
+    await page.mouse.wheel(0, 120);
+    await page.waitForTimeout(100);
+    assert.equal(await page.locator('#preview-count').innerText(), 'Page 2 of 2');
+    await page.locator('#preview-close').click();
+
+    await page.locator('#select-none').click();
+    await page.locator('#preview-open').click();
+    await page.locator('#preview-page canvas').waitFor();
+    assert.equal(await page.locator('#preview-title').innerText(), 'Preview of the PDF');
+    assert.match(await page.locator('#preview-caption').innerText(), /^3 pages, /);
+  } finally {
+    await app.close();
+  }
+});

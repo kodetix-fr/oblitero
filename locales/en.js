@@ -432,4 +432,6 @@ export default {
   'app.preview': 'Preview',
   'app.preview.title': 'See the PDF as it will be downloaded',
   'preview.title': 'Preview of the PDF',
+
+  'preview.selection': 'Preview of the selection',
 };

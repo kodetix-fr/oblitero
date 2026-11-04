@@ -396,4 +396,6 @@ export default {
   'app.preview': 'Предпросмотр',
   'app.preview.title': 'Посмотреть PDF в том виде, в каком он будет скачан',
   'preview.title': 'Предпросмотр PDF',
+
+  'preview.selection': 'Предпросмотр выбранного',
 };

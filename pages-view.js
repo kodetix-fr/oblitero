@@ -959,9 +959,11 @@ export function initPages() {
   });
   controls.preview.addEventListener('click', () =>
     run('status.preview', async () => {
-      const entries = visible(pages);
+      const chosen = visible(pages).filter((page) => selected.has(page.id));
+      const entries = chosen.length ? chosen : visible(pages);
       const blob = await asPdf(entries);
-      await previewer.open(new Uint8Array(await blob.arrayBuffer()), [pagesOf(entries.length), formatSize(blob.size)].join(t('list-gap')));
+      const title = t(chosen.length ? 'preview.selection' : 'preview.title');
+      await previewer.open(new Uint8Array(await blob.arrayBuffer()), title, [pagesOf(entries.length), formatSize(blob.size)].join(t('list-gap')));
     }),
   );
   controls.downloadAll.addEventListener('click', () =>
