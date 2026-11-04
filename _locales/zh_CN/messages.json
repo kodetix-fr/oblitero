@@ -1,9 +1,9 @@
 {
   "extName": {
-    "message": "Oblitero"
+    "message": "Oblitero：合并、涂黑和签名 PDF"
   },
   "extDescription": {
-    "message": "合并、整理、签名、涂黑和压缩 PDF 文件与照片。完全本地处理，无需账号。"
+    "message": "合并、整理、签名、涂黑和压缩 PDF 文件与照片。完全本地处理，无需账号，免费开源。"
   },
   "actionTitle": {
     "message": "Oblitero"

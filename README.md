@@ -2,9 +2,25 @@
 
 A Chrome extension (Manifest V3) for PDF files: merge, organize, cut, hide pages,
 redact, compress, number and watermark, turn images into a PDF and pages into
-images. 100% local, no account, no permission, free and open source.
+images.
 
-Status: under construction, private until the first release.
+## Promise
+
+Free, open source, no account, no watermark forced on your files, no ad, no usage
+limit, no permission and no network request. Your files stay in the tab that reads
+them, and are gone when you close it. See `docs/PRIVACY.md`.
+
+Check it yourself: the `permissions` list of `manifest.json` is empty, its Content
+Security Policy only lets a page load files from the extension itself
+(`connect-src 'self'`), and `test/e2e/privacy.e2e.mjs` tries every kind of request
+against a local server. In Chrome, the Network tab of DevTools lists only
+`chrome-extension://`, `data:` and `blob:` addresses.
+
+## Scope
+
+Oblitero will not have a server, an account or telemetry. A tool that cannot work
+on your computer alone (conversion through an online service, a shared link, a
+certified digital signature) is out of scope.
 
 ## What works
 
@@ -125,8 +141,7 @@ after the page, Ctrl/Cmd+Z and Shift+Ctrl/Cmd+Z undo and redo.
 
 ## Planned
 
-The backlog is on the project board (milestones 0.1.0 and 0.2.0): headers and
-footers, an image watermark, more precise reading order of the text, and more.
+The backlog is on the project board.
 
 ## Performance
 
@@ -140,19 +155,13 @@ Thumbnails are drawn only when they come into view. A 200 MB file has not been
 tried. `npm run bench` repeats the scan measurement (building the file takes
 about a second per page).
 
-## Privacy
-
-The extension asks for no permission. Its Content Security Policy only lets a
-page load files from the extension itself (`connect-src 'self'`), so no request
-can leave for another origin. The files you open stay in the page that reads
-them.
-
 ## Development
 
 ```
 npm ci
 npm run check        # lint, types, unit tests
 npm run test:e2e     # the extension in Chromium (needs: npx playwright-core install chromium)
+npm run package      # dist/oblitero-<version>.zip and its SHA-256
 ```
 
 `npm run icons` redraws `icons/` from `docs/logo.svg`.

@@ -1,21 +1,21 @@
 // Launches Playwright's Chromium with a throwaway copy of the extension, in a throwaway profile.
 import { chromium } from 'playwright-core';
-import { cpSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PDFDocument, StandardFonts } from '../../../vendor/pdf-lib.esm.min.js';
+import { listRuntimeFiles } from '../../../scripts/package.mjs';
 
 export const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
-const NOT_SHIPPED = /(^|\/)(node_modules|\.git|\.github|test|coverage|dist)(\/|$)|\.test\.js$|^(package(-lock)?\.json|eslint\.config\.js|tsconfig.*\.json)$/;
 
 export async function launchExtension() {
   const root = mkdtempSync(join(tmpdir(), 'obl-'));
   const ext = join(root, 'ext');
-  cpSync(REPO, ext, {
-    recursive: true,
-    filter: (source) => !NOT_SHIPPED.test(source.slice(REPO.length + 1)),
-  });
+  for (const file of listRuntimeFiles(REPO)) {
+    mkdirSync(dirname(join(ext, file)), { recursive: true });
+    cpSync(join(REPO, file), join(ext, file));
+  }
   const cleanup = () => rmSync(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
 
   let context;

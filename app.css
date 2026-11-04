@@ -360,7 +360,7 @@ dialog::backdrop { background: var(--shade); }
 .mark-draft:focus-visible { outline: 3px solid var(--ring); }
 .mark-draft img { display: block; width: 100%; height: 100%; pointer-events: none; user-select: none; }
 .mark-draft.text { color: #0f0f1a; font-family: Helvetica, Arial, sans-serif; line-height: 1; white-space: nowrap; user-select: none; }
-.mark-draft .handle { position: absolute; right: -6px; bottom: -6px; width: 12px; height: 12px; border-radius: 3px; background: var(--accent); cursor: nwse-resize; }
+.mark-draft .handle { position: absolute; right: 0; bottom: 0; width: 12px; height: 12px; border-radius: 3px; background: var(--accent); cursor: nwse-resize; }
 .mark-img { position: absolute; pointer-events: none; }
 .mark-text { position: absolute; color: #0f0f1a; font-family: Helvetica, Arial, sans-serif; font-size: calc(var(--thumb-w) * var(--fit, 1) * var(--size)); line-height: 1; white-space: nowrap; pointer-events: none; }
 
