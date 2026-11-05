@@ -125,6 +125,12 @@ after the page, V shows it large, Ctrl/Cmd+Z and Shift+Ctrl/Cmd+Z undo and redo.
 
 - A redacted page is no longer searchable or selectable as a whole, and its
   links are gone.
+- Links inside a document (a table of contents, for example) are removed from
+  the result, so that none can carry a redacted or hidden page along. Web links
+  stay, and so do notes and what form fields show; attachments, media and
+  private application data of a page do not.
+- A PDF whose pages two readers count differently (a damaged page tree) is
+  refused rather than risk showing one page and writing another.
 - Compression only touches JPEG photos (single filter, gray or color). Images
   in other encodings are kept as they are, so a PDF made of scanned PNG pages
   or of vector drawings may not shrink; the result says so. Bookmarks, forms and

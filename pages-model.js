@@ -46,6 +46,17 @@ export function rotateRect({ x, y, w, h }, delta) {
   return delta > 0 ? { x: 1 - y - h, y: x, w: h, h: w } : { x: y, y: 1 - x - w, w: h, h: w };
 }
 
+// A mark stays on what it was put on, so a quarter turn of the page moves it and turns it with the page. A text is placed by the
+// top left corner of its line.
+export function rotateMark(mark, delta) {
+  const turn = (mark.turn + delta + 360) % 360;
+  if (mark.kind === 'image') return { ...mark, ...rotateRect(mark, delta), turn };
+  return { ...mark, x: delta > 0 ? 1 - mark.y : mark.y, y: delta > 0 ? mark.x : 1 - mark.x, turn };
+}
+
+// The size of a text in points: a fraction of the side of the page that was its width when the text was placed.
+export const textSizeOn = (mark, width, height) => mark.size * (mark.turn % 180 ? height : width);
+
 export function rotatePages(pages, ids, delta) {
   return pages.map((page) =>
     ids.has(page.id)
@@ -53,6 +64,7 @@ export function rotatePages(pages, ids, delta) {
           ...page,
           rotation: (page.rotation + delta + 360) % 360,
           redactions: page.redactions.map((rect) => rotateRect(rect, delta)),
+          marks: page.marks.map((mark) => rotateMark(mark, delta)),
         }
       : page,
   );

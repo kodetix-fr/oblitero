@@ -1,6 +1,5 @@
 import { inkBounds, whiteToTransparent } from './signature.js';
-import { checkText } from './stamps.js';
-import { byId, query } from './dom.js';
+import { askDialog, byId, query } from './dom.js';
 import { t } from './i18n.js';
 
 const INK = '#12121c';
@@ -119,11 +118,7 @@ export function initSign() {
     byId('sign-file').value = '';
     query('input[name="sign-mode"][value="draw"]').checked = true;
     showMode();
-    return new Promise((resolve) => {
-      const session = new AbortController();
-      const { signal } = session;
-      let result = null;
-      byId('sign-cancel').addEventListener('click', () => dialog.close(), { signal });
+    return askDialog(dialog, 'sign-cancel', (finish, signal) => {
       byId('sign-use').addEventListener(
         'click',
         async () => {
@@ -133,22 +128,12 @@ export function initSign() {
             error.textContent = t(`sign.error-${mode()}`);
             return;
           }
-          result = made;
-          dialog.close();
+          finish(made);
         },
         { signal },
       );
-      dialog.addEventListener(
-        'close',
-        () => {
-          session.abort();
-          resolve(result);
-        },
-        { once: true },
-      );
-      dialog.showModal();
     });
   }
 
-  return { create, checkText };
+  return { create };
 }

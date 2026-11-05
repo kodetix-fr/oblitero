@@ -414,5 +414,6 @@ export default {
   'status.cut-size-none': 'No hace falta dividir: el documento entero pesa {size}.',
   'status.cut-size-over': '{n} partes. Una sola página supera el límite: la parte mayor pesa {size}.',
   'preview.page': 'Vista de la página',
+  'preview.unreadable': 'Esta página no se puede mostrar.',
   'card.large': 'Haz doble clic en una página, o pulsa V, para verla en grande.',
 };

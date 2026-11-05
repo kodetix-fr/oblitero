@@ -363,8 +363,11 @@ dialog::backdrop { background: var(--shade); }
 .mark-draft img { display: block; width: 100%; height: 100%; pointer-events: none; user-select: none; }
 .mark-draft.text { color: #0f0f1a; font-family: Helvetica, Arial, sans-serif; line-height: 1; white-space: nowrap; user-select: none; }
 .mark-draft .handle { position: absolute; right: 0; bottom: 0; width: 12px; height: 12px; border-radius: 3px; background: var(--accent); cursor: nwse-resize; }
-.mark-img { position: absolute; pointer-events: none; }
-.mark-text { position: absolute; color: #0f0f1a; font-family: Helvetica, Arial, sans-serif; font-size: calc(var(--thumb-w) * var(--fit, 1) * var(--size)); line-height: 1; white-space: nowrap; pointer-events: none; }
+.mark-img { position: absolute; pointer-events: none; container-type: size; }
+.mark-img img { position: absolute; left: 50%; top: 50%; width: 100cqw; height: 100cqh; transform: translate(-50%, -50%) rotate(var(--turn, 0deg)); }
+.mark-img[data-sideways] img { width: 100cqh; height: 100cqw; }
+.mark-text { position: absolute; color: #0f0f1a; font-family: Helvetica, Arial, sans-serif; font-size: calc(var(--thumb-w) * var(--fit, 1) * var(--size)); line-height: 1; white-space: nowrap; pointer-events: none; transform-origin: 0 0; transform: rotate(var(--turn, 0deg)); }
+.mark-text[data-sideways] { font-size: calc(var(--thumb-w) * var(--fit, 1) * var(--size) * var(--aspect, 1)); }
 
 /* ---------- hide the blank pages ---------- */
 #blank-dialog { width: min(760px, calc(100vw - 32px)); }
@@ -412,3 +415,4 @@ dialog::backdrop { background: var(--shade); }
 .report-card dt { color: var(--muted); }
 .report-card dd { margin: 0; overflow-wrap: anywhere; }
 .report-card dd.none { color: var(--muted); }
+[data-busy] #grid, [data-busy] #file-list { pointer-events: none; }

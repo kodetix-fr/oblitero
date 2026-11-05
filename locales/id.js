@@ -414,5 +414,6 @@ export default {
   'status.cut-size-none': 'Tidak perlu dipisahkan: seluruh dokumen berukuran {size}.',
   'status.cut-size-over': '{n} bagian. Satu halaman saja melebihi batas: bagian terbesar {size}.',
   'preview.page': 'Tampilan halaman',
+  'preview.unreadable': 'Halaman ini tidak dapat ditampilkan.',
   'card.large': 'Klik dua kali halaman, atau tekan V, untuk melihatnya besar.',
 };

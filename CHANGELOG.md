@@ -18,7 +18,8 @@ First release. One screen, in nine languages, with no account, no permission and
 - **Large view** of a page, by double click or V, and a size slider for the thumbnails.
 - **Preview** of the result, and a before and after for the compression.
 - **Redact**: rectangles drawn or placed with the keyboard, find and redact (e-mail, IBAN, card, phone, words). A
-  redacted page becomes a picture, and the output is a new document without the metadata of the source.
+  redacted page becomes a picture, and the output is a new document without the metadata of the source. Links inside a
+  document are removed from the result, so that none can carry a redacted or hidden page along.
 - **Sign and add text**, **fill a form**, **numbers, header, footer and watermark** (text or image).
 - **Photos to PDF** and **pages to images**, **extract text** in reading order, **hide blank pages**.
 - **Compression** in three levels and a report of the **properties** a file carries.

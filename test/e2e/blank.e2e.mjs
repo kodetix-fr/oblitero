@@ -78,3 +78,22 @@ test('applying hides the pages shown dimmed, cancelling hides nothing, and the p
   await page.locator('#undo').click();
   assert.equal(await page.locator('#grid li[data-hidden]').count(), 0);
 });
+
+test('a page that holds a signature or a text is never taken for a blank page', async () => {
+  await page.close();
+  page = await app.openApp();
+  await page.setInputFiles('#pages-file', join(app.dir, 'scan.pdf'));
+  await page.locator('#grid li').nth(7).waitFor();
+  await page.getByRole('button', { name: /^Page 2(,|$)/ }).click();
+  await page.locator('#add-text').click();
+  await page.locator('#place-dialog').waitFor({ state: 'visible' });
+  await page.locator('#place-go').click();
+  await page.locator('#place-dialog').waitFor({ state: 'hidden' });
+  await page.locator('#hide-blank').click();
+  await page.locator('#blank-dialog').waitFor({ state: 'visible' });
+  await page.waitForFunction(() => document.querySelectorAll('#blank-pages li').length > 0);
+  const numbers = (await page.locator('#blank-pages .blank-number').allInnerTexts()).map(Number);
+  assert.equal(numbers.includes(2), false);
+  await page.locator('#blank-cancel').click();
+  await page.locator('#blank-dialog').waitFor({ state: 'hidden' });
+});

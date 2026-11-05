@@ -80,3 +80,6 @@ export function formatFixed(n, digits) {
  * @param {Record<string, string | number>} [vars]
  */
 export const plural = (n, one, other, vars) => t(pluralForm(current, n) === 'one' ? one : other, { ...vars, n: formatNumber(n) });
+
+/** @param {number} n */
+export const pagesOf = (n) => plural(n, 'count.page.one', 'count.page.other');

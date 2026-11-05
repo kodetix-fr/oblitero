@@ -1,4 +1,5 @@
-import { byId } from './dom.js';
+import { byId, unreadablePage } from './dom.js';
+import { clamp } from './math.js';
 import { t } from './i18n.js';
 import { closeRender, openRender, pageSize, renderPage } from './render.js';
 
@@ -27,12 +28,12 @@ export function initPreview() {
       if (mine !== token) return;
       stage.replaceChildren(canvas);
     } catch {
-      if (mine === token) stage.replaceChildren();
+      if (mine === token) stage.replaceChildren(unreadablePage());
     }
   }
 
   function flip(step) {
-    const next = Math.max(0, Math.min(source.count - 1, page + step));
+    const next = clamp(page + step, 0, source.count - 1);
     if (next === page) return;
     page = next;
     paint();

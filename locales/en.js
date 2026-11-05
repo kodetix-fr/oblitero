@@ -450,5 +450,6 @@ export default {
   'status.cut-size-none': 'No cut needed: the whole document is {size}.',
   'status.cut-size-over': '{n} parts. A page alone goes over the limit: the largest part is {size}.',
   'preview.page': 'Page view',
+  'preview.unreadable': 'This page cannot be displayed.',
   'card.large': 'Double-click a page, or press V, to see it large.',
 };

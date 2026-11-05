@@ -1,5 +1,5 @@
 import { DEFAULT_POSITION, POSITIONS, blankIds, thresholdAt } from './blank.js';
-import { byId, icon } from './dom.js';
+import { askDialog, byId, icon } from './dom.js';
 import { formatPercent, t } from './i18n.js';
 
 // A dialog that shows every page with the ink it holds, and dims the ones that a slider would hide.
@@ -37,30 +37,10 @@ export function initBlank() {
     slider.value = String(DEFAULT_POSITION);
     show();
 
-    return new Promise((resolve) => {
-      const session = new AbortController();
-      const { signal } = session;
-      let result = null;
+    return askDialog(dialog, 'blank-cancel', (finish, signal) => {
+      signal.addEventListener('abort', () => grid.replaceChildren());
       slider.addEventListener('input', show, { signal });
-      byId('blank-cancel').addEventListener('click', () => dialog.close(), { signal });
-      apply.addEventListener(
-        'click',
-        () => {
-          result = chosen;
-          dialog.close();
-        },
-        { signal },
-      );
-      dialog.addEventListener(
-        'close',
-        () => {
-          session.abort();
-          grid.replaceChildren();
-          resolve(result);
-        },
-        { once: true },
-      );
-      dialog.showModal();
+      apply.addEventListener('click', () => finish(chosen), { signal });
     });
   }
 

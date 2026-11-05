@@ -15,3 +15,5 @@ export const PDFTextField: any;
 export const StandardFonts: any;
 export const degrees: any;
 export const rgb: any;
+export const PDFRef: any;
+export const PDFStream: any;

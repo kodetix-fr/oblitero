@@ -1,5 +1,6 @@
 import { formatSize } from './compress.js';
-import { byId } from './dom.js';
+import { byId, unreadablePage } from './dom.js';
+import { clamp } from './math.js';
 import { t } from './i18n.js';
 import { closeRender, openRender, pageSize, renderPage } from './render.js';
 
@@ -15,7 +16,7 @@ export function initCompare() {
   let token = 0;
 
   function setSplit(percent) {
-    const split = Math.max(0, Math.min(100, percent));
+    const split = clamp(percent, 0, 100);
     stage.style.setProperty('--split', `${split}%`);
     handle.setAttribute('aria-valuenow', String(Math.round(split)));
   }
@@ -51,7 +52,7 @@ export function initCompare() {
       await Promise.all([renderPage(before, page, 0, canvases[0], scale), renderPage(after, page, 0, canvases[1], scale)]);
       if (mine === token) byId('compare-pages').replaceChildren(...canvases);
     } catch {
-      if (mine === token) byId('compare-pages').replaceChildren();
+      if (mine === token) byId('compare-pages').replaceChildren(unreadablePage());
     }
   }
   for (const [id, step] of /** @type {Array<[string, number]>} */ ([['compare-prev', -1], ['compare-next', 1]])) {

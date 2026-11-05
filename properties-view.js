@@ -1,6 +1,6 @@
 import { DEFAULT_PROPERTIES, inspectPdf } from './properties.js';
-import { byId } from './dom.js';
-import { plural, t } from './i18n.js';
+import { askDialog, byId } from './dom.js';
+import { pagesOf, plural, t } from './i18n.js';
 
 const day = (date) => (date ? date.toISOString().slice(0, 10) : '');
 
@@ -34,7 +34,7 @@ export function initProperties() {
     const element = document.createElement('div');
     element.className = 'report-card';
     const title = document.createElement('h4');
-    title.textContent = info ? t('props.card-title', { name: file.name, pages: plural(info.pages, 'count.page.one', 'count.page.other') }) : file.name;
+    title.textContent = info ? t('props.card-title', { name: file.name, pages: pagesOf(info.pages) }) : file.name;
     element.append(title);
     const list = document.createElement('dl');
     for (const [label, value] of info ? facts(info) : [[t('props.error'), t('props.unreadable')]]) {
@@ -77,29 +77,9 @@ export function initProperties() {
       }),
     );
     report.replaceChildren(...cards);
-    return new Promise((resolve) => {
-      const session = new AbortController();
-      const { signal } = session;
-      let result = null;
-      byId('props-cancel').addEventListener('click', () => dialog.close(), { signal });
+    return askDialog(dialog, 'props-cancel', (finish, signal) => {
       byId('props-reset').addEventListener('click', () => fill(DEFAULT_PROPERTIES), { signal });
-      byId('props-apply').addEventListener(
-        'click',
-        () => {
-          result = read();
-          dialog.close();
-        },
-        { signal },
-      );
-      dialog.addEventListener(
-        'close',
-        () => {
-          session.abort();
-          resolve(result);
-        },
-        { once: true },
-      );
-      dialog.showModal();
+      byId('props-apply').addEventListener('click', () => finish(read()), { signal });
     });
   }
 

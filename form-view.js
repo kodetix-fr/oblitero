@@ -1,4 +1,4 @@
-import { byId } from './dom.js';
+import { askDialog, byId } from './dom.js';
 import { t } from './i18n.js';
 import { checkText } from './stamps.js';
 
@@ -67,11 +67,7 @@ export function initForm() {
         return section;
       }),
     );
-    return new Promise((resolve) => {
-      const session = new AbortController();
-      const { signal } = session;
-      let result = null;
-      byId('form-cancel').addEventListener('click', () => dialog.close(), { signal });
+    return askDialog(dialog, 'form-cancel', (finish, signal) => {
       byId('form-reset').addEventListener(
         'click',
         () => {
@@ -97,25 +93,16 @@ export function initForm() {
               return;
             }
           }
-          result = new Map();
+          const result = new Map();
           for (const made of rows) {
             if (made.field.readOnly) continue;
             if (!result.has(made.index)) result.set(made.index, {});
             result.get(made.index)[made.field.name] = valueOf(made);
           }
-          dialog.close();
+          finish(result);
         },
         { signal },
       );
-      dialog.addEventListener(
-        'close',
-        () => {
-          session.abort();
-          resolve(result);
-        },
-        { once: true },
-      );
-      dialog.showModal();
     });
   }
 

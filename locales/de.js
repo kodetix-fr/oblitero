@@ -414,5 +414,6 @@ export default {
   'status.cut-size-none': 'Kein Schnitt nötig: Das ganze Dokument hat {size}.',
   'status.cut-size-over': '{n} Teile. Eine einzelne Seite überschreitet die Grenze: Der größte Teil hat {size}.',
   'preview.page': 'Seitenansicht',
+  'preview.unreadable': 'Diese Seite kann nicht angezeigt werden.',
   'card.large': 'Doppelklicke auf eine Seite oder drücke V, um sie groß zu sehen.',
 };

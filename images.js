@@ -52,13 +52,12 @@ export function layout(size, margin, width, height) {
   const landscape = width > height;
   const page = landscape ? [longSide, shortSide] : [shortSide, longSide];
   const room = [page[0] - 2 * margin, page[1] - 2 * margin];
-  const scale = Math.min(room[0] / naturalWidth, room[1] / naturalHeight, Infinity);
+  const scale = Math.min(room[0] / naturalWidth, room[1] / naturalHeight);
   const drawn = [naturalWidth * scale, naturalHeight * scale];
   return { page, x: (page[0] - drawn[0]) / 2, y: (page[1] - drawn[1]) / 2, width: drawn[0], height: drawn[1] };
 }
 
-// `items`: { bytes, width, height } in order. Every image is a JPEG or a PNG here: `prepare(item)` (the browser) turns
-// anything else, and a JPEG that is stored sideways, into one of the two.
+// `items`: { bytes, kind } in order, each a JPEG or a PNG that needs no turning: readPhoto makes them so.
 export async function imagesToPdf(items, { size, margin }) {
   const document = await PDFDocument.create();
   document.setProducer('Oblitero');

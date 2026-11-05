@@ -1,7 +1,8 @@
 import test, { after, before } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { PDFDocument, PDFName } from '../../vendor/pdf-lib.esm.min.js';
 import { launchExtension, writePdf } from './support/browser.mjs';
 
 const hexText = (text) => `FEFF${[...text].map((c) => c.charCodeAt(0).toString(16).padStart(4, '0')).join('')}`.toUpperCase();
@@ -164,4 +165,16 @@ test('a rectangle can be placed, moved, resized and removed with the keyboard al
   await page.locator('#redact-done').click();
   await page.locator('#grid .badge').first().waitFor();
   assert.equal(await page.locator('#grid .badge').first().innerText(), '1 redacted');
+});
+
+test('a file whose pages the two readers count differently is refused', async () => {
+  const source = await PDFDocument.load(readFileSync(await writePdf(app.dir, 'typeless-source.pdf', [{ size: 300, text: 'COVER' }, { size: 300, text: 'INSIDE' }, { size: 300, text: 'LAST' }])));
+  source.getPage(0).node.delete(PDFName.of('Type'));
+  const path = join(app.dir, 'typeless.pdf');
+  writeFileSync(path, await source.save({ useObjectStreams: false }));
+  const tab = await app.openApp();
+  await tab.setInputFiles('#pages-file', path);
+  await tab.waitForFunction(() => /typeless\.pdf/.test(document.getElementById('pages-status').textContent));
+  assert.equal(await tab.locator('#grid li').count(), 0);
+  await tab.close();
 });

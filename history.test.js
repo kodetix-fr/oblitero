@@ -33,3 +33,11 @@ test('the oldest states are dropped past the limit, and clear empties both sides
   history.clear();
   assert.equal(history.canUndo || history.canRedo, false);
 });
+
+test('states lists what undo and redo can still bring back', () => {
+  const history = createHistory();
+  history.push('a');
+  history.push('b');
+  history.undo('c');
+  assert.deepEqual(history.states, ['a', 'c']);
+});

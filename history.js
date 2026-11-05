@@ -17,6 +17,9 @@ export function createHistory(limit = 100) {
       past.push(current);
       return future.pop();
     },
+    get states() {
+      return [...past, ...future];
+    },
     clear() {
       past.length = 0;
       future.length = 0;

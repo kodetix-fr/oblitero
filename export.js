@@ -1,16 +1,29 @@
 import { PDFDocument, degrees } from './vendor/pdf-lib.esm.min.js';
 import { drawMarks, newCache } from './marks.js';
+import { dropUnreachable, isolatePages } from './page-links.js';
+
+const parsed = new WeakMap();
+
+// Copying pages does not change the document they come from, so that the parts of a file can share one parse.
+function loadIsolated(bytes) {
+  if (!parsed.has(bytes)) {
+    parsed.set(
+      bytes,
+      PDFDocument.load(bytes).then((document) => {
+        isolatePages(document);
+        return document;
+      }),
+    );
+  }
+  return parsed.get(bytes);
+}
 
 // `sources` are the bytes of the files the pages come from (an entry names its file by index). A page with redactions is
 // replaced by the picture burnPage returns, so nothing of its content survives; a blank page is an empty page. The output
 // is a new document: the metadata, outline and attachments of the sources are not carried over. `finish(output)` runs on the
 // finished document, before it is saved (page numbers, watermarks).
 export async function buildPdf(sources, entries, burnPage, finish) {
-  const documents = new Map();
-  const load = async (file) => {
-    if (!documents.has(file)) documents.set(file, await PDFDocument.load(sources[file]));
-    return documents.get(file);
-  };
+  const load = (file) => loadIsolated(sources[file]);
   const output = await PDFDocument.create({ updateMetadata: false });
   output.setProducer('Oblitero');
   output.setCreator('Oblitero');
@@ -52,5 +65,6 @@ export async function buildPdf(sources, entries, burnPage, finish) {
     await drawMarks(output, output.getPages().at(-1), entry.marks, marked);
   }
   await finish?.(output);
+  await dropUnreachable(output);
   return output.save();
 }

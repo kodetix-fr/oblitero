@@ -2,6 +2,8 @@ import { getLanguage, t } from './i18n.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
 
+export const ARROWS = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+
 export const byId = (id) => /** @type {any} */ (document.getElementById(id));
 export const query = (selector) => /** @type {any} */ (document.querySelector(selector));
 
@@ -25,6 +27,35 @@ export function iconButton(name, label, onClick, disabled = false, title = label
   element.append(icon(name));
   element.addEventListener('click', onClick);
   return element;
+}
+
+// The scale at which a page fits a dialog that keeps `reserved` pixels of the window's height for itself.
+export const fitScale = (width, height, reserved) => Math.min(Math.max(Math.min(928, window.innerWidth - 64), 200) / width, Math.max(window.innerHeight - reserved, 200) / height);
+
+export const unreadablePage = () => Object.assign(document.createElement('p'), { className: 'state-note', textContent: t('preview.unreadable') });
+
+// Opens a modal dialog and resolves with what `wire` passes to `finish`, or null when it is cancelled. The listeners `wire` adds
+// with `signal` go away when the dialog closes.
+/** @param {any} dialog @param {string} cancelId @param {(finish: (value: any) => void, signal: AbortSignal) => void} wire */
+export function askDialog(dialog, cancelId, wire) {
+  return new Promise((resolve) => {
+    const session = new AbortController();
+    let result = null;
+    byId(cancelId).addEventListener('click', () => dialog.close(), { signal: session.signal });
+    wire((value) => {
+      result = value;
+      dialog.close();
+    }, session.signal);
+    dialog.addEventListener(
+      'close',
+      () => {
+        session.abort();
+        resolve(result);
+      },
+      { once: true },
+    );
+    dialog.showModal();
+  });
 }
 
 export function copyCanvas(source) {

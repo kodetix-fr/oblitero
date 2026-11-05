@@ -1,3 +1,5 @@
+import { clamp } from './math.js';
+
 // The box that holds everything that is not transparent in an RGBA image, or null when there is nothing.
 export function inkBounds({ data, width, height }, alphaMin = 8) {
   let left = width;
@@ -21,7 +23,7 @@ export function inkBounds({ data, width, height }, alphaMin = 8) {
 export function whiteToTransparent({ data }, paper = 245, ink = 160) {
   for (let i = 0; i < data.length; i += 4) {
     const luminance = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-    const keep = Math.min(1, Math.max(0, (paper - luminance) / (paper - ink)));
+    const keep = clamp((paper - luminance) / (paper - ink), 0, 1);
     data[i + 3] = Math.round(data[i + 3] * keep);
   }
   return { data };

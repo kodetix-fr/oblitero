@@ -1,6 +1,8 @@
 import test, { after, before } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { PDFDocument, rgb } from '../../vendor/pdf-lib.esm.min.js';
 import { launchExtension, writePdf } from './support/browser.mjs';
 
 let app;
@@ -165,5 +167,104 @@ test('a text can be placed and sized with the keyboard alone, and Today writes t
   await page.locator('#place-dialog').waitFor({ state: 'hidden' });
   const text = await page.locator('#grid .mark-text').innerText();
   assert.match(text, /^\d{4}-\d{2}-\d{2}$/);
+  await page.close();
+});
+
+test('a signature and a text stay on what they were put on when the page turns', async () => {
+  const source = await PDFDocument.create();
+  source.addPage([300, 600]);
+  const path = join(app.dir, `tall-${counter++}.pdf`);
+  writeFileSync(path, await source.save());
+  page = await app.openApp();
+  await page.setInputFiles('#pages-file', path);
+  await page.locator('#grid li').first().waitFor();
+
+  await page.locator('#sign').click();
+  await page.getByRole('radio', { name: 'Type' }).check();
+  await page.locator('#sign-text').fill('Jean Dupont');
+  await page.locator('#sign-use').click();
+  await page.locator('#place-go').click();
+  await page.locator('#place-dialog').waitFor({ state: 'hidden' });
+  await page.locator('#add-text').click();
+  await page.locator('#place-text').fill('TURNING');
+  await page.locator('#place-go').click();
+  await page.locator('#place-dialog').waitFor({ state: 'hidden' });
+
+  const thumbnailDrawn = () => page.waitForFunction(() => document.querySelector('#grid canvas').style.getPropertyValue('--fit') !== '');
+  await thumbnailDrawn();
+  const before = await page.locator('#grid .mark-img img').boundingBox();
+  assert.ok(before.width > before.height);
+  await card(1).click();
+  await page.locator('#rotate-right').click();
+  await thumbnailDrawn();
+  const after = await page.locator('#grid .mark-img img').boundingBox();
+  assert.ok(after.height > after.width, 'the picture of the thumbnail did not turn');
+  const ratio = (after.height / after.width) / (before.width / before.height);
+  assert.ok(Math.abs(ratio - 1) < 0.05, `the picture of the thumbnail changed shape: ${ratio}`);
+
+  const bytes = await downloaded(() => page.locator('#download-all').click());
+  const [signature] = await inspect(bytes, { x: 0, y: 0.45, w: 0.25, h: 0.45 });
+  assert.ok(signature.ink > 40, `the signature did not follow the page: ${signature.ink}`);
+  const [text] = await inspect(bytes, { x: 0.8, y: 0.05, w: 0.15, h: 0.45 });
+  assert.match(text.text, /TURNING/);
+  assert.ok(text.ink > 10, `the text did not follow the page: ${text.ink}`);
+  const [old] = await inspect(bytes, BOTTOM_RIGHT);
+  assert.equal(old.ink, 0, 'the signature stayed where it was before the turn');
+  await page.close();
+});
+
+test('everything set for a document is forgotten with it, and comes back with an undo', async () => {
+  await openDocument(1);
+  await page.locator('#properties').click();
+  await page.locator('#props-author').fill('Someone Else');
+  await page.locator('#props-apply').click();
+  await page.locator('#props-dialog').waitFor({ state: 'hidden' });
+  await page.locator('#stamps').click();
+  await page.locator('#watermark-on').check();
+  await page.locator('#stamp-apply').click();
+  await page.locator('#stamp-dialog').waitFor({ state: 'hidden' });
+  const summary = page.locator('#selection-summary');
+  await page.waitForFunction(() => /properties/.test(document.getElementById('selection-summary').textContent));
+
+  await page.locator('#clear-all').click();
+  await page.locator('#undo').click();
+  await page.locator('#grid li').first().waitFor();
+  assert.match(await summary.innerText(), /properties/);
+  assert.match(await summary.innerText(), /watermark/i);
+
+  await page.locator('#clear-all').click();
+  const path = await writePdf(app.dir, `next-${counter++}.pdf`, [{ size: 612 }]);
+  await page.setInputFiles('#pages-file', path);
+  await page.locator('#grid li').first().waitFor();
+  assert.doesNotMatch(await summary.innerText(), /properties|watermark/i);
+  const bytes = await downloaded(() => page.locator('#download-all').click());
+  assert.equal((await PDFDocument.load(bytes)).getAuthor(), undefined);
+  await page.close();
+});
+
+test('the buttons stay locked while a task runs, even when a page is clicked', async () => {
+  await openDocument(2);
+  await page.locator('#hide-blank').click();
+  await page.locator('#blank-dialog').waitFor({ state: 'visible' });
+  await page.evaluate(() => document.querySelector('#grid .card').click());
+  assert.equal(await page.locator('#download-all').isDisabled(), true);
+  await page.locator('#blank-cancel').click();
+  await page.waitForFunction(() => !document.getElementById('download-all').disabled);
+  await page.close();
+});
+
+test('a form that is not filled keeps what its fields show', async () => {
+  const source = await PDFDocument.create();
+  const sheet = source.addPage([400, 400]);
+  const field = source.getForm().createTextField('person.city');
+  field.setText('Paris Paris Paris');
+  field.addToPage(sheet, { x: 20, y: 340, width: 300, height: 40, borderWidth: 0, backgroundColor: rgb(1, 1, 1) });
+  const path = join(app.dir, `form-${counter++}.pdf`);
+  writeFileSync(path, await source.save());
+  page = await app.openApp();
+  await page.setInputFiles('#pages-file', path);
+  await page.locator('#grid li').first().waitFor();
+  const [shown] = await inspect(await downloaded(() => page.locator('#download-all').click()), { x: 0.05, y: 0.05, w: 0.8, h: 0.1 });
+  assert.ok(shown.ink > 40, `the value of the field is gone: ${shown.ink}`);
   await page.close();
 });

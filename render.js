@@ -1,6 +1,8 @@
 import * as pdfjs from './vendor/pdfjs/pdf.min.mjs';
 import { multiply, runBox } from './find.js';
 import { readingText } from './reading-order.js';
+import { TEXT_RISE } from './marks.js';
+import { textSizeOn } from './pages-model.js';
 import { t } from './i18n.js';
 
 const resource = (path) => new URL(`vendor/pdfjs/${path}`, import.meta.url).href;
@@ -10,10 +12,13 @@ const BURN_SCALE = 2;
 pdfjs.GlobalWorkerOptions.workerSrc = resource('pdf.worker.min.mjs');
 
 const tasks = new WeakMap();
+let worker = null;
 
 export async function openRender(bytes) {
+  worker ??= new pdfjs.PDFWorker();
   const task = pdfjs.getDocument({
     data: bytes.slice(),
+    worker,
     isEvalSupported: false,
     cMapUrl: resource('cmaps/'),
     cMapPacked: true,
@@ -49,7 +54,7 @@ export async function renderPage(doc, index, rotation, canvas, scale) {
 
 // The size of a page as it is displayed, in points: its rotation applied.
 export async function entrySize(doc, entry) {
-  if (entry.blank) return entry.rotation % 180 ? { width: entry.blank.height, height: entry.blank.width } : { width: entry.blank.width, height: entry.blank.height };
+  if (entry.blank) return entry.rotation % 180 ? { width: entry.blank.height, height: entry.blank.width } : entry.blank;
   return pageSize(doc, entry.source, entry.rotation);
 }
 
@@ -72,17 +77,27 @@ const bitmaps = new WeakMap();
 // The pictures and the lines of text put on a page, drawn on its canvas as they will be in the PDF.
 async function paintMarks(canvas, marks) {
   const context = canvas.getContext('2d');
-  for (const mark of marks ?? []) {
+  for (const mark of marks) {
+    const radians = (mark.turn * Math.PI) / 180;
+    context.save();
     if (mark.kind === 'image') {
       if (!bitmaps.has(mark.png)) bitmaps.set(mark.png, await createImageBitmap(new Blob([mark.png], { type: 'image/png' })));
-      context.drawImage(bitmaps.get(mark.png), mark.x * canvas.width, mark.y * canvas.height, mark.w * canvas.width, mark.h * canvas.height);
+      const boxWidth = mark.w * canvas.width;
+      const boxHeight = mark.h * canvas.height;
+      const [width, height] = mark.turn % 180 ? [boxHeight, boxWidth] : [boxWidth, boxHeight];
+      context.translate(mark.x * canvas.width + boxWidth / 2, mark.y * canvas.height + boxHeight / 2);
+      context.rotate(radians);
+      context.drawImage(bitmaps.get(mark.png), -width / 2, -height / 2, width, height);
     } else {
-      const size = mark.size * canvas.width;
+      const size = textSizeOn(mark, canvas.width, canvas.height);
       context.fillStyle = '#0f0f1a';
       context.font = `${size}px Helvetica, Arial, sans-serif`;
       context.textBaseline = 'alphabetic';
-      context.fillText(mark.text, mark.x * canvas.width, mark.y * canvas.height + size * 0.8);
+      context.translate(mark.x * canvas.width, mark.y * canvas.height);
+      context.rotate(radians);
+      context.fillText(mark.text, 0, size * TEXT_RISE);
     }
+    context.restore();
   }
 }
 
@@ -91,9 +106,9 @@ async function paintMarks(canvas, marks) {
 export async function paintEntry(doc, entry, scale, withMarks = false) {
   const canvas = document.createElement('canvas');
   if (entry.blank) {
-    const turned = entry.rotation % 180 !== 0;
-    canvas.width = Math.ceil((turned ? entry.blank.height : entry.blank.width) * scale);
-    canvas.height = Math.ceil((turned ? entry.blank.width : entry.blank.height) * scale);
+    const { width, height } = await entrySize(doc, entry);
+    canvas.width = Math.ceil(width * scale);
+    canvas.height = Math.ceil(height * scale);
     const context = canvas.getContext('2d');
     context.fillStyle = '#ffffff';
     context.fillRect(0, 0, canvas.width, canvas.height);
@@ -125,7 +140,7 @@ export async function burnPage(doc, entry) {
 
 // A page as a PNG or JPEG file at `dpi`, lowered when the page would not fit in a canvas.
 export async function entryImage(doc, entry, dpi, type) {
-  const size = entry.blank ? { width: entry.blank.width, height: entry.blank.height } : await pageSize(doc, entry.source, entry.rotation);
+  const size = await entrySize(doc, entry);
   const scale = Math.min(dpi / 72, MAX_SIDE / Math.max(size.width, size.height));
   return toBlob(await paintEntry(doc, entry, scale, true), type, 0.92);
 }

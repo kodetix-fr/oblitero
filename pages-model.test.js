@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { blankPage, createPages, cutBefore, cutEvery, cutToFit, duplicate, insertEntries, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, removePages, rotatePages, runsOf, rotateRect, showAll, toggleCuts, toggleHidden, visible } from './pages-model.js';
+import { blankPage, createPages, cutBefore, cutEvery, cutToFit, duplicate, insertEntries, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, removePages, rotateMark, rotatePages, runsOf, rotateRect, showAll, toggleCuts, toggleHidden, visible } from './pages-model.js';
 
 const ids = (pages) => pages.map((page) => page.id);
 const close = (actual, expected) => {
@@ -209,4 +209,19 @@ test('cutToFit does not count the hidden pages, and cuts after a page that stays
   assert.deepEqual([...cuts], [2]);
   assert.deepEqual(sizes, [2, 2]);
   assert.deepEqual(exportParts(pages, cuts).map(ids), [[0, 2], [3, 4]]);
+});
+
+test('a mark turns with its page, and four quarter turns bring it back', () => {
+  const picture = { kind: 'image', png: null, x: 0.1, y: 0.2, w: 0.3, h: 0.05, turn: 0 };
+  const text = { kind: 'text', text: 'A', x: 0.1, y: 0.2, size: 0.03, turn: 0 };
+  assert.deepEqual(rotateMark(text, 90), { ...text, x: 0.8, y: 0.1, turn: 90 });
+  assert.deepEqual(rotateMark(text, -90), { ...text, x: 0.2, y: 0.9, turn: 270 });
+  const [page] = rotatePages([{ id: 1, rotation: 0, redactions: [], marks: [picture, text] }], new Set([1]), 90);
+  assert.equal(page.rotation, 90);
+  assert.deepEqual(page.marks.map((mark) => mark.turn), [90, 90]);
+  let turned = [page];
+  for (let i = 0; i < 3; i++) turned = rotatePages(turned, new Set([1]), 90);
+  assert.equal(turned[0].marks[0].turn, 0);
+  close(turned[0].marks[0], picture);
+  assert.ok(Math.abs(turned[0].marks[1].y - 0.2) < 1e-9);
 });

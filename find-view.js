@@ -1,9 +1,8 @@
 import { PRESETS, findMatches } from './find.js';
-import { byId, setI18n } from './dom.js';
-import { plural, t } from './i18n.js';
+import { askDialog, byId, setI18n } from './dom.js';
+import { pagesOf, plural, t } from './i18n.js';
 
 const matches = (count) => plural(count, 'count.match.one', 'count.match.other');
-const pagesOf = (count) => plural(count, 'count.page.one', 'count.page.other');
 
 export function initFind() {
   const dialog = byId('find-dialog');
@@ -82,10 +81,8 @@ export function initFind() {
         .join(t('sentence-gap'));
     }
 
-    return new Promise((resolve) => {
-      const session = new AbortController();
-      const { signal } = session;
-      let result = null;
+    return askDialog(dialog, 'find-cancel', (finish, signal) => {
+      signal.addEventListener('abort', () => searching++);
       byId('find-run').addEventListener('click', search, { signal });
       byId('find-words').addEventListener('keydown', (event) => event.key === 'Enter' && search(), { signal });
       toggle.addEventListener(
@@ -97,26 +94,15 @@ export function initFind() {
         },
         { signal },
       );
-      byId('find-cancel').addEventListener('click', () => dialog.close(), { signal });
       apply.addEventListener(
         'click',
         () => {
-          result = new Map();
+          const result = new Map();
           for (const entry of checked()) result.set(entry.page.id, [...(result.get(entry.page.id) ?? []), ...entry.boxes]);
-          dialog.close();
+          finish(result);
         },
         { signal },
       );
-      dialog.addEventListener(
-        'close',
-        () => {
-          searching++;
-          session.abort();
-          resolve(result);
-        },
-        { once: true },
-      );
-      dialog.showModal();
     });
   }
 

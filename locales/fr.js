@@ -414,5 +414,6 @@ export default {
   'status.cut-size-none': 'Aucune coupe nécessaire : le document entier fait {size}.',
   'status.cut-size-over': '{n} parties. Une page seule dépasse la limite : la partie la plus lourde fait {size}.',
   'preview.page': 'Vue de la page',
+  'preview.unreadable': 'Cette page ne peut pas être affichée.',
   'card.large': 'Double-clique sur une page, ou appuie sur V, pour la voir en grand.',
 };

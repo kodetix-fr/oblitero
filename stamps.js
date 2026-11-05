@@ -3,9 +3,8 @@ import { t } from './i18n.js';
 import { parseRange } from './pages-model.js';
 
 export const POSITIONS = ['top-left', 'top-center', 'top-right', 'bottom-left', 'bottom-center', 'bottom-right'];
-// The sample is what is drawn: the standard font only holds Latin characters, so "Page" is not translated.
-export const ALIGNS = ['left', 'center', 'right'];
 export const NO_STAMPS = Object.freeze({ numbers: null, header: null, footer: null, watermark: null, range: '' });
+// The sample is what is drawn: the standard font only holds Latin characters, so "Page" is not translated.
 export const FORMATS = [
   ['number', '3'],
   ['of', '3 / 12'],
@@ -86,7 +85,7 @@ export function tileCenters(width, height, markWidth, markHeight, angle) {
   return centers;
 }
 
-const displaySize = (page) => {
+export const displaySize = (page) => {
   const { width, height } = page.getSize();
   return page.getRotation().angle % 180 === 0 ? { width, height } : { width: height, height: width };
 };

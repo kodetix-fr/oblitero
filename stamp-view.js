@@ -1,6 +1,7 @@
 import { FORMATS, NO_STAMPS, POSITIONS, checkText } from './stamps.js';
 import { parseRange } from './pages-model.js';
-import { byId, setI18n } from './dom.js';
+import { askDialog, byId, setI18n } from './dom.js';
+import { clamp } from './math.js';
 import { readPhoto } from './photo.js';
 import { t } from './i18n.js';
 
@@ -79,7 +80,7 @@ export function initStamps() {
     field('stamp-error').textContent = '';
   }
 
-  const number = (id, fallback, min, max) => Math.min(max, Math.max(min, Math.round(Number(field(id).value)) || fallback));
+  const number = (id, fallback, min, max) => clamp(Math.round(Number(field(id).value)) || fallback, min, max);
 
   const band = (name) =>
     field(`${name}-on`).checked ? { text: field(`${name}-text`).value.trim(), align: field(`${name}-align`).value, size: number(`${name}-size`, 10, 6, 48) } : null;
@@ -116,9 +117,7 @@ export function initStamps() {
   // Resolves with the settings the user applied, or null when they cancel.
   function edit(current, preview) {
     show(current);
-    return new Promise((resolve) => {
-      const session = new AbortController();
-      const { signal } = session;
+    return askDialog(dialog, 'stamp-cancel', (finish, signal) => {
       let timer;
       let latest = 0;
       const drawPreview = async () => {
@@ -137,9 +136,7 @@ export function initStamps() {
       dialog.addEventListener('change', schedulePreview, { signal });
       signal.addEventListener('abort', () => clearTimeout(timer));
       drawPreview();
-      let result = null;
-      byId('stamp-cancel').addEventListener('click', () => dialog.close(), { signal });
-      byId('stamp-clear').addEventListener('click', () => ((result = { ...NO_STAMPS }), dialog.close()), { signal });
+      byId('stamp-clear').addEventListener('click', () => finish({ ...NO_STAMPS }), { signal });
       byId('stamp-apply').addEventListener(
         'click',
         async () => {
@@ -160,20 +157,10 @@ export function initStamps() {
             field('stamp-error').textContent = error.message;
             return;
           }
-          result = settings;
-          dialog.close();
+          finish(settings);
         },
         { signal },
       );
-      dialog.addEventListener(
-        'close',
-        () => {
-          session.abort();
-          resolve(result);
-        },
-        { once: true },
-      );
-      dialog.showModal();
     });
   }
 

@@ -419,5 +419,6 @@ export default {
   'status.cut-size-none': '分割は不要です。文書全体で {size} です。',
   'status.cut-size-over': '{n} パート。1 ページだけで上限を超えています。最大のパートは {size} です。',
   'preview.page': 'ページ表示',
+  'preview.unreadable': 'このページは表示できません。',
   'card.large': 'ページをダブルクリックするか V キーを押すと大きく表示します。',
 };

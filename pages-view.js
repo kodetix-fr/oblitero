@@ -1,8 +1,12 @@
 import { openInfo } from './pdf-info.js';
 import { buildPdf } from './export.js';
-import { LEVELS, compressPdf, formatSize } from './compress.js';
+import { LEVELS, formatSize } from './compress.js';
+import { createOutput } from './page-output.js';
+import { pageCard } from './page-card.js';
+import { createThumbs } from './page-thumbs.js';
+import { initMarquee } from './page-marquee.js';
 import { MARGINS, PAGE_SIZES, imagesToPdf } from './images.js';
-import { readPhoto, recode } from './photo.js';
+import { readPhoto } from './photo.js';
 import { initCompare } from './compare-view.js';
 import { initPreview } from './preview-view.js';
 import { initFiles } from './files-view.js';
@@ -10,7 +14,8 @@ import { buildZip } from './zip.js';
 import { burnPage, closeRender, entryImage, entrySize, inkOf, openRender, outlineStarts, pageRuns, pageSize, paintEntry, renderPage, textOf } from './render.js';
 import { blankPage, createPages, cutBefore, cutEvery, cutToFit, duplicate, insertEntries, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, removePages, rotatePages, runsOf, showAll, toggleCuts, toggleHidden, visible } from './pages-model.js';
 import { createHistory } from './history.js';
-import { plural, t } from './i18n.js';
+import { pagesOf, plural, t } from './i18n.js';
+import { clamp } from './math.js';
 import { openRedactor } from './redact-view.js';
 import { NO_STAMPS, applyStamps } from './stamps.js';
 import { initFind } from './find-view.js';
@@ -19,19 +24,14 @@ import { initProperties } from './properties-view.js';
 import { initForm } from './form-view.js';
 import { initBlank } from './blank-view.js';
 import { fillForm } from './forms.js';
-import { DEFAULT_PROPERTIES, applyProperties } from './properties.js';
+import { DEFAULT_PROPERTIES } from './properties.js';
 import { placeMark } from './place-view.js';
 import { imageMark, textMark } from './marks.js';
 import { initStamps } from './stamp-view.js';
-import { byId, copyCanvas, icon, nearestEntry, setI18n, sortable } from './dom.js';
+import { byId, copyCanvas, nearestEntry, setI18n, sortable } from './dom.js';
 import { download } from './download.js';
 
-const THUMB_WIDTH = 150;
-const THUMB_HEIGHT = 220;
-const THUMB_QUALITY = 1.75;
 const A4 = { width: 595.28, height: 841.89 };
-const TONES = 7;
-const MARQUEE_THRESHOLD = 4;
 // The smaller of the two meanings of a megabyte, so that a part fits under either.
 const MEGABYTE = 1_000_000;
 
@@ -99,9 +99,12 @@ export function initPages() {
     cutSize: byId('cut-size'),
     clearCuts: byId('clear-cuts'),
     downloadParts: byId('download-parts'),
+    photoSize: sizeSelect,
+    photoMargin: marginSelect,
   };
 
   let stamps = { ...NO_STAMPS };
+  let busy = false;
   let view = 'pages';
   let compression = 'none';
   const comparer = initCompare();
@@ -124,7 +127,6 @@ export function initPages() {
   const formDialog = initForm();
   const blankDialog = initBlank();
   let properties = { ...DEFAULT_PROPERTIES };
-  let nextMark = 0;
   const documents = [];
   let nextId = 0;
   let pages = [];
@@ -132,11 +134,9 @@ export function initPages() {
   let selected = new Set();
   let anchor = null;
   let focusId = null;
-  let generation = 0;
-  let renders = Promise.resolve();
   const history = createHistory();
   const drag = { source: null, group: new Set() };
-  const thumbs = new Map();
+  const thumbnails = createThumbs((file) => documents[file].doc);
   const items = new Map();
   const cards = new Map();
 
@@ -152,69 +152,12 @@ export function initPages() {
     showStatus();
   };
   const say = (key, vars) => setStatus(() => t(key, vars));
-  const urls = new WeakMap();
-  const markUrl = (png) => {
-    if (!urls.has(png)) urls.set(png, URL.createObjectURL(new Blob([png], { type: 'image/png' })));
-    return urls.get(png);
-  };
-  const thumbKey = (page) => `${generation}:${page.id}:${page.rotation}`;
-  const pagesOf = (count) => plural(count, 'count.page.one', 'count.page.other');
-  const redactionsOf = (count) => plural(count, 'count.redaction.one', 'count.redaction.other');
+  const docOf = (page) => (page.file === null ? null : documents[page.file].doc);
   const nameOf = (page) => (page.file === null ? t('page.blank') : documents[page.file].name);
   const used = () => documents.filter((_, file) => pages.some((page) => page.file === file));
   let tagged = new Set();
   let toned = false;
   const toneOf = (file) => (210 + file * 137.5) % 360;
-
-  // ---------- thumbnails, drawn when they come into view ----------
-
-  const observer = new IntersectionObserver((records) => {
-    for (const record of records) {
-      if (!record.isIntersecting) continue;
-      observer.unobserve(record.target);
-      const thumb = thumbs.get(/** @type {HTMLElement} */ (record.target).dataset.key);
-      if (thumb && thumb.state === 'idle') {
-        thumb.state = 'queued';
-        const current = generation;
-        renders = renders.then(() => drawThumb(thumb, current));
-      }
-    }
-  });
-
-  async function drawThumb(thumb, current) {
-    if (current !== generation) return;
-    try {
-      const turned = thumb.rotation % 180 !== 0;
-      const size = thumb.blank
-        ? { width: turned ? thumb.blank.height : thumb.blank.width, height: turned ? thumb.blank.width : thumb.blank.height }
-        : await pageSize(documents[thumb.file].doc, thumb.source, thumb.rotation);
-      const fit = Math.min(THUMB_WIDTH / size.width, THUMB_HEIGHT / size.height);
-      thumb.canvas.style.setProperty('--fit', String((size.width * fit) / THUMB_WIDTH));
-      thumb.canvas.parentElement?.style.setProperty('--fit', String((size.width * fit) / THUMB_WIDTH));
-      if (thumb.blank) {
-        thumb.canvas.width = Math.ceil(size.width * fit);
-        thumb.canvas.height = Math.ceil(size.height * fit);
-      } else {
-        await renderPage(documents[thumb.file].doc, thumb.source, thumb.rotation, thumb.canvas, fit * THUMB_QUALITY * devicePixelRatio);
-      }
-      thumb.state = 'done';
-    } catch {
-      thumb.state = 'failed';
-    }
-  }
-
-  function thumbOf(page) {
-    const key = thumbKey(page);
-    let thumb = thumbs.get(key);
-    if (!thumb) {
-      const canvas = document.createElement('canvas');
-      canvas.dataset.key = key;
-      thumb = { canvas, file: page.file, source: page.source, blank: page.blank, rotation: page.rotation, state: 'idle' };
-      thumbs.set(key, thumb);
-    }
-    observer.observe(thumb.canvas);
-    return thumb.canvas;
-  }
 
   // ---------- the grid ----------
 
@@ -228,89 +171,27 @@ export function initPages() {
   }
 
   function card(page, index, last, part, parted) {
-    const item = document.createElement('li');
-    item.draggable = true;
-    item.dataset.id = String(page.id);
-    if (parted) {
-      item.dataset.part = String(part);
-      item.style.setProperty('--tone', String(((part * 360) / TONES) | 0));
-    }
-    if (toned && page.file !== null) {
-      item.dataset.file = String(page.file);
-      item.style.setProperty('--file-tone', String(toneOf(page.file)));
-    }
-    const toggle = document.createElement('button');
-    toggle.type = 'button';
-    toggle.className = 'card';
-    toggle.tabIndex = page.id === focusId ? 0 : -1;
-    const count = page.redactions.length;
-    toggle.setAttribute('aria-label', [t('page.n', { n: index + 1 }), page.blank ? t('card.blank') : '', count ? redactionsOf(count) : '', page.hidden ? t('card.hidden') : ''].filter(Boolean).join(t('list-gap')));
-    toggle.setAttribute('aria-pressed', String(selected.has(page.id)));
-
-    const check = document.createElement('span');
-    check.className = 'check';
-    check.append(icon('check'));
-    toggle.append(check);
-    toggle.title = `${nameOf(page)}\n${t('card.large')}`;
-    if (tagged.has(page.id)) toggle.append(Object.assign(document.createElement('span'), { className: 'run-tag', textContent: nameOf(page) }));
-    if (count) {
-      const badge = document.createElement('span');
-      badge.className = 'badge';
-      badge.textContent = t('card.redacted', { n: count });
-      toggle.append(badge);
-    }
-    const thumb = document.createElement('span');
-    thumb.className = 'thumb';
-    thumb.append(thumbOf(page));
-    for (const { x, y, w, h } of page.redactions) {
-      const box = document.createElement('span');
-      box.className = 'box';
-      Object.assign(box.style, { left: `${x * 100}%`, top: `${y * 100}%`, width: `${w * 100}%`, height: `${h * 100}%` });
-      thumb.append(box);
-    }
-    for (const mark of page.marks ?? []) {
-      if (mark.kind === 'image') {
-        const picture = Object.assign(document.createElement('img'), { className: 'mark-img', src: markUrl(mark.png), alt: '' });
-        Object.assign(picture.style, { left: `${mark.x * 100}%`, top: `${mark.y * 100}%`, width: `${mark.w * 100}%`, height: `${mark.h * 100}%` });
-        thumb.append(picture);
-      } else {
-        const text = Object.assign(document.createElement('span'), { className: 'mark-text', textContent: mark.text });
-        Object.assign(text.style, { left: `${mark.x * 100}%`, top: `${mark.y * 100}%` });
-        text.style.setProperty('--size', String(mark.size));
-        thumb.append(text);
-      }
-    }
-    thumb.style.setProperty('--fit', thumb.querySelector('canvas').style.getPropertyValue('--fit') || '1');
-    const label = document.createElement('span');
-    label.className = 'label';
-    label.textContent = String(index + 1);
-    toggle.append(thumb, label);
-    if (page.hidden) {
-      const mark = document.createElement('span');
-      mark.className = 'hidden-mark';
-      mark.append(icon('eye-off'));
-      toggle.append(mark);
-      item.dataset.hidden = '';
-    }
-    toggle.addEventListener('click', (event) => choose(page.id, event.shiftKey));
-    toggle.addEventListener('dblclick', () => openLarge(page.id));
-    toggle.addEventListener('focus', () => setFocus(page.id));
-    item.append(toggle);
-
-    if (!last) {
-      const has = cuts.has(page.id);
-      const cut = document.createElement('button');
-      cut.type = 'button';
-      cut.className = 'cut';
-      cut.tabIndex = -1;
-      cut.title = t(has ? 'cut.remove' : 'cut.add');
-      cut.setAttribute('aria-label', t(has ? 'cut.remove-aria' : 'cut.add-aria', { n: index + 1 }));
-      cut.setAttribute('aria-pressed', String(has));
-      cut.append(icon('cut'));
-      cut.addEventListener('click', () => commit({ cuts: toggleCuts(pages, cuts, new Set([page.id])) }));
-      item.append(cut);
-      if (has) item.dataset.cut = '';
-    }
+    const { item, toggle } = pageCard(
+      {
+        page,
+        number: index + 1,
+        name: nameOf(page),
+        canvas: thumbnails.canvasOf(page),
+        last,
+        part: parted ? part : null,
+        fileTone: toned && page.file !== null ? toneOf(page.file) : null,
+        tagged: tagged.has(page.id),
+        focused: page.id === focusId,
+        pressed: selected.has(page.id),
+        hasCut: cuts.has(page.id),
+      },
+      {
+        onChoose: (extend) => choose(page.id, extend),
+        onOpen: () => openLarge(page.id),
+        onFocus: () => setFocus(page.id),
+        onCut: () => commit({ cuts: toggleCuts(pages, cuts, new Set([page.id])) }),
+      },
+    );
     items.set(page.id, item);
     cards.set(page.id, toggle);
     return item;
@@ -392,7 +273,7 @@ export function initPages() {
     controls.fillForm.title = t(fillable ? 'app.fill-form.title' : 'form.none-title');
     controls.addText.disabled = shown === 0;
     controls.clearMarks.disabled = false;
-    controls.clearMarks.hidden = !pages.some((page) => page.marks?.length);
+    controls.clearMarks.hidden = !pages.some((page) => page.marks.length);
     controls.exportImages.disabled = shown === 0;
     controls.downloadAll.disabled = shown === 0;
     hideLabel.textContent = t(allHidden ? 'hide.show' : 'hide.label');
@@ -400,7 +281,10 @@ export function initPages() {
     controls.hide.title = t(allHidden ? 'hide.show-title' : 'app.hide.title');
     controls.showHidden.hidden = hidden === 0;
     showHiddenLabel.textContent = t('show-hidden', { n: hidden });
-    for (const key of ['cutEvery', 'cutChapters', 'cutBlank', 'cutSize']) controls[key].disabled = pages.length < 2;
+    for (const key of ['cutEvery', 'cutChapters', 'cutBlank']) controls[key].disabled = pages.length < 2;
+    controls.cutSize.disabled = shown < 2;
+    controls.photoSize.disabled = false;
+    controls.photoMargin.disabled = false;
     controls.clearCuts.disabled = false;
     controls.showHidden.disabled = false;
     controls.clearCuts.hidden = cuts.size === 0;
@@ -423,33 +307,50 @@ export function initPages() {
     ]
       .filter(Boolean)
       .join(' · ');
+    if (busy) for (const control of Object.values(controls)) control.disabled = true;
   }
 
-  // ---------- state: every change goes through commit, so every change can be undone ----------
+  // ---------- state: the pages, the cuts, the stamps and the properties go through commit, so that they can be undone ----------
 
   function apply(state) {
     const before = measure();
     pages = state.pages;
     cuts = keepCuts(pages, state.cuts);
+    stamps = state.stamps;
+    properties = state.properties;
     selected = new Set([...selected].filter((id) => pages.some((page) => page.id === id)));
     render(before);
   }
 
+  const current = () => ({ pages, cuts, stamps, properties });
+
+  // A file nothing can bring back anymore, not even an undo, leaves the memory.
+  function release() {
+    const held = new Set([pages, ...history.states.map((state) => state.pages)].flat().map((page) => page.file));
+    documents.forEach((document, file) => {
+      if (!document.doc || held.has(file)) return;
+      closeRender(document.doc);
+      Object.assign(document, { doc: null, bytes: null, original: null, photo: null });
+    });
+  }
+
   function commit(next) {
-    const nextPages = next.pages ?? pages;
-    const nextCuts = next.cuts ?? cuts;
-    if (nextPages === pages && nextCuts === cuts) return;
-    history.push({ pages, cuts });
-    apply({ pages: nextPages, cuts: nextCuts });
+    const state = { ...current(), ...next };
+    if (state.pages === pages && state.cuts === cuts && state.stamps === stamps && state.properties === properties) return;
+    // What was set for a document does not reach the next one.
+    if (state.pages.length === 0) Object.assign(state, { stamps: { ...NO_STAMPS }, properties: { ...DEFAULT_PROPERTIES } });
+    history.push(current());
+    apply(state);
+    release();
   }
 
   function undo() {
-    const state = history.undo({ pages, cuts });
+    const state = history.undo(current());
     if (state) apply(state);
   }
 
   function redo() {
-    const state = history.redo({ pages, cuts });
+    const state = history.redo(current());
     if (state) apply(state);
   }
 
@@ -472,7 +373,13 @@ export function initPages() {
     const bytes = new Uint8Array(await file.arrayBuffer());
     if (isPdf(bytes)) {
       const { count, fields } = await openInfo(bytes);
-      return { name: file.name, bytes, doc: await openRender(bytes), count, fields, values: {} };
+      const doc = await openRender(bytes);
+      // The screen reads a file with PDF.js and the result is built with pdf-lib: a page they count differently would be another page.
+      if (doc.numPages !== count) {
+        closeRender(doc);
+        throw new Error('The two readers do not see the same pages');
+      }
+      return { name: file.name, bytes, doc, count, fields, values: {} };
     }
     const photo = await readPhoto(file);
     const pdf = await imagesToPdf([photo], photoLayout());
@@ -517,20 +424,20 @@ export function initPages() {
         document.doc = await openRender(document.bytes);
         closeRender(old);
       }
-      generation += 1;
-      thumbs.clear();
+      thumbnails.reset();
       history.clear();
       render();
+      release();
       return '';
     });
 
-  const lastSelected = () => [...pages].reverse().find((page) => selected.has(page.id));
+  const lastSelected = () => pages.findLast((page) => selected.has(page.id));
+  const shownSelected = () => visible(pages).filter((page) => selected.has(page.id));
+  const selectedOrAll = () => (selected.size ? shownSelected() : visible(pages));
 
   async function addBlank() {
     const reference = lastSelected() ?? pages.at(-1);
-    let size = A4;
-    if (reference?.blank) size = reference.rotation % 180 ? { width: reference.blank.height, height: reference.blank.width } : reference.blank;
-    else if (reference) size = await pageSize(documents[reference.file].doc, reference.source, reference.rotation);
+    const size = reference ? await entrySize(docOf(reference), reference) : A4;
     const page = blankPage(nextId++, size.width, size.height);
     selected = new Set([page.id]);
     commit({ pages: insertEntries(pages, [page], reference?.id ?? null, true) });
@@ -562,7 +469,7 @@ export function initPages() {
           say('status.blank-at', { n: index + 1, total: pages.length });
           await new Promise((resolve) => setTimeout(resolve));
         }
-        if (page.hidden || page.redactions.length) continue;
+        if (page.hidden || page.redactions.length || page.marks.length) continue;
         if (page.blank) {
           const thumb = document.createElement('canvas');
           thumb.width = 72;
@@ -585,11 +492,11 @@ export function initPages() {
     const dpi = Number(byId('export-dpi').value);
     const extension = type === 'image/png' ? 'png' : 'jpg';
     await run('status.drawing', async () => {
-      const chosen = selected.size ? visible(pages).filter((page) => selected.has(page.id)) : visible(pages);
+      const chosen = selectedOrAll();
       const files = [];
       for (const page of chosen) {
         say('status.drawing-at', { n: files.length + 1, total: chosen.length });
-        const blob = await entryImage(page.file === null ? null : documents[page.file].doc, page, dpi, type);
+        const blob = await entryImage(docOf(page), page, dpi, type);
         files.push({ name: `${stem()}-page-${String(pages.indexOf(page) + 1).padStart(3, '0')}.${extension}`, blob });
       }
       if (files.length === 1) download(files[0].blob, files[0].name);
@@ -599,7 +506,7 @@ export function initPages() {
 
   async function extractText() {
     await run('status.reading-text', async () => {
-      const chosen = selected.size ? visible(pages).filter((page) => selected.has(page.id)) : visible(pages);
+      const chosen = selectedOrAll();
       const parts = [];
       for (const page of chosen) {
         const number = pages.indexOf(page) + 1;
@@ -621,7 +528,7 @@ export function initPages() {
       .filter((page) => group.has(page.id))
       .slice(0, 3)
       .forEach((page, index) => {
-        const picture = copyCanvas(thumbs.get(thumbKey(page))?.canvas) ?? document.createElement('canvas');
+        const picture = copyCanvas(thumbnails.canvasDrawn(page)) ?? document.createElement('canvas');
         Object.assign(picture.style, { left: `${index * 10}px`, top: `${index * 10}px`, zIndex: String(3 - index) });
         ghost.append(picture);
       });
@@ -646,51 +553,14 @@ export function initPages() {
     onMove: (ids, target, after) => commit({ pages: place(pages, ids, target, after) }),
   });
 
-  // A drag that starts on the background of the stage draws a rectangle; the pages it touches are selected
-  // (Shift or Ctrl/Cmd keeps the current selection). A plain click on the background clears the selection.
-  stage.addEventListener('pointerdown', (/** @type {PointerEvent} */ event) => {
-    if (event.button !== 0 || view !== 'pages' || panel.hasAttribute('data-empty')) return;
-    if (/** @type {Element} */ (event.target).closest('.card, .cut, button, input')) return;
-    event.preventDefault();
-    const keep = event.shiftKey || event.metaKey || event.ctrlKey ? new Set(selected) : new Set();
-    const start = { x: event.clientX, y: event.clientY };
-    const band = document.createElement('div');
-    band.className = 'marquee';
-    document.body.append(band);
-    stage.setPointerCapture(event.pointerId);
-    const gesture = new AbortController();
-    let moved = false;
-    stage.addEventListener(
-      'pointermove',
-      (e) => {
-        if (!moved && Math.hypot(e.clientX - start.x, e.clientY - start.y) < MARQUEE_THRESHOLD) return;
-        moved = true;
-        const left = Math.min(start.x, e.clientX);
-        const top = Math.min(start.y, e.clientY);
-        const right = Math.max(start.x, e.clientX);
-        const bottom = Math.max(start.y, e.clientY);
-        Object.assign(band.style, { left: `${left}px`, top: `${top}px`, width: `${right - left}px`, height: `${bottom - top}px` });
-        selected = new Set(keep);
-        for (const [id, element] of cards) {
-          const box = element.getBoundingClientRect();
-          if (box.left < right && box.right > left && box.top < bottom && box.bottom > top) selected.add(id);
-        }
-        refresh();
-      },
-      { signal: gesture.signal },
-    );
-    stage.addEventListener(
-      'pointerup',
-      () => {
-        gesture.abort();
-        band.remove();
-        if (!moved && keep.size === 0) {
-          selected = new Set();
-          refresh();
-        }
-      },
-      { signal: gesture.signal },
-    );
+  initMarquee(stage, {
+    enabled: () => !busy && view === 'pages' && !panel.hasAttribute('data-empty'),
+    selection: () => selected,
+    select: (next) => {
+      selected = next;
+      refresh();
+    },
+    cards,
   });
 
   const columnCount = () => {
@@ -710,7 +580,7 @@ export function initPages() {
     else if (event.key === 'End') next = pages.length - 1;
     else return;
     event.preventDefault();
-    next = Math.min(pages.length - 1, Math.max(0, next));
+    next = clamp(next, 0, pages.length - 1);
     if (next === index) return;
     const id = pages[next].id;
     if (event.shiftKey) {
@@ -728,8 +598,7 @@ export function initPages() {
         start: pages.findIndex((page) => page.id === id),
         draw: async (index, width) => {
           const page = pages[index];
-          const doc = page.file === null ? null : documents[page.file].doc;
-          return paintEntry(doc, page, width / (await entrySize(doc, page)).width, true);
+          return paintEntry(docOf(page), page, width / (await entrySize(docOf(page), page)).width, true);
         },
         caption: (index) => [nameOf(pages[index]), pages[index].hidden ? t('card.hidden') : ''].filter(Boolean).join(t('list-gap')),
       },
@@ -742,7 +611,7 @@ export function initPages() {
   const cutSelected = () => commit({ cuts: toggleCuts(pages, cuts, selected) });
 
   document.addEventListener('keydown', (event) => {
-    if (view !== 'pages' || panel.hasAttribute('data-fresh') || document.querySelector('dialog[open]')) return;
+    if (busy || view !== 'pages' || panel.hasAttribute('data-fresh') || document.querySelector('dialog[open]')) return;
     if (/** @type {Element} */ (event.target).closest('input, textarea, select')) return;
     const mod = event.metaKey || event.ctrlKey;
     const key = event.key.toLowerCase();
@@ -775,49 +644,34 @@ export function initPages() {
     const lead = pages.find((page) => page.file !== null && !page.hidden) ?? pages.find((page) => page.file !== null);
     return (lead ? documents[lead.file].name : 'document').replace(/\.[^.]+$/, '');
   };
-  const build = async (entries) => {
-    const redacted = entries.filter((entry) => entry.redactions.length > 0).length;
-    let drawn = 0;
-    const burn = (entry) => {
-      say('status.redacting', { n: ++drawn, total: redacted });
-      return burnPage(documents[entry.file].doc, entry);
-    };
-    return buildPdf(documents.map((document) => document.bytes), entries, burn, async (output) => {
-      await applyStamps(output, stamps);
-      applyProperties(output, properties);
-    });
-  };
-  const squeeze = (bytes) => compressPdf(bytes, compression, recode, (done, total) => total && say('status.compressing', { n: done + 1, total }));
-  let saved = { before: 0, after: 0 };
-  const asPdf = async (entries) => {
-    const bytes = await build(entries);
-    let result = bytes;
-    if (compression !== 'none') {
-      const smaller = await squeeze(bytes);
-      if (smaller.length < bytes.length) result = smaller;
-    }
-    saved.before += bytes.length;
-    saved.after += result.length;
-    return new Blob([result], { type: 'application/pdf' });
-  };
-  const savedText = () => {
-    if (compression === 'none' || saved.after >= saved.before) return '';
-    const { before, after } = saved;
-    return () => t('status.compressed', { before: formatSize(before), after: formatSize(after) });
-  };
+  const output = createOutput(documents, () => ({ stamps, properties, compression }), say);
+  const { build, squeeze, asPdf, savedText } = output;
 
   async function run(label, work) {
-    for (const control of Object.values(controls)) control.disabled = true;
-    saved = { before: 0, after: 0 };
+    if (busy) return;
+    busy = true;
+    panel.toggleAttribute('data-busy', true);
+    refresh();
+    output.resetSaved();
     say(label);
     try {
       setStatus((await work()) ?? '');
     } catch (error) {
       say('status.failed', { message: error.message });
     } finally {
+      busy = false;
+      panel.toggleAttribute('data-busy', false);
       refresh();
     }
   }
+
+  const guarded = (work) => async (...args) => {
+    try {
+      await work(...args);
+    } catch (error) {
+      say('status.failed', { message: error.message });
+    }
+  };
 
   fileInput.addEventListener('change', async () => {
     const target = view === 'pages' ? lastSelected() : null;
@@ -829,13 +683,13 @@ export function initPages() {
   for (const radio of viewRadios) radio.addEventListener('change', () => radio.checked && setView(radio.value));
   sizeSelect.addEventListener('change', layoutPhotos);
   marginSelect.addEventListener('change', layoutPhotos);
-  controls.addBlank.addEventListener('click', addBlank);
+  controls.addBlank.addEventListener('click', guarded(addBlank));
   controls.duplicate.addEventListener('click', duplicateSelected);
   controls.hideBlank.addEventListener('click', () => hideBlankPages());
   controls.extractText.addEventListener('click', extractText);
   const exportDialog = byId('export-dialog');
   controls.exportImages.addEventListener('click', () => {
-    const count = selected.size ? visible(pages).filter((page) => selected.has(page.id)).length : visible(pages).length;
+    const count = selectedOrAll().length;
     byId('export-note').textContent = t(count > 1 ? 'export.note-zip' : 'export.note', { pages: pagesOf(count) });
     exportDialog.showModal();
   });
@@ -847,21 +701,18 @@ export function initPages() {
   async function putMark(draft, noticeKey) {
     const target = lastSelected() ?? visible(pages)[0];
     if (!target) return;
-    const placed = await placeMark({ doc: target.blank ? null : documents[target.file].doc, entry: target, draft, number: pages.indexOf(target) + 1, selectedCount: selected.size });
+    const placed = await placeMark({ doc: docOf(target), entry: target, draft, number: pages.indexOf(target) + 1, selectedCount: selected.size });
     if (!placed) return;
     const reach = placed.scope === 'all' ? new Set(visible(pages).map((page) => page.id)) : placed.scope === 'selection' ? new Set(selected) : new Set([target.id]);
     const { mark } = placed;
-    const made = (id) => (mark.kind === 'image' ? imageMark(id, mark.png, mark.x, mark.y, mark.w, mark.h) : textMark(id, mark.text.trim(), mark.x, mark.y, mark.size));
-    commit({ pages: pages.map((page) => (reach.has(page.id) ? { ...page, marks: [...(page.marks ?? []), made(nextMark++)] } : page)) });
+    const made = mark.kind === 'image' ? imageMark(mark.png, mark.x, mark.y, mark.w, mark.h) : textMark(mark.text.trim(), mark.x, mark.y, mark.size);
+    commit({ pages: pages.map((page) => (reach.has(page.id) ? { ...page, marks: [...page.marks, made] } : page)) });
     setStatus(() => t(noticeKey, { pages: pagesOf(reach.size) }));
   }
-  controls.properties.addEventListener('click', async () => {
+  controls.properties.addEventListener('click', guarded(async () => {
     const result = await propertiesDialog.open(used().map((document) => ({ name: document.name, bytes: document.original ?? document.bytes })), properties);
-    if (result) {
-      properties = result;
-      refresh();
-    }
-  });
+    if (result) commit({ properties: result });
+  }));
   // The values go into a copy of the file with the fields flattened; the first bytes are kept, so the form can be filled again.
   const applyForms = (result) =>
     run('status.filling', async () => {
@@ -880,36 +731,35 @@ export function initPages() {
         changedAny = true;
       }
       if (changedAny) {
-        generation += 1;
-        thumbs.clear();
+        thumbnails.reset();
         render();
       }
       return () => t('status.form-updated');
     });
-  controls.fillForm.addEventListener('click', async () => {
+  controls.fillForm.addEventListener('click', guarded(async () => {
     const files = used()
       .filter((document) => document.fields.length)
       .map((document) => ({ index: documents.indexOf(document), name: document.name, fields: document.fields, values: document.values }));
     const result = await formDialog.edit(files);
     if (result) await applyForms(result);
-  });
-  controls.sign.addEventListener('click', async () => {
+  }));
+  controls.sign.addEventListener('click', guarded(async () => {
     const signature = await signer.create();
     if (signature) await putMark({ kind: 'image', png: signature.png, aspect: signature.aspect }, 'status.signature-placed');
-  });
-  controls.addText.addEventListener('click', () => putMark({ kind: 'text', text: t('place.default-text'), size: 0.025 }, 'status.text-placed'));
+  }));
+  controls.addText.addEventListener('click', guarded(() => putMark({ kind: 'text', text: t('place.default-text'), size: 0.025 }, 'status.text-placed')));
   controls.clearMarks.addEventListener('click', () => {
     const reach = selected.size ? selected : new Set(pages.map((page) => page.id));
-    commit({ pages: pages.map((page) => (reach.has(page.id) && page.marks?.length ? { ...page, marks: [] } : page)) });
+    commit({ pages: pages.map((page) => (reach.has(page.id) && page.marks.length ? { ...page, marks: [] } : page)) });
   });
-  controls.find.addEventListener('click', async () => {
+  controls.find.addEventListener('click', guarded(async () => {
     const candidates = visible(pages).filter((page) => !page.blank).map((page) => ({ page, number: pages.indexOf(page) + 1 }));
     const added = await finder.open(candidates, (page) => pageRuns(documents[page.file].doc, page));
     if (!added) return;
     const count = [...added.values()].reduce((sum, boxes) => sum + boxes.length, 0);
     commit({ pages: pages.map((page) => (added.has(page.id) ? { ...page, redactions: [...page.redactions, ...added.get(page.id)] } : page)) });
     setStatus(() => t('status.found-added', { rectangles: plural(count, 'count.rectangle.one', 'count.rectangle.other'), pages: pagesOf(added.size) }));
-  });
+  }));
   // The page the settings reach first, built and stamped the way the download is, so the preview cannot disagree with it.
   async function previewStamps(settings) {
     const shownPages = visible(pages);
@@ -932,13 +782,10 @@ export function initPages() {
       closeRender(doc);
     }
   }
-  controls.stamps.addEventListener('click', async () => {
+  controls.stamps.addEventListener('click', guarded(async () => {
     const result = await stampDialog.edit(stamps, previewStamps);
-    if (result) {
-      stamps = result;
-      refresh();
-    }
-  });
+    if (result) commit({ stamps: result });
+  }));
   controls.selectOdd.addEventListener('click', () => selectPositions(pages.map((_, index) => index).filter((index) => index % 2 === 0)));
   controls.selectEven.addEventListener('click', () => selectPositions(pages.map((_, index) => index).filter((index) => index % 2 === 1)));
   rangeInput.addEventListener('keydown', (event) => {
@@ -969,7 +816,7 @@ export function initPages() {
   controls.showHidden.addEventListener('click', () => commit({ pages: showAll(pages) }));
   controls.cut.addEventListener('click', cutSelected);
   controls.cutEvery.addEventListener('click', () => commit({ cuts: cutEvery(pages, Math.max(1, Math.floor(Number(splitSize.value)) || 1)) }));
-  controls.cutChapters.addEventListener('click', async () => {
+  controls.cutChapters.addEventListener('click', guarded(async () => {
     const outlines = new Map();
     const starts = new Set();
     for (const page of pages) {
@@ -981,13 +828,14 @@ export function initPages() {
     if (next.size === 0) return say('status.no-chapters');
     setStatus('');
     commit({ cuts: next });
-  });
+  }));
   controls.cutBlank.addEventListener('click', () => hideBlankPages({ cut: true }));
   controls.cutSize.addEventListener('click', () => {
     const limit = Number(splitMb.value) * MEGABYTE;
     if (!(limit > 0)) return say('status.bad-size');
     return run('status.sizing', async () => {
-      const { cuts: next, sizes } = await cutToFit(pages, limit, async (entries) => (await build(entries)).length);
+      const burned = new Map();
+      const { cuts: next, sizes } = await cutToFit(pages, limit, async (entries) => (await build(entries, burned)).length);
       if (next.size || cuts.size) commit({ cuts: next });
       const largest = Math.max(...sizes);
       const key = largest > limit ? 'status.cut-size-over' : sizes.length > 1 ? 'status.cut-size' : 'status.cut-size-none';
@@ -1007,7 +855,7 @@ export function initPages() {
   });
   controls.preview.addEventListener('click', () =>
     run('status.preview', async () => {
-      const chosen = visible(pages).filter((page) => selected.has(page.id));
+      const chosen = shownSelected();
       const entries = chosen.length ? chosen : visible(pages);
       const blob = await asPdf(entries);
       const title = t(chosen.length ? 'preview.selection' : 'preview.title');
@@ -1022,7 +870,7 @@ export function initPages() {
   );
   controls.downloadSelected.addEventListener('click', () =>
     run('status.preparing', async () => {
-      download(await asPdf(visible(pages).filter((page) => selected.has(page.id))), `${stem()}-pages.pdf`);
+      download(await asPdf(shownSelected()), `${stem()}-pages.pdf`);
       return savedText();
     }),
   );

@@ -1,9 +1,9 @@
 import { checkText } from './stamps.js';
 import { entrySize, paintEntry } from './render.js';
-import { byId, query } from './dom.js';
+import { ARROWS, askDialog, byId, fitScale, query } from './dom.js';
+import { clamp } from './math.js';
 import { t } from './i18n.js';
 
-const clamp = (value, low, high) => Math.min(high, Math.max(low, value));
 const STEP = 0.01;
 
 // Puts a picture or a line of text on a page. `draft` is { kind: 'image', png, aspect } or { kind: 'text', text, size };
@@ -16,7 +16,7 @@ export async function placeMark({ doc, entry, draft, number, selectedCount }) {
   const isText = draft.kind === 'text';
 
   const shown = await entrySize(doc, entry);
-  const scale = Math.min(Math.max(Math.min(928, window.innerWidth - 64), 200) / shown.width, Math.max(window.innerHeight - 340, 200) / shown.height);
+  const scale = fitScale(shown.width, shown.height, 340);
   const stageWidth = shown.width * scale;
   const stageHeight = shown.height * scale;
   stage.style.width = `${stageWidth}px`;
@@ -82,7 +82,7 @@ export async function placeMark({ doc, entry, draft, number, selectedCount }) {
       element.textContent = mark.text;
       element.style.fontSize = `${mark.size * stageWidth}px`;
     } else {
-      Object.assign(element.style, { width: `${mark.w * 100}%`, height: `${(heightOf() / 1) * 100}%` });
+      Object.assign(element.style, { width: `${mark.w * 100}%`, height: `${heightOf() * 100}%` });
     }
   }
   layout();
@@ -100,9 +100,8 @@ export async function placeMark({ doc, entry, draft, number, selectedCount }) {
     element.addEventListener('pointerup', () => element.removeEventListener('pointermove', move), { once: true });
   });
 
-  const arrows = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
   element.addEventListener('keydown', (event) => {
-    const arrow = arrows[event.key];
+    const arrow = ARROWS[event.key];
     if (arrow) {
       event.preventDefault();
       if (event.shiftKey) {
@@ -139,9 +138,11 @@ export async function placeMark({ doc, entry, draft, number, selectedCount }) {
     }, { signal });
   }
 
-  return new Promise((resolve) => {
-    let result = null;
-    byId('place-cancel').addEventListener('click', () => dialog.close(), { signal });
+  return askDialog(dialog, 'place-cancel', (finish, closed) => {
+    closed.addEventListener('abort', () => {
+      session.abort();
+      if (url) URL.revokeObjectURL(url);
+    });
     byId('place-go').addEventListener(
       'click',
       async () => {
@@ -158,21 +159,10 @@ export async function placeMark({ doc, entry, draft, number, selectedCount }) {
           }
         }
         const scope = query('input[name="place-scope"]:checked').value;
-        result = { mark: { ...mark, h: isText ? undefined : heightOf() }, scope };
-        dialog.close();
+        finish({ mark: { ...mark, h: isText ? undefined : heightOf() }, scope });
       },
-      { signal },
+      { signal: closed },
     );
-    dialog.addEventListener(
-      'close',
-      () => {
-        session.abort();
-        if (url) URL.revokeObjectURL(url);
-        resolve(result);
-      },
-      { once: true },
-    );
-    dialog.showModal();
-    element.focus();
+    queueMicrotask(() => element.focus());
   });
 }

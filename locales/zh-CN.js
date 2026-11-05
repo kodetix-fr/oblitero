@@ -414,5 +414,6 @@ export default {
   'status.cut-size-none': '无需分割：整个文档为 {size}。',
   'status.cut-size-over': '共 {n} 部分。有一页本身就超过限制：最大的部分为 {size}。',
   'preview.page': '页面视图',
+  'preview.unreadable': '无法显示此页面。',
   'card.large': '双击页面或按 V 键可放大查看。',
 };
