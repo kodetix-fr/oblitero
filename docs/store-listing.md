@@ -47,7 +47,7 @@ Oblitero merges, organizes, redacts and signs your PDF files, with no account, n
 ORGANIZE
 - Drop PDF files and photos together: everything lands on one screen, by file or by page.
 - Rotate, move, duplicate and hide pages, add a blank page. Every action can be undone, and everything works from the keyboard too.
-- Cut the document with one click, or every N pages, and get the parts in a ZIP.
+- Cut the document with one click, every N pages, at the chapters, after blank pages or under a size, and get the parts in a ZIP.
 - Hide the blank pages of a scan, with a slider that shows what would go.
 
 REDACT FOR REAL
@@ -89,7 +89,7 @@ Tools, or Productivity like Obturo: pick it in the dashboard menu.
 
 ## 6. Data disclosure and privacy policy
 
-The Chrome FAQ asks for a disclosure even when data is only processed locally. The files are not collected, but they are handled, and no box of the form describes a file the user opens. **Website content** is the closest ("text, images, sounds, videos or hyperlinks"): tick it, or none if the form's wording says it only concerns collected data. Read the wording; this choice is the publisher's.
+The Chrome FAQ asks for a disclosure even when data is only processed locally. The files are not collected, but they are handled, and no box of the form describes a file the user opens. **Website content** is the closest ("text, images, sounds, videos or hyperlinks"): tick it.
 
 - Certifications: all of them, as no data is sold, transferred, used outside the single purpose, used for advertising or read by a human.
 - Policy URL: https://kodetix.fr/en/oblitero/confidentialite (to create, rendered from `docs/PRIVACY.md`).

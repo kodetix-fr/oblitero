@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { blankPage, createPages, cutEvery, duplicate, insertEntries, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, removePages, rotatePages, runsOf, rotateRect, showAll, toggleCuts, toggleHidden, visible } from './pages-model.js';
+import { blankPage, createPages, cutBefore, cutEvery, cutToFit, duplicate, insertEntries, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, removePages, rotatePages, runsOf, rotateRect, showAll, toggleCuts, toggleHidden, visible } from './pages-model.js';
 
 const ids = (pages) => pages.map((page) => page.id);
 const close = (actual, expected) => {
@@ -167,4 +167,46 @@ test('runsOf groups consecutive pages of the same file, a blank page apart', () 
   assert.deepEqual(runsOf(pages).map((run) => [run.file, ids(run.pages)]), [[0, [0]], [1, [2]], [0, [1]], [null, [9]], [1, [3]]]);
   assert.deepEqual(runsOf([...first, ...second]).map((run) => [run.file, ids(run.pages)]), [[0, [0, 1]], [1, [2, 3]]]);
   assert.deepEqual(runsOf([]), []);
+});
+
+test('cutBefore starts a part on each page it is given, and never cuts before the first page', () => {
+  const pages = createPages(5);
+  assert.deepEqual([...cutBefore(pages, new Set([0, 2, 4]))], [1, 3]);
+  assert.deepEqual([...cutBefore(pages, new Set([0]))], []);
+});
+
+test('cutToFit makes the longest parts under the limit, measured and not added up', async () => {
+  const pages = createPages(10);
+  let calls = 0;
+  // A shared 40 bytes in every file, as fonts are, and 10 bytes per page.
+  const sizeOf = async (entries) => {
+    calls += 1;
+    return 40 + entries.length * 10;
+  };
+  const { cuts, sizes } = await cutToFit(pages, 75, sizeOf);
+  assert.deepEqual([...cuts], [2, 5, 8]);
+  assert.deepEqual(sizes, [70, 70, 70, 50]);
+  assert.ok(calls < 20, `${calls} measures`);
+});
+
+test('cutToFit leaves a document that fits whole, and keeps a page over the limit alone', async () => {
+  const pages = createPages(4);
+  const whole = await cutToFit(pages, 1000, async (entries) => entries.length);
+  assert.deepEqual([...whole.cuts], []);
+  assert.deepEqual(whole.sizes, [4]);
+  const weight = [1, 50, 1, 1];
+  const heavy = await cutToFit(pages, 10, async (entries) => entries.reduce((sum, page) => sum + weight[page.id], 0));
+  assert.deepEqual([...heavy.cuts], [0, 1]);
+  assert.deepEqual(heavy.sizes, [1, 50, 2]);
+});
+
+test('cutToFit does not count the hidden pages, and cuts after a page that stays', async () => {
+  const pages = toggleHidden(createPages(5), new Set([1]));
+  const { cuts, sizes } = await cutToFit(pages, 2, async (entries) => {
+    assert.ok(entries.every((page) => !page.hidden));
+    return entries.length;
+  });
+  assert.deepEqual([...cuts], [2]);
+  assert.deepEqual(sizes, [2, 2]);
+  assert.deepEqual(exportParts(pages, cuts).map(ids), [[0, 2], [3, 4]]);
 });

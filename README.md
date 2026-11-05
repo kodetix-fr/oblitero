@@ -38,7 +38,8 @@ certified digital signature) is out of scope.
   nearest page, gaps and the end included). Every change can be undone and
   redone. A hidden page stays in the grid, dimmed, and is left out of every
   download; Show brings it back. Download the result or only the selected pages.
-  The thumbnails have a size slider. Add a blank page (the size of the page
+  The thumbnails have a size slider, and a double click (or V) shows a page large,
+  with the arrows or the wheel to go to the next one. Add a blank page (the size of the page
   before it) and Duplicate act on the selection.
 - **Photos**: photos and screenshots (JPEG, PNG, WebP) become pages like any
   other, in the order you give them, with a page size (fit, A4, Letter) and a
@@ -48,7 +49,10 @@ certified digital signature) is out of scope.
 - **Cut**: the scissors that appear between two pages cut the document there.
   The parts get their own color, and one click downloads them as a ZIP. "Cut
   every N pages" places the cuts for you, and they can be moved or removed one
-  by one.
+  by one. So do the other ways: at the chapters (the top-level entries of the
+  outline), after each blank page (which is hidden: a batch scan with separator
+  sheets), or so that no part goes over a size you type. That size is measured by
+  building the parts; a page over the limit on its own is a part of its own.
 - **Preview**: the result panel shows the PDF you would download, the selection
   if there is one and the whole document otherwise, page by page (arrows or mouse
   wheel) and with its real size: hidden pages left out, redactions, stamps and
@@ -115,7 +119,7 @@ certified digital signature) is out of scope.
 Arrows move between pages (Shift extends the selection), Space selects the
 focused page, Ctrl/Cmd+A selects all, Esc clears the selection, R and Shift+R
 rotate, Delete or H hides (and shows again), Alt+Left and Alt+Right move, C cuts
-after the page, Ctrl/Cmd+Z and Shift+Ctrl/Cmd+Z undo and redo.
+after the page, V shows it large, Ctrl/Cmd+Z and Shift+Ctrl/Cmd+Z undo and redo.
 
 ## Limits
 
@@ -137,7 +141,9 @@ after the page, Ctrl/Cmd+Z and Shift+Ctrl/Cmd+Z undo and redo.
   a sidebar, a table whose cells hold long text, or vertical text can come out in
   the wrong order.
 - Encrypted PDF files are refused.
-- Only tested with the Chromium that ships with Playwright 1.57.
+- Needs Chrome 124 or newer. The tests run on Chrome 124 and on the Chromium that
+  ships with Playwright 1.57. Chrome 116 cannot open a PDF: it lacks
+  `Promise.withResolvers`, which PDF.js uses. Versions 117 to 123 are not tested.
 
 ## Planned
 
@@ -189,6 +195,10 @@ with the keys of `en.js` in the same order, and `_locales/<code>/messages.json`
 for the name and the description in the store. `npm test` checks that every
 language has the same keys and the same `{placeholders}`, that no text holds a
 long dash, and that the code only asks for keys that exist.
+
+## Support
+
+Oblitero is free and will stay free. To support it: https://kodetix.fr/oblitero/soutenir
 
 ## Licence
 

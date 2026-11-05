@@ -36,7 +36,8 @@ test('no network API, resource hint, frame or remote address in the code of the 
     assert.doesNotMatch(text, /\b(fetch\s*\(|XMLHttpRequest|WebSocket|EventSource|sendBeacon|importScripts|RTCPeerConnection|WebTransport)\b/, `${file}: a network API`);
     assert.doesNotMatch(text, /\brel\s*[=:]\s*['"]?(preconnect|dns-prefetch|prefetch|prerender)/, `${file}: a resource hint`);
     assert.doesNotMatch(text, /<(iframe|frame|object|embed)\b|createElement\(\s*['"](iframe|frame|object|embed)['"]/, `${file}: a frame or an embedded object`);
-    assert.deepEqual((text.match(/https?:\/\/[^\s'"`)<>]+/g) ?? []).filter((url) => url !== 'http://www.w3.org/2000/svg'), [], `${file}: a remote address`);
+    const allowed = new Set(['http://www.w3.org/2000/svg', 'https://kodetix.fr/oblitero/soutenir']); // the SVG namespace, and the support page (opened by a click on a link)
+    assert.deepEqual((text.match(/https?:\/\/[^\s'"`)<>]+/g) ?? []).filter((url) => !allowed.has(url)), [], `${file}: a remote address`);
   }
 });
 

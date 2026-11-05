@@ -12,12 +12,12 @@
   <!-- Icons: one sprite, used as <svg class="ic"><use href="#i-name"/></svg>. 24 px grid, 1.75 stroke (app.css). -->
   <svg class="sprite" aria-hidden="true" focusable="false">
     <symbol id="i-logo" viewBox="8 8 112 112">
-      <rect x="8" y="8" width="112" height="112" rx="28" fill="#2563eb"/>
+      <rect x="8" y="8" width="112" height="112" rx="28" fill="#be123c"/>
       <path d="M40 26h34l22 22v54a6 6 0 0 1-6 6H40a6 6 0 0 1-6-6V32a6 6 0 0 1 6-6z" fill="#ffffff"/>
-      <path d="M74 26v16a6 6 0 0 0 6 6h16z" fill="#bfdbfe"/>
-      <rect x="44" y="52" width="26" height="7" rx="3.5" fill="#9db0d6"/>
-      <rect x="44" y="67" width="42" height="13" rx="4" fill="#0e1522"/>
-      <rect x="44" y="88" width="30" height="7" rx="3.5" fill="#9db0d6"/>
+      <path d="M74 26v16a6 6 0 0 0 6 6h16z" fill="#fecdd3"/>
+      <rect x="44" y="52" width="26" height="7" rx="3.5" fill="#c3b4b9"/>
+      <rect x="44" y="67" width="42" height="13" rx="4" fill="#111114"/>
+      <rect x="44" y="88" width="30" height="7" rx="3.5" fill="#c3b4b9"/>
     </symbol>
     <symbol id="i-pages" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.6"/><rect x="13" y="4" width="7" height="7" rx="1.6"/><rect x="4" y="13" width="7" height="7" rx="1.6"/><rect x="13" y="13" width="7" height="7" rx="1.6"/></symbol>
     <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
@@ -65,6 +65,7 @@
     </div>
     <p class="tagline" data-i18n="app.pdf-tools-that-never">PDF tools that never leave your computer</p>
     <span class="sep"></span>
+    <a class="support-link" href="https://kodetix.fr/oblitero/soutenir" target="_blank" rel="noopener noreferrer" data-i18n="app.support">Support Oblitero</a>
     <span class="lang"><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg><select id="language" aria-label="Language" data-i18n-aria="app.language-aria"></select></span>
   </header>
 
@@ -169,6 +170,15 @@
               <input type="number" id="split-size" min="1" value="1" aria-label="Pages per part" data-i18n-aria="app.split-size.aria">
               <span data-i18n="app.pages">pages</span>
               <button type="button" class="btn sm ghost" id="clear-cuts" hidden data-i18n="app.clear-cuts">Remove cuts</button>
+            </div>
+            <div class="out-row">
+              <button type="button" class="btn sm" id="cut-chapters" title="Start a part at each top-level entry of the outline of the file" data-i18n-title="app.cut-chapters.title"><svg class="ic" aria-hidden="true"><use href="#i-cut"/></svg><span data-i18n="app.cut-chapters">At the chapters</span></button>
+              <button type="button" class="btn sm" id="cut-blank" title="Cut after each blank page and hide it: for a batch scan with separator sheets" data-i18n-title="app.cut-blank.title"><svg class="ic" aria-hidden="true"><use href="#i-cut"/></svg><span data-i18n="app.cut-blank">After blank pages</span></button>
+            </div>
+            <div class="out-row">
+              <button type="button" class="btn sm" id="cut-size" title="No part goes over this size. It is measured on the real parts." data-i18n-title="app.cut-size.title"><svg class="ic" aria-hidden="true"><use href="#i-cut"/></svg><span data-i18n="app.cut-size">Cut at</span></button>
+              <input type="number" id="split-mb" min="0.1" step="0.5" value="10" aria-label="Largest size of a part, in megabytes" data-i18n-aria="app.split-mb.aria">
+              <span data-i18n="app.cut-size-unit">MB per part</span>
             </div>
           </section>
           <section class="out-group">

@@ -83,6 +83,8 @@ input[type="number"] {
 .logo { width: 30px; height: 30px; }
 h1 { font-size: 16px; font-weight: 650; letter-spacing: -.01em; }
 .tagline { color: var(--muted); font-size: 12px; }
+.support-link { color: var(--muted); font-size: 12px; margin-right: 12px; }
+.support-link:hover { color: var(--fg); }
 .lang { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); }
 
 /* ---------- panel: tool bar, stage, status bar ---------- */

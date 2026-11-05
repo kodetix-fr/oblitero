@@ -53,6 +53,20 @@ export async function entrySize(doc, entry) {
   return pageSize(doc, entry.source, entry.rotation);
 }
 
+// The indexes of the pages where the top-level entries of the outline of a file begin.
+export async function outlineStarts(doc) {
+  const starts = new Set();
+  for (const { dest } of (await doc.getOutline()) ?? []) {
+    try {
+      const target = typeof dest === 'string' ? await doc.getDestination(dest) : dest;
+      if (target) starts.add(typeof target[0] === 'number' ? target[0] : await doc.getPageIndex(target[0]));
+    } catch {
+      continue;
+    }
+  }
+  return starts;
+}
+
 const bitmaps = new WeakMap();
 
 // The pictures and the lines of text put on a page, drawn on its canvas as they will be in the PDF.

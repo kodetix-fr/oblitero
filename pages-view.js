@@ -7,8 +7,8 @@ import { initCompare } from './compare-view.js';
 import { initPreview } from './preview-view.js';
 import { initFiles } from './files-view.js';
 import { buildZip } from './zip.js';
-import { burnPage, closeRender, entryImage, inkOf, openRender, pageRuns, pageSize, renderPage, textOf } from './render.js';
-import { blankPage, createPages, cutEvery, duplicate, insertEntries, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, removePages, rotatePages, runsOf, showAll, toggleCuts, toggleHidden, visible } from './pages-model.js';
+import { burnPage, closeRender, entryImage, entrySize, inkOf, openRender, outlineStarts, pageRuns, pageSize, paintEntry, renderPage, textOf } from './render.js';
+import { blankPage, createPages, cutBefore, cutEvery, cutToFit, duplicate, insertEntries, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, removePages, rotatePages, runsOf, showAll, toggleCuts, toggleHidden, visible } from './pages-model.js';
 import { createHistory } from './history.js';
 import { plural, t } from './i18n.js';
 import { openRedactor } from './redact-view.js';
@@ -32,6 +32,8 @@ const THUMB_QUALITY = 1.75;
 const A4 = { width: 595.28, height: 841.89 };
 const TONES = 7;
 const MARQUEE_THRESHOLD = 4;
+// The smaller of the two meanings of a megabyte, so that a part fits under either.
+const MEGABYTE = 1_000_000;
 
 export function initPages() {
   const panel = byId('panel-pages');
@@ -48,6 +50,7 @@ export function initPages() {
   const hideIcon = byId('hide-icon');
   const showHiddenLabel = byId('show-hidden-label');
   const splitSize = byId('split-size');
+  const splitMb = byId('split-mb');
   const rangeInput = byId('select-range');
   const zoom = byId('zoom');
   const fileList = byId('file-list');
@@ -91,6 +94,9 @@ export function initPages() {
     downloadAll: byId('download-all'),
     downloadSelected: byId('download-selected'),
     cutEvery: byId('cut-every'),
+    cutChapters: byId('cut-chapters'),
+    cutBlank: byId('cut-blank'),
+    cutSize: byId('cut-size'),
     clearCuts: byId('clear-cuts'),
     downloadParts: byId('download-parts'),
   };
@@ -245,7 +251,7 @@ export function initPages() {
     check.className = 'check';
     check.append(icon('check'));
     toggle.append(check);
-    toggle.title = nameOf(page);
+    toggle.title = `${nameOf(page)}\n${t('card.large')}`;
     if (tagged.has(page.id)) toggle.append(Object.assign(document.createElement('span'), { className: 'run-tag', textContent: nameOf(page) }));
     if (count) {
       const badge = document.createElement('span');
@@ -287,6 +293,7 @@ export function initPages() {
       item.dataset.hidden = '';
     }
     toggle.addEventListener('click', (event) => choose(page.id, event.shiftKey));
+    toggle.addEventListener('dblclick', () => openLarge(page.id));
     toggle.addEventListener('focus', () => setFocus(page.id));
     item.append(toggle);
 
@@ -393,7 +400,7 @@ export function initPages() {
     controls.hide.title = t(allHidden ? 'hide.show-title' : 'app.hide.title');
     controls.showHidden.hidden = hidden === 0;
     showHiddenLabel.textContent = t('show-hidden', { n: hidden });
-    controls.cutEvery.disabled = pages.length < 2;
+    for (const key of ['cutEvery', 'cutChapters', 'cutBlank', 'cutSize']) controls[key].disabled = pages.length < 2;
     controls.clearCuts.disabled = false;
     controls.showHidden.disabled = false;
     controls.clearCuts.hidden = cuts.size === 0;
@@ -547,7 +554,7 @@ export function initPages() {
     refresh();
   }
 
-  async function hideBlankPages() {
+  async function hideBlankPages({ cut = false } = {}) {
     await run('status.blank-looking', async () => {
       const items = [];
       for (const [index, page] of pages.entries()) {
@@ -568,7 +575,7 @@ export function initPages() {
       if (items.length === 0) return () => t('status.no-blank');
       const blank = await blankDialog.choose(items);
       if (!blank) return '';
-      commit({ pages: toggleHidden(pages, blank) });
+      commit({ pages: toggleHidden(pages, blank), cuts: cut ? blank : cuts });
       return () => plural(blank.size, 'status.hid-blank-one', 'status.hid-blank-other');
     });
   }
@@ -714,6 +721,21 @@ export function initPages() {
     cards.get(id).focus();
   });
 
+  const openLarge = (id) =>
+    previewer.openPages(
+      {
+        count: pages.length,
+        start: pages.findIndex((page) => page.id === id),
+        draw: async (index, width) => {
+          const page = pages[index];
+          const doc = page.file === null ? null : documents[page.file].doc;
+          return paintEntry(doc, page, width / (await entrySize(doc, page)).width, true);
+        },
+        caption: (index) => [nameOf(pages[index]), pages[index].hidden ? t('card.hidden') : ''].filter(Boolean).join(t('list-gap')),
+      },
+      t('preview.page'),
+    );
+
   const hideSelected = () => commit({ pages: toggleHidden(pages, selected) });
   const rotateSelected = (delta) => commit({ pages: rotatePages(pages, selected, delta) });
   const moveSelected = (step) => commit({ pages: movePages(pages, selected, step) });
@@ -743,6 +765,7 @@ export function initPages() {
     else if ((key === 'delete' || key === 'backspace') && selected.size) act(hideSelected);
     else if (key === 'h' && selected.size) act(hideSelected);
     else if (key === 'r' && selected.size) act(() => rotateSelected(event.shiftKey ? -90 : 90));
+    else if (key === 'v' && focusId !== null) act(() => openLarge(focusId));
     else if (key === 'c' && pages.length > 1) act(() => commit({ cuts: toggleCuts(pages, cuts, selected.size ? selected : new Set([focusId])) }));
   });
 
@@ -808,7 +831,7 @@ export function initPages() {
   marginSelect.addEventListener('change', layoutPhotos);
   controls.addBlank.addEventListener('click', addBlank);
   controls.duplicate.addEventListener('click', duplicateSelected);
-  controls.hideBlank.addEventListener('click', hideBlankPages);
+  controls.hideBlank.addEventListener('click', () => hideBlankPages());
   controls.extractText.addEventListener('click', extractText);
   const exportDialog = byId('export-dialog');
   controls.exportImages.addEventListener('click', () => {
@@ -946,6 +969,31 @@ export function initPages() {
   controls.showHidden.addEventListener('click', () => commit({ pages: showAll(pages) }));
   controls.cut.addEventListener('click', cutSelected);
   controls.cutEvery.addEventListener('click', () => commit({ cuts: cutEvery(pages, Math.max(1, Math.floor(Number(splitSize.value)) || 1)) }));
+  controls.cutChapters.addEventListener('click', async () => {
+    const outlines = new Map();
+    const starts = new Set();
+    for (const page of pages) {
+      if (page.file === null) continue;
+      if (!outlines.has(page.file)) outlines.set(page.file, await outlineStarts(documents[page.file].doc));
+      if (outlines.get(page.file).has(page.source)) starts.add(page.id);
+    }
+    const next = cutBefore(pages, starts);
+    if (next.size === 0) return say('status.no-chapters');
+    setStatus('');
+    commit({ cuts: next });
+  });
+  controls.cutBlank.addEventListener('click', () => hideBlankPages({ cut: true }));
+  controls.cutSize.addEventListener('click', () => {
+    const limit = Number(splitMb.value) * MEGABYTE;
+    if (!(limit > 0)) return say('status.bad-size');
+    return run('status.sizing', async () => {
+      const { cuts: next, sizes } = await cutToFit(pages, limit, async (entries) => (await build(entries)).length);
+      if (next.size || cuts.size) commit({ cuts: next });
+      const largest = Math.max(...sizes);
+      const key = largest > limit ? 'status.cut-size-over' : sizes.length > 1 ? 'status.cut-size' : 'status.cut-size-none';
+      return () => t(key, { n: sizes.length, size: formatSize(largest) });
+    });
+  });
   controls.clearCuts.addEventListener('click', () => commit({ cuts: new Set() }));
   controls.redact.addEventListener('click', async () => {
     const [id] = selected;
@@ -963,7 +1011,7 @@ export function initPages() {
       const entries = chosen.length ? chosen : visible(pages);
       const blob = await asPdf(entries);
       const title = t(chosen.length ? 'preview.selection' : 'preview.title');
-      await previewer.open(new Uint8Array(await blob.arrayBuffer()), title, [pagesOf(entries.length), formatSize(blob.size)].join(t('list-gap')));
+      await previewer.openPdf(new Uint8Array(await blob.arrayBuffer()), title, [pagesOf(entries.length), formatSize(blob.size)].join(t('list-gap')));
     }),
   );
   controls.downloadAll.addEventListener('click', () =>

@@ -132,6 +132,45 @@ export function cutEvery(pages, size) {
   return cuts;
 }
 
+// A cut right before each of the pages `starts`, so that a part begins on each of them.
+export function cutBefore(pages, starts) {
+  const cuts = new Set();
+  pages.forEach((page, index) => {
+    if (index > 0 && starts.has(page.id)) cuts.add(pages[index - 1].id);
+  });
+  return cuts;
+}
+
+// The longest parts that hold within `limit` bytes, and their sizes. `sizeOf` builds consecutive pages and gives their real
+// size, which is not the sum of the pages (they share fonts and pictures). A page over the limit alone is a part of its own.
+export async function cutToFit(pages, limit, sizeOf) {
+  const shown = visible(pages);
+  const cuts = new Set();
+  const sizes = [];
+  let start = 0;
+  while (start < shown.length) {
+    const from = start;
+    const room = shown.length - from;
+    let size = await sizeOf(shown.slice(from, from + 1));
+    let good = 1;
+    let bad = size > limit ? 2 : room + 1;
+    while (bad - good > 1) {
+      const count = bad > room ? Math.min(good * 2, room) : (good + bad) >> 1;
+      const measured = await sizeOf(shown.slice(from, from + count));
+      if (measured <= limit) {
+        good = count;
+        size = measured;
+      } else {
+        bad = count;
+      }
+    }
+    sizes.push(size);
+    start += good;
+    if (start < shown.length) cuts.add(shown[start - 1].id);
+  }
+  return { cuts, sizes };
+}
+
 export function keepCuts(pages, cuts) {
   const cuttable = new Set(pages.slice(0, -1).map((page) => page.id));
   return new Set([...cuts].filter((id) => cuttable.has(id)));

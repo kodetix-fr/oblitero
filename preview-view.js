@@ -5,11 +5,12 @@ import { closeRender, openRender, pageSize, renderPage } from './render.js';
 const PREVIEW_WIDTH = 860;
 const WHEEL_STEP = 80;
 const WHEEL_PAUSE_MS = 200;
+const KEY_STEPS = { ArrowLeft: -1, ArrowRight: 1, PageUp: -1, PageDown: 1 };
 
 export function initPreview() {
   const dialog = byId('preview-dialog');
   const stage = byId('preview-page');
-  let doc = null;
+  let source = null;
   let page = 0;
   let token = 0;
   let wheel = 0;
@@ -17,25 +18,35 @@ export function initPreview() {
 
   async function paint() {
     const mine = ++token;
-    byId('preview-count').textContent = t('compare.page-of', { n: page + 1, total: doc.numPages });
+    byId('preview-count').textContent = t('compare.page-of', { n: page + 1, total: source.count });
     byId('preview-prev').disabled = page === 0;
-    byId('preview-next').disabled = page === doc.numPages - 1;
+    byId('preview-next').disabled = page === source.count - 1;
+    if (source.caption) byId('preview-caption').textContent = source.caption(page);
     try {
-      const scale = (PREVIEW_WIDTH * devicePixelRatio) / (await pageSize(doc, page, 0)).width;
-      const canvas = document.createElement('canvas');
-      await renderPage(doc, page, 0, canvas, scale);
+      const canvas = await source.draw(page, PREVIEW_WIDTH * devicePixelRatio);
       if (mine !== token) return;
       stage.replaceChildren(canvas);
     } catch {
       if (mine === token) stage.replaceChildren();
     }
   }
-  for (const [id, step] of /** @type {Array<[string, number]>} */ ([['preview-prev', -1], ['preview-next', 1]])) {
-    byId(id).addEventListener('click', () => {
-      page += step;
-      paint();
-    });
+
+  function flip(step) {
+    const next = Math.max(0, Math.min(source.count - 1, page + step));
+    if (next === page) return;
+    page = next;
+    paint();
   }
+  byId('preview-prev').addEventListener('click', () => flip(-1));
+  byId('preview-next').addEventListener('click', () => flip(1));
+
+  // On the document: the button that had the focus is disabled at the first and the last page, and the focus leaves the dialog.
+  document.addEventListener('keydown', (event) => {
+    const step = KEY_STEPS[event.key];
+    if (!dialog.open || !step) return;
+    event.preventDefault();
+    flip(step);
+  });
 
   // A trackpad keeps sending wheel events after the swipe, so one page turn waits for a pause.
   dialog.addEventListener('wheel', (event) => {
@@ -43,30 +54,45 @@ export function initPreview() {
     if (event.timeStamp - flipped < WHEEL_PAUSE_MS) return;
     wheel += event.deltaY;
     if (Math.abs(wheel) < WHEEL_STEP) return;
-    const next = Math.max(0, Math.min(doc.numPages - 1, page + Math.sign(wheel)));
+    const step = Math.sign(wheel);
     wheel = 0;
     flipped = event.timeStamp;
-    if (next === page) return;
-    page = next;
-    paint();
+    flip(step);
   }, { passive: false });
 
   dialog.addEventListener('close', () => {
     token += 1;
-    closeRender(doc);
+    source.close?.();
   });
   byId('preview-close').addEventListener('click', () => dialog.close());
 
+  async function show(next, title) {
+    source = next;
+    page = next.start ?? 0;
+    wheel = 0;
+    byId('preview-title').textContent = title;
+    stage.replaceChildren();
+    dialog.showModal();
+    await paint();
+  }
+
   return {
-    async open(bytes, title, caption) {
-      doc = await openRender(bytes);
-      page = 0;
-      wheel = 0;
-      byId('preview-title').textContent = title;
+    async openPdf(bytes, title, caption) {
+      const doc = await openRender(bytes);
       byId('preview-caption').textContent = caption;
-      stage.replaceChildren();
-      dialog.showModal();
-      await paint();
+      await show(
+        {
+          count: doc.numPages,
+          draw: async (index, width) => {
+            const canvas = document.createElement('canvas');
+            await renderPage(doc, index, 0, canvas, width / (await pageSize(doc, index, 0)).width);
+            return canvas;
+          },
+          close: () => closeRender(doc),
+        },
+        title,
+      );
     },
+    openPages: show,
   };
 }

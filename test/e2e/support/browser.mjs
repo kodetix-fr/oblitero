@@ -21,9 +21,9 @@ export async function launchExtension() {
   let context;
   try {
     context = await chromium.launchPersistentContext(join(root, 'profile'), {
-      channel: 'chromium',
-      headless: true,
-      args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, '--no-first-run', '--no-default-browser-check', '--lang=en-US'],
+      // An older Chrome only loads extensions in the new headless mode, which it must be asked for.
+      ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH, headless: false } : { channel: 'chromium', headless: true }),
+      args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`, '--no-first-run', '--no-default-browser-check', '--lang=en-US', ...(process.env.CHROME_PATH ? ['--headless=new'] : [])],
       locale: 'en-US',
       acceptDownloads: true,
       viewport: { width: 1280, height: 900 },
@@ -37,6 +37,11 @@ export async function launchExtension() {
     context.on('page', watch);
 
     const worker = context.serviceWorkers()[0] ?? (await context.waitForEvent('serviceworker', { timeout: 20_000 }));
+    // An older Chrome hands the worker over before its extension APIs are bound.
+    for (let tries = 0; !(await worker.evaluate(() => !!globalThis.chrome?.runtime)); tries++) {
+      if (tries === 500) throw new Error('the extension APIs never came');
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
     const id = worker.url().split('/')[2];
     return {
       context,
