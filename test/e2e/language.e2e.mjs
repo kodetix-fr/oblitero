@@ -90,7 +90,7 @@ test('every language draws the screens, the dialogs and the files view without a
   for (const code of CODES) {
     await page.evaluate((value) => localStorage.setItem('oblitero-language', value), code);
     await page.reload();
-    assert.equal(await page.locator('html').getAttribute('lang'), code);
+    await page.waitForFunction((language) => document.documentElement.lang === language, code);
     assert.equal(await page.locator('#choose-pages').innerText(), texts[code]['app.choose-pages'], code);
     await page.setInputFiles('#pages-file', path);
     await page.locator('#grid li').nth(1).waitFor();
