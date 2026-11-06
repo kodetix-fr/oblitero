@@ -6,7 +6,7 @@ Notable changes to Oblitero. The format follows
 
 ## [Unreleased]
 
-## [0.1.0] - Unreleased
+## [0.1.0] - 2026-11-06
 
 First release. One screen, in nine languages, with no account, no permission and no network request.
 

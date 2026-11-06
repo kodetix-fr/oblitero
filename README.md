@@ -4,6 +4,10 @@ A Chrome extension (Manifest V3) for PDF files: merge, organize, cut, hide pages
 redact, compress, number and watermark, turn images into a PDF and pages into
 images.
 
+## Install
+
+[Add Oblitero to Chrome](https://chromewebstore.google.com/detail/oblitero-pdf-merge-redact/ofnapekaofoabpfodbffomjkpljmbdfd) from the Chrome Web Store (Chrome 124 or newer).
+
 ## Promise
 
 Free, open source, no account, no watermark forced on your files, no ad, no usage
