@@ -63,8 +63,8 @@ export function initProperties() {
     keywords: byId('props-keywords').value.trim(),
     dates: byId('props-dates').checked,
     stripAnnotations: byId('props-strip').checked,
-    bookmarks: byId('props-bookmarks').checked,
     flatten: byId('props-flatten').checked,
+    bookmarks: byId('props-bookmarks').checked,
   });
 
   // `files`: [{ name, bytes }]. Resolves with the properties to write, or null when the user cancels.

@@ -314,7 +314,7 @@ export function initPages() {
       stamps.footer ? t('summary.footer') : '',
       stamps.watermark ? t('summary.watermark') : '',
       stamps.letterhead ? t('summary.letterhead') : '',
-      JSON.stringify(properties) === JSON.stringify(DEFAULT_PROPERTIES) ? '' : t('summary.properties'),
+      Object.entries(DEFAULT_PROPERTIES).every(([key, value]) => properties[key] === value) ? '' : t('summary.properties'),
       parts > 1 ? t('summary.parts', { n: parts }) : '',
     ]
       .filter(Boolean)
