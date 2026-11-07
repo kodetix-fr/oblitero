@@ -202,7 +202,7 @@ test('the large view: double click or V, arrows and buttons, every kind of page,
     await page.keyboard.press('ArrowRight');
     assert.equal(await count(), 'Page 2 of 3');
     await page.keyboard.press('Escape');
-    await page.locator('#preview-dialog').waitFor({ state: 'hidden' });
+    await page.waitForFunction(() => !document.querySelector('dialog[open]'));
 
     await card(1).focus();
     await page.keyboard.press('v');
