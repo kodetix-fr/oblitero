@@ -178,6 +178,7 @@ export default {
   'props.props-keywords.placeholder': '用逗号分隔',
   'props.write-the-creation-and': '写入创建日期和修改日期',
   'props.remove-the-links-and': '移除页面上的链接和批注',
+  'props.flatten': '将表单字段和批注绘入页面，使其无法再被修改',
   'props.keep-bookmarks': '保留文件的书签（页面有涂黑时不保留）',
   'props.props-reset': '重置',
   'props.props-cancel': '取消',

@@ -178,6 +178,7 @@ export default {
   'props.props-keywords.placeholder': 'separadas por vírgulas',
   'props.write-the-creation-and': 'Gravar as datas de criação e modificação',
   'props.remove-the-links-and': 'Remover os links e comentários das páginas',
+  'props.flatten': 'Desenhar os campos de formulário e os comentários nas páginas, para que não possam mais ser alterados',
   'props.keep-bookmarks': 'Manter os marcadores dos arquivos (nunca quando uma página está tarjada)',
   'props.props-reset': 'Redefinir',
   'props.props-cancel': 'Cancelar',

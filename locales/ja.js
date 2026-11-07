@@ -178,6 +178,7 @@ export default {
   'props.props-keywords.placeholder': 'カンマ区切り',
   'props.write-the-creation-and': '作成日と更新日を書き込む',
   'props.remove-the-links-and': 'ページからリンクとコメントを外す',
+  'props.flatten': 'フォームのフィールドとコメントをページに描き込み、変更できないようにする',
   'props.keep-bookmarks': 'ファイルのしおりを残す（ページが墨消しされているときは残さない）',
   'props.props-reset': 'リセット',
   'props.props-cancel': 'キャンセル',

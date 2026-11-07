@@ -178,6 +178,7 @@ export default {
   'props.props-keywords.placeholder': 'через запятую',
   'props.write-the-creation-and': 'Записать даты создания и изменения',
   'props.remove-the-links-and': 'Убрать ссылки и комментарии со страниц',
+  'props.flatten': 'Впечатать поля формы и комментарии в страницы, чтобы их нельзя было изменить',
   'props.keep-bookmarks': 'Сохранить закладки файлов (никогда, если страница закрашена)',
   'props.props-reset': 'Сбросить',
   'props.props-cancel': 'Отмена',
