@@ -77,7 +77,9 @@ certified digital signature) is out of scope.
   page count) and a watermark, drawn on everything you download, upright on
   rotated pages too. The watermark is a text (size) or an image (a share of the
   page width), with an angle and an opacity, centered or repeated across the
-  page. A letterhead is the first page of a PDF you choose (company paper),
+  page. Bates numbers (prefix, first number, digits, suffix) go on from one part
+  of a cut document to the next, and a stamp is a framed text such as
+  CONFIDENTIAL, or an image, in a corner or the middle of an edge. A letterhead is the first page of a PDF you choose (company paper),
   placed under or over the content of every page, as large as the page holds it,
   with an opacity. A list of pages such as `2-5, 8` limits all of them to those pages of each
   file you download. The dialog previews the first page reached, stamped the way

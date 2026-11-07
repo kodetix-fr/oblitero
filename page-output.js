@@ -12,7 +12,8 @@ export function createOutput(documents, settings, say) {
   let saved = { before: 0, after: 0 };
 
   // `burned` keeps the pictures of the redacted pages from one build to the next, when they are many builds of the same pages.
-  const build = async (entries, burned = new Map()) => {
+  // `offset` is the number of pages of the parts before this one, for the Bates numbers.
+  const build = async (entries, burned = new Map(), offset = 0) => {
     const redacted = entries.filter((entry) => entry.redactions.length > 0).length;
     let drawn = 0;
     const burn = (entry) => {
@@ -36,7 +37,7 @@ export function createOutput(documents, settings, say) {
     return buildPdf(documents.map((document) => document.bytes), entries, burn, async (output) => {
       const { stamps } = settings();
       if (bookmarked) writeOutline(output, outlineFor(entries, trees, documents.map((document) => document.name)));
-      await applyStamps(output, stamps);
+      await applyStamps(output, stamps, null, offset);
       applyProperties(output, properties);
     });
   };
@@ -46,8 +47,8 @@ export function createOutput(documents, settings, say) {
   return {
     build,
     squeeze,
-    async asPdf(entries) {
-      const bytes = await build(entries);
+    async asPdf(entries, offset = 0) {
+      const bytes = await build(entries, new Map(), offset);
       let result = bytes;
       if (settings().compression !== 'none') {
         const smaller = await squeeze(bytes);
