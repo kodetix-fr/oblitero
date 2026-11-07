@@ -53,6 +53,7 @@ export function initProperties() {
     byId('props-keywords').value = settings.keywords;
     byId('props-dates').checked = settings.dates;
     byId('props-strip').checked = settings.stripAnnotations;
+    byId('props-bookmarks').checked = settings.bookmarks;
   };
   const read = () => ({
     title: byId('props-title-input').value.trim(),
@@ -61,6 +62,7 @@ export function initProperties() {
     keywords: byId('props-keywords').value.trim(),
     dates: byId('props-dates').checked,
     stripAnnotations: byId('props-strip').checked,
+    bookmarks: byId('props-bookmarks').checked,
   });
 
   // `files`: [{ name, bytes }]. Resolves with the properties to write, or null when the user cancels.
