@@ -10,6 +10,7 @@ Notable changes to Oblitero. The format follows
 
 - **Reverse** the order of the selected pages, and **interleave** them one file at a time (the fronts and backs of a scan).
 - **Turn by any angle** and **mirror** the selected pages.
+- **Letterhead**: the first page of a PDF under or over every page, or a range, with an opacity.
 - **Flatten** the form fields and comments into the pages, an option of Properties.
 - **Bookmarks** of the files are kept in the result, under the name of each file when there are several (never with a redaction).
 

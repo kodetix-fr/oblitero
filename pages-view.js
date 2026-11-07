@@ -313,6 +313,7 @@ export function initPages() {
       stamps.header ? t('summary.header') : '',
       stamps.footer ? t('summary.footer') : '',
       stamps.watermark ? t('summary.watermark') : '',
+      stamps.letterhead ? t('summary.letterhead') : '',
       JSON.stringify(properties) === JSON.stringify(DEFAULT_PROPERTIES) ? '' : t('summary.properties'),
       parts > 1 ? t('summary.parts', { n: parts }) : '',
     ]

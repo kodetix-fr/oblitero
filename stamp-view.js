@@ -3,6 +3,7 @@ import { parseRange } from './pages-model.js';
 import { askDialog, byId, setI18n } from './dom.js';
 import { clamp } from './math.js';
 import { readPhoto } from './photo.js';
+import { PDFDocument } from './vendor/pdf-lib.esm.min.js';
 import { t } from './i18n.js';
 
 const DEFAULTS = {
@@ -25,6 +26,7 @@ export function initStamps() {
   field('numbers-format').replaceChildren(...FORMATS.map(([value, text]) => Object.assign(document.createElement('option'), { value, textContent: text })));
 
   let image = null;
+  let sheet = null;
   let schedulePreview = () => {};
   const syncKind = () => {
     const picture = field('watermark-kind').value === 'image';
@@ -34,6 +36,25 @@ export function initStamps() {
   const showImageName = () => {
     byId('watermark-image-name').textContent = image ? t('stamp.image-kept', { name: image.name }) : '';
   };
+  const showSheetName = () => {
+    byId('letterhead-name').textContent = sheet ? t('stamp.letterhead-kept', { name: sheet.name }) : '';
+  };
+  field('letterhead-file').addEventListener('change', async () => {
+    const file = field('letterhead-file').files[0];
+    if (!file) return;
+    try {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      if ((await PDFDocument.load(bytes)).getPageCount() === 0) throw new Error();
+      sheet = { bytes, name: file.name };
+      field('letterhead-on').checked = true;
+      field('stamp-error').textContent = '';
+    } catch {
+      field('stamp-error').textContent = t('stamp.letterhead-unreadable');
+    }
+    field('letterhead-file').value = '';
+    showSheetName();
+    schedulePreview();
+  });
   field('watermark-kind').addEventListener('change', syncKind);
   field('watermark-file').addEventListener('change', async () => {
     const file = field('watermark-file').files[0];
@@ -76,6 +97,11 @@ export function initStamps() {
       field(`${band}-align`).value = settings.align;
       field(`${band}-size`).value = String(settings.size);
     }
+    field('letterhead-on').checked = !!current.letterhead;
+    sheet = current.letterhead ? { bytes: current.letterhead.bytes, name: current.letterhead.name } : null;
+    field('letterhead-place').value = current.letterhead?.under === false ? 'over' : 'under';
+    field('letterhead-opacity').value = String(Math.round((current.letterhead?.opacity ?? 1) * 100));
+    showSheetName();
     field('stamp-range').value = current.range ?? '';
     field('stamp-error').textContent = '';
   }
@@ -90,6 +116,10 @@ export function initStamps() {
       header: band('header'),
       footer: band('footer'),
       range: field('stamp-range').value.trim(),
+      letterhead:
+        field('letterhead-on').checked && sheet
+          ? { ...sheet, under: field('letterhead-place').value === 'under', opacity: number('letterhead-opacity', 100, 10, 100) / 100 }
+          : null,
       numbers: field('numbers-on').checked
         ? {
             position: field('numbers-position').value,
@@ -146,6 +176,7 @@ export function initStamps() {
             (settings.watermark?.kind === 'image' && !settings.watermark.image && 'sign.error-image') ||
             (settings.header && !settings.header.text && 'stamp.error-header') ||
             (settings.footer && !settings.footer.text && 'stamp.error-footer') ||
+            (field('letterhead-on').checked && !sheet && 'stamp.error-letterhead') ||
             (settings.range && parseRange(settings.range, 1e6) === null && 'stamp.error-range');
           if (problem) {
             field('stamp-error').textContent = t(problem);

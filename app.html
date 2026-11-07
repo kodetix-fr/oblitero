@@ -280,6 +280,13 @@
         <label class="field wide"><span data-i18n="stamp.opacity">Opacity</span> <input type="range" id="watermark-opacity" min="5" max="80" value="25"></label>
         <label class="field wide"><input type="checkbox" id="watermark-tile"> <span data-i18n="stamp.tile">Repeat across the page</span></label>
       </fieldset>
+      <fieldset>
+        <legend><label><input type="checkbox" id="letterhead-on"> <span data-i18n="stamp.letterhead">Letterhead</span></label></legend>
+        <label class="field wide"><span data-i18n="stamp.letterhead-file">PDF</span> <input type="file" id="letterhead-file" accept="application/pdf,.pdf"></label>
+        <p class="hint wide" id="letterhead-name"></p>
+        <label class="field wide"><span data-i18n="stamp.letterhead-place">Place</span> <select id="letterhead-place"><option value="under" data-i18n="stamp.letterhead-under">Under the content</option><option value="over" data-i18n="stamp.letterhead-over">Over the content</option></select></label>
+        <label class="field wide"><span data-i18n="stamp.opacity">Opacity</span> <input type="range" id="letterhead-opacity" min="10" max="100" value="100"></label>
+      </fieldset>
       <p class="hint" data-i18n="stamp.hint">In a header or a footer, {page} is replaced by the number of the page and {pages} by the number of pages. The Pages field limits all four to a list such as 2-5, 8.</p>
       <p id="stamp-error" role="alert" class="hint"></p>
     </div>

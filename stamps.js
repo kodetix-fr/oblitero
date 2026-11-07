@@ -1,9 +1,9 @@
-import { PDFDocument, StandardFonts, degrees, rgb } from './vendor/pdf-lib.esm.min.js';
+import { PDFDocument, StandardFonts, concatTransformationMatrix, degrees, drawObject, popGraphicsState, pushGraphicsState, rgb, setGraphicsState } from './vendor/pdf-lib.esm.min.js';
 import { t } from './i18n.js';
 import { parseRange } from './pages-model.js';
 
 export const POSITIONS = ['top-left', 'top-center', 'top-right', 'bottom-left', 'bottom-center', 'bottom-right'];
-export const NO_STAMPS = Object.freeze({ numbers: null, header: null, footer: null, watermark: null, range: '' });
+export const NO_STAMPS = Object.freeze({ numbers: null, header: null, footer: null, watermark: null, letterhead: null, range: '' });
 // The sample is what is drawn: the standard font only holds Latin characters, so "Page" is not translated.
 export const FORMATS = [
   ['number', '3'],
@@ -90,6 +90,26 @@ export const displaySize = (page) => {
   return page.getRotation().angle % 180 === 0 ? { width, height } : { width: height, height: width };
 };
 
+// Draws `sheet`, an embedded page, as large as the displayed page holds it, centered and upright, under the content of the page
+// or over it.
+export function drawSheet(page, sheet, under, opacity) {
+  const rotation = page.getRotation().angle;
+  const { width, height } = page.getSize();
+  const box = displaySize(page);
+  const scale = Math.min(box.width / sheet.width, box.height / sheet.height);
+  const corner = toPage(rotation, width, height, (box.width - sheet.width * scale) / 2, (box.height - sheet.height * scale) / 2);
+  const radians = (rotation * Math.PI) / 180;
+  const cos = Math.round(Math.cos(radians)) * scale;
+  const sin = Math.round(Math.sin(radians)) * scale;
+  const { context } = page.doc;
+  const operators = [pushGraphicsState()];
+  if (opacity < 1) operators.push(setGraphicsState(page.node.newExtGState('Sheet', context.obj({ ca: opacity, CA: opacity }))));
+  operators.push(concatTransformationMatrix(cos, sin, -sin, cos, corner.x, corner.y), drawObject(page.node.newXObject('Sheet', sheet.ref)), popGraphicsState());
+  page.node.normalize();
+  if (under) page.node.Contents().insert(0, context.register(page.createContentStream(...operators)));
+  else page.pushOperators(...operators);
+}
+
 // Throws when the standard font cannot draw a character of `text`.
 export async function checkText(text) {
   const document = await PDFDocument.create();
@@ -102,16 +122,20 @@ export async function checkText(text) {
 }
 
 // settings: { numbers: null | { position, format, first, size, skipFirst }, header: null | { text, align, size }, footer: the same,
-// watermark: null | { text, size, opacity, angle }, range: '' for every page, or a list of pages such as 2-5, 8 }
+// watermark: null | { text, size, opacity, angle }, letterhead: null | { bytes, name, under, opacity }, range: '' for every page, or a list of pages such as 2-5, 8 }
 // place: { index, total } stamps a one-page output as that page of a longer document.
 export async function applyStamps(output, settings, place = null) {
-  if (!settings.numbers && !settings.header && !settings.footer && !settings.watermark) return;
+  if (!settings.numbers && !settings.header && !settings.footer && !settings.watermark && !settings.letterhead) return;
   const font = await output.embedFont(StandardFonts.Helvetica);
   const pages = output.getPages();
   const total = place?.total ?? pages.length;
   const placed = pages.map((page, index) => [page, place?.index ?? index]);
   const chosen = settings.range ? parseRange(settings.range, total) : null;
   const reaches = (index) => !chosen || chosen.includes(index);
+  if (settings.letterhead) {
+    const [sheet] = await output.embedPdf(settings.letterhead.bytes, [0]);
+    for (const [page, index] of placed) if (reaches(index)) drawSheet(page, sheet, settings.letterhead.under, settings.letterhead.opacity);
+  }
   if (settings.numbers) {
     const { position, format, first, size, skipFirst } = settings.numbers;
     placed.forEach(([page, index]) => {
