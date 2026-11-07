@@ -3,7 +3,7 @@ import { t } from './i18n.js';
 import { parseRange } from './pages-model.js';
 
 export const POSITIONS = ['top-left', 'top-center', 'top-right', 'bottom-left', 'bottom-center', 'bottom-right'];
-export const NO_STAMPS = Object.freeze({ numbers: null, header: null, footer: null, watermark: null, letterhead: null, range: '' });
+export const NO_STAMPS = Object.freeze({ numbers: null, header: null, footer: null, watermark: null, letterhead: null, bates: null, stamp: null, range: '' });
 // The sample is what is drawn: the standard font only holds Latin characters, so "Page" is not translated.
 export const FORMATS = [
   ['number', '3'],
@@ -16,6 +16,11 @@ const INK = rgb(0.15, 0.15, 0.15);
 
 // The text of a header or a footer, with {page} and {pages} replaced by the number of the page and the number of pages.
 export const bandText = (template, number, total) => template.replaceAll('{page}', String(number)).replaceAll('{pages}', String(total));
+
+// A Bates number: the prefix, the number of the page in the whole set with `digits` digits at least, and the suffix.
+export const batesText = ({ prefix, suffix, first, digits }, index) => `${prefix}${String(first + index).padStart(digits, '0')}${suffix}`;
+
+const STAMP_INK = rgb(0.75, 0.1, 0.1);
 
 export function label(format, number, total) {
   if (format === 'of') return `${number} / ${total}`;
@@ -122,10 +127,12 @@ export async function checkText(text) {
 }
 
 // settings: { numbers: null | { position, format, first, size, skipFirst }, header: null | { text, align, size }, footer: the same,
-// watermark: null | { text, size, opacity, angle }, letterhead: null | { bytes, name, under, opacity }, range: '' for every page, or a list of pages such as 2-5, 8 }
-// place: { index, total } stamps a one-page output as that page of a longer document.
-export async function applyStamps(output, settings, place = null) {
-  if (!settings.numbers && !settings.header && !settings.footer && !settings.watermark && !settings.letterhead) return;
+// watermark: null | { text, size, opacity, angle }, letterhead: null | { bytes, name, under, opacity },
+// bates: null | { prefix, suffix, first, digits, position, size }, stamp: null | { kind, text, image, position, size, scale }, range: '' for every page, or a list of pages such as 2-5, 8 }
+// place: { index, total } stamps a one-page output as that page of a longer document. `offset` is the number of pages that come
+// before this output in the set it belongs to (the parts of a cut document), where the Bates numbers go on.
+export async function applyStamps(output, settings, place = null, offset = 0) {
+  if (!settings.numbers && !settings.header && !settings.footer && !settings.watermark && !settings.letterhead && !settings.bates && !settings.stamp) return;
   const font = await output.embedFont(StandardFonts.Helvetica);
   const pages = output.getPages();
   const total = place?.total ?? pages.length;
@@ -155,6 +162,39 @@ export async function applyStamps(output, settings, place = null) {
       const at = anchor(`${edge}-${band.align}`, box.width, box.height, font.widthOfTextAtSize(text, band.size), band.size);
       drawTextAt(page, font, text, band.size, at.x, at.y, 0);
     });
+  }
+  if (settings.bates) {
+    const { position, size } = settings.bates;
+    placed.forEach(([page, index]) => {
+      if (!reaches(index)) return;
+      const text = batesText(settings.bates, place ? index : offset + index);
+      const box = displaySize(page);
+      const at = anchor(position, box.width, box.height, font.widthOfTextAtSize(text, size), size);
+      drawTextAt(page, font, text, size, at.x, at.y, 0);
+    });
+  }
+  if (settings.stamp) {
+    const mark = settings.stamp;
+    const image = mark.kind === 'image' ? await (mark.image.kind === 'png' ? output.embedPng(mark.image.bytes) : output.embedJpg(mark.image.bytes)) : null;
+    const pad = mark.size * 0.4;
+    for (const [page, index] of placed) {
+      if (!reaches(index)) continue;
+      const box = displaySize(page);
+      if (image) {
+        const width = (box.width * mark.scale) / 100;
+        const height = (width * image.height) / image.width;
+        const at = anchor(mark.position, box.width, box.height, width, height);
+        drawImageAt(page, image, width, height, at.x, at.y, 0, 1);
+        continue;
+      }
+      const textWidth = font.widthOfTextAtSize(mark.text, mark.size);
+      const at = anchor(mark.position, box.width, box.height, textWidth + 2 * pad, mark.size + 2 * pad);
+      const rotation = page.getRotation().angle;
+      const { width, height } = page.getSize();
+      const corner = toPage(rotation, width, height, at.x, at.y);
+      page.drawRectangle({ x: corner.x, y: corner.y, width: textWidth + 2 * pad, height: mark.size + 2 * pad, borderColor: STAMP_INK, borderWidth: Math.max(1, mark.size / 10), rotate: degrees(rotation) });
+      drawTextAt(page, font, mark.text, mark.size, at.x + pad, at.y + pad + mark.size * 0.2, 0, { color: STAMP_INK });
+    }
   }
   if (settings.watermark) {
     const mark = settings.watermark;

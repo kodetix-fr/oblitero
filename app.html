@@ -247,7 +247,7 @@
     </div>
     <div class="stamp-main">
     <div class="dlg-body">
-      <label class="field"><span data-i18n="stamp.pages">Pages</span> <input type="text" id="stamp-range" placeholder="2-5, 8" aria-label="Pages that get the numbers, the header, the footer and the watermark: empty for all, or a list such as 2-5, 8" data-i18n-aria="stamp.pages-aria" spellcheck="false"></label>
+      <label class="field"><span data-i18n="stamp.pages">Pages</span> <input type="text" id="stamp-range" placeholder="2-5, 8" aria-label="Pages that get what this dialog adds: empty for all, or a list such as 2-5, 8" data-i18n-aria="stamp.pages-aria" spellcheck="false"></label>
       <fieldset>
         <legend><label><input type="checkbox" id="numbers-on"> <span data-i18n="stamp.page-numbers">Page numbers</span></label></legend>
         <label class="field"><span data-i18n="stamp.position">Position</span> <select id="numbers-position"></select></label>
@@ -255,6 +255,25 @@
         <label class="field"><span data-i18n="stamp.first-number">First number</span> <input type="number" id="numbers-first" min="0" value="1"></label>
         <label class="field"><span data-i18n="stamp.size">Size</span> <input type="number" id="numbers-size" min="6" max="48" value="10"></label>
         <label class="field wide"><input type="checkbox" id="numbers-skip"> <span data-i18n="stamp.leave-the-first-page">Leave the first page without a number</span></label>
+      </fieldset>
+      <fieldset>
+        <legend><label><input type="checkbox" id="bates-on"> <span data-i18n="stamp.bates">Bates numbers</span></label></legend>
+        <label class="field"><span data-i18n="stamp.bates-prefix">Prefix</span> <input type="text" id="bates-prefix" maxlength="30" value="DOC-" spellcheck="false"></label>
+        <label class="field"><span data-i18n="stamp.bates-suffix">Suffix</span> <input type="text" id="bates-suffix" maxlength="30" spellcheck="false"></label>
+        <label class="field"><span data-i18n="stamp.first-number">First number</span> <input type="number" id="bates-first" min="0" value="1"></label>
+        <label class="field"><span data-i18n="stamp.bates-digits">Digits</span> <input type="number" id="bates-digits" min="1" max="12" value="6"></label>
+        <label class="field"><span data-i18n="stamp.position">Position</span> <select id="bates-position"></select></label>
+        <label class="field"><span data-i18n="stamp.size">Size</span> <input type="number" id="bates-size" min="6" max="48" value="10"></label>
+      </fieldset>
+      <fieldset>
+        <legend><label><input type="checkbox" id="mark-on"> <span data-i18n="stamp.mark">Stamp</span></label></legend>
+        <label class="field wide"><span data-i18n="stamp.kind">Type</span> <select id="mark-kind"><option value="text" data-i18n="stamp.kind-text">Text</option><option value="image" data-i18n="stamp.kind-image">Image</option></select></label>
+        <label class="field wide" id="mark-text-field"><span data-i18n="stamp.text">Text</span> <input type="text" id="mark-text" value="CONFIDENTIAL" maxlength="60" spellcheck="false"></label>
+        <label class="field" id="mark-size-field"><span data-i18n="stamp.size-2">Size</span> <input type="number" id="mark-size" min="8" max="72" value="18"></label>
+        <label class="field wide" id="mark-image-field" hidden><span data-i18n="stamp.image">Image</span> <input type="file" id="mark-file" accept="image/*"></label>
+        <p class="hint wide" id="mark-image-name"></p>
+        <label class="field wide" id="mark-scale-field" hidden><span data-i18n="stamp.scale">Width</span> <input type="range" id="mark-scale" min="5" max="60" value="20"></label>
+        <label class="field"><span data-i18n="stamp.position">Position</span> <select id="mark-position"></select></label>
       </fieldset>
       <fieldset>
         <legend><label><input type="checkbox" id="header-on"> <span data-i18n="stamp.header">Header</span></label></legend>

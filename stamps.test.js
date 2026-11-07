@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { PDFArray, PDFDict, PDFDocument, PDFName, PDFRawStream, decodePDFRawStream, degrees } from './vendor/pdf-lib.esm.min.js';
-import { NO_STAMPS, anchor, applyStamps, bandText, checkText, cornerOf, drawSheet, label, tileCenters, toPage } from './stamps.js';
+import { NO_STAMPS, anchor, applyStamps, bandText, batesText, checkText, cornerOf, drawSheet, label, tileCenters, toPage } from './stamps.js';
 
 test('label writes a number in the three formats', () => {
   assert.deepEqual([label('number', 3, 12), label('of', 3, 12), label('page', 3, 12)], ['3', '3 / 12', 'Page 3']);
@@ -149,4 +149,37 @@ test('a letterhead fills the displayed page, upright, under the content or over 
   drawSheet(turned, sheet, false, 1);
   assert.match(contents(turned).at(-1), /0 1 -1 0 100 0 cm/);
   assert.ok(turned.node.Contents() instanceof PDFArray);
+});
+
+// The texts drawn on each page, decoded from the hex strings of the standard font.
+async function textsOf(document) {
+  const reloaded = await PDFDocument.load(await document.save());
+  return reloaded.getPages().map((page) => {
+    const contents = page.node.Contents();
+    const parts = !contents ? [] : contents instanceof PDFArray ? contents.asArray().map((ref) => page.node.context.lookup(ref)) : [contents];
+    const content = parts.map((part) => Buffer.from(part instanceof PDFRawStream ? decodePDFRawStream(part).decode() : part.getUnencodedContents())).join('\n');
+    return [...content.matchAll(/<([0-9A-F]+)> Tj/g)].map((match) => Buffer.from(match[1], 'hex').toString('latin1'));
+  });
+}
+
+test('Bates numbers go on from one part to the next, with their digits, prefix and suffix', async () => {
+  const bates = { prefix: 'CASE-', suffix: '-A', first: 98, digits: 4, position: 'bottom-right', size: 10 };
+  assert.equal(batesText(bates, 3), 'CASE-0101-A');
+  const found = [];
+  let offset = 0;
+  for (const count of [2, 3, 1]) {
+    const document = await PDFDocument.create();
+    for (let i = 0; i < count; i++) document.addPage([300, 400]);
+    await applyStamps(document, { ...NO_STAMPS, bates }, null, offset);
+    found.push(...(await textsOf(document)).flat());
+    offset += count;
+  }
+  assert.deepEqual(found, ['CASE-0098-A', 'CASE-0099-A', 'CASE-0100-A', 'CASE-0101-A', 'CASE-0102-A', 'CASE-0103-A']);
+});
+
+test('a text stamp is written in the content of the pages of the range, in a frame', async () => {
+  const document = await PDFDocument.create();
+  for (let i = 0; i < 3; i++) document.addPage([300, 400]);
+  await applyStamps(document, { ...NO_STAMPS, range: '2', stamp: { kind: 'text', text: 'RECEIVED', size: 18, scale: 20, position: 'top-right', image: null } });
+  assert.deepEqual(await textsOf(document), [[], ['RECEIVED'], []]);
 });

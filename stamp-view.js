@@ -9,6 +9,8 @@ import { t } from './i18n.js';
 const DEFAULTS = {
   numbers: { position: 'bottom-center', format: 'of', first: 1, size: 10, skipFirst: false },
   watermark: { kind: 'text', text: 'DRAFT', size: 72, opacity: 0.25, angle: 45, scale: 50, tile: false, image: null },
+  bates: { prefix: 'DOC-', suffix: '', first: 1, digits: 6, position: 'bottom-right', size: 10 },
+  stamp: { kind: 'text', text: 'CONFIDENTIAL', size: 18, scale: 20, position: 'top-right', image: null },
   header: { text: '', align: 'center', size: 10 },
   footer: { text: '', align: 'center', size: 10 },
 };
@@ -16,16 +18,19 @@ const DEFAULTS = {
 export function initStamps() {
   const dialog = byId('stamp-dialog');
   const field = (id) => byId(id);
-  field('numbers-position').replaceChildren(
-    ...POSITIONS.map((value) => {
-      const option = Object.assign(document.createElement('option'), { value });
-      setI18n(option, `position.${value}`);
-      return option;
-    }),
-  );
+  for (const id of ['numbers-position', 'bates-position', 'mark-position']) {
+    field(id).replaceChildren(
+      ...POSITIONS.map((value) => {
+        const option = Object.assign(document.createElement('option'), { value });
+        setI18n(option, `position.${value}`);
+        return option;
+      }),
+    );
+  }
   field('numbers-format').replaceChildren(...FORMATS.map(([value, text]) => Object.assign(document.createElement('option'), { value, textContent: text })));
 
   let image = null;
+  let markImage = null;
   let sheet = null;
   let schedulePreview = () => {};
   const syncKind = () => {
@@ -53,6 +58,28 @@ export function initStamps() {
     }
     field('letterhead-file').value = '';
     showSheetName();
+    schedulePreview();
+  });
+  const syncMarkKind = () => {
+    const picture = field('mark-kind').value === 'image';
+    for (const id of ['mark-text-field', 'mark-size-field']) byId(id).hidden = picture;
+    for (const id of ['mark-image-field', 'mark-scale-field']) byId(id).hidden = !picture;
+  };
+  const showMarkImageName = () => {
+    byId('mark-image-name').textContent = markImage ? t('stamp.image-kept', { name: markImage.name }) : '';
+  };
+  field('mark-kind').addEventListener('change', syncMarkKind);
+  field('mark-file').addEventListener('change', async () => {
+    const file = field('mark-file').files[0];
+    if (!file) return;
+    try {
+      markImage = { ...(await readPhoto(file)), name: file.name };
+      field('stamp-error').textContent = '';
+    } catch {
+      field('stamp-error').textContent = t('sign.error-open');
+    }
+    field('mark-file').value = '';
+    showMarkImageName();
     schedulePreview();
   });
   field('watermark-kind').addEventListener('change', syncKind);
@@ -97,6 +124,15 @@ export function initStamps() {
       field(`${band}-align`).value = settings.align;
       field(`${band}-size`).value = String(settings.size);
     }
+    const bates = current.bates ?? DEFAULTS.bates;
+    field('bates-on').checked = !!current.bates;
+    for (const key of ['prefix', 'suffix', 'first', 'digits', 'position', 'size']) field(`bates-${key}`).value = String(bates[key]);
+    const mark = current.stamp ?? DEFAULTS.stamp;
+    field('mark-on').checked = !!current.stamp;
+    for (const key of ['kind', 'text', 'size', 'scale', 'position']) field(`mark-${key}`).value = String(mark[key]);
+    markImage = mark.image ?? null;
+    showMarkImageName();
+    syncMarkKind();
     field('letterhead-on').checked = !!current.letterhead;
     sheet = current.letterhead ? { bytes: current.letterhead.bytes, name: current.letterhead.name } : null;
     field('letterhead-place').value = current.letterhead?.under === false ? 'over' : 'under';
@@ -116,6 +152,26 @@ export function initStamps() {
       header: band('header'),
       footer: band('footer'),
       range: field('stamp-range').value.trim(),
+      bates: field('bates-on').checked
+        ? {
+            prefix: field('bates-prefix').value.trim(),
+            suffix: field('bates-suffix').value.trim(),
+            first: number('bates-first', 1, 0, 999999999),
+            digits: number('bates-digits', 6, 1, 12),
+            position: field('bates-position').value,
+            size: number('bates-size', 10, 6, 48),
+          }
+        : null,
+      stamp: field('mark-on').checked
+        ? {
+            kind: field('mark-kind').value,
+            text: field('mark-text').value.trim(),
+            image: markImage,
+            size: number('mark-size', 18, 8, 72),
+            scale: number('mark-scale', 20, 5, 60),
+            position: field('mark-position').value,
+          }
+        : null,
       letterhead:
         field('letterhead-on').checked && sheet
           ? { ...sheet, under: field('letterhead-place').value === 'under', opacity: number('letterhead-opacity', 100, 10, 100) / 100 }
@@ -177,13 +233,17 @@ export function initStamps() {
             (settings.header && !settings.header.text && 'stamp.error-header') ||
             (settings.footer && !settings.footer.text && 'stamp.error-footer') ||
             (field('letterhead-on').checked && !sheet && 'stamp.error-letterhead') ||
+            (settings.stamp?.kind === 'text' && !settings.stamp.text && 'stamp.error-mark') ||
+            (settings.stamp?.kind === 'image' && !settings.stamp.image && 'sign.error-image') ||
             (settings.range && parseRange(settings.range, 1e6) === null && 'stamp.error-range');
           if (problem) {
             field('stamp-error').textContent = t(problem);
             return;
           }
           try {
-            for (const text of [settings.watermark?.kind === 'text' ? settings.watermark.text : '', settings.header?.text, settings.footer?.text]) if (text) await checkText(text);
+            const texts = [settings.watermark?.kind === 'text' ? settings.watermark.text : '', settings.header?.text, settings.footer?.text];
+            texts.push(settings.bates?.prefix, settings.bates?.suffix, settings.stamp?.kind === 'text' ? settings.stamp.text : '');
+            for (const text of texts) if (text) await checkText(text);
           } catch (error) {
             field('stamp-error').textContent = error.message;
             return;

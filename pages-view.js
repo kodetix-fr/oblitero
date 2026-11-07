@@ -314,6 +314,8 @@ export function initPages() {
       stamps.footer ? t('summary.footer') : '',
       stamps.watermark ? t('summary.watermark') : '',
       stamps.letterhead ? t('summary.letterhead') : '',
+      stamps.bates ? t('summary.bates') : '',
+      stamps.stamp ? t('summary.stamp') : '',
       Object.entries(DEFAULT_PROPERTIES).every(([key, value]) => properties[key] === value) ? '' : t('summary.properties'),
       parts > 1 ? t('summary.parts', { n: parts }) : '',
     ]
@@ -902,9 +904,11 @@ export function initPages() {
     run('status.splitting', async () => {
       const parts = exportParts(pages, cuts);
       const files = [];
+      let offset = 0;
       for (const part of parts) {
         say('status.splitting-at', { n: files.length + 1, total: parts.length });
-        files.push({ name: `${stem()}-${String(files.length + 1).padStart(3, '0')}.pdf`, blob: await asPdf(part) });
+        files.push({ name: `${stem()}-${String(files.length + 1).padStart(3, '0')}.pdf`, blob: await asPdf(part, offset) });
+        offset += part.length;
       }
       download(await buildZip(files), `${stem()}-split.zip`);
       return savedText();
