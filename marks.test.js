@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { crc32, deflateSync } from 'node:zlib';
 import { PDFDocument, PDFName, degrees } from './vendor/pdf-lib.esm.min.js';
 import { buildPdf, fitPaper } from './export.js';
-import { drawMarks, imageMark, newCache, textMark } from './marks.js';
+import { drawMarks, imageMark, newCache, shapeMark, shapeParts, textMark } from './marks.js';
 import { blankPage, createPages, rotateMark } from './pages-model.js';
 
 function png(width, height) {
@@ -129,4 +129,27 @@ test('a page put on a sheet of paper is scaled within the margin, centered, on a
   ]);
   const content = Buffer.from(output.context.lookup(output.getPage(0).node.Contents().get(0)).getUnencodedContents()).toString();
   assert.match(content, /^q\n2\.56\d* 0 0 2\.56\d* 36 41\.0\d* cm\n\/Page-\d+ Do\nQ/);
+});
+
+test('a shape turns with its page, and an arrow has its head at the second point', () => {
+  const arrow = shapeMark('arrow', 0.1, 0.2, 0.5, 0.2, 'blue');
+  const turned = rotateMark(arrow, 90);
+  assert.deepEqual([turned.x1, turned.y1, turned.x2, turned.y2], [0.8, 0.1, 0.8, 0.5]);
+  const back = rotateMark(turned, -90);
+  assert.ok(['x1', 'y1', 'x2', 'y2'].every((key) => Math.abs(back[key] - arrow[key]) < 1e-9) && back.turn === 0);
+  const { lines, box } = shapeParts(arrow, 100, 100);
+  assert.equal(box, null);
+  assert.equal(lines.length, 3);
+  assert.ok(lines.slice(1).every(([x, y, hx]) => x === 50 && y === 20 && hx < 50));
+  assert.deepEqual(shapeParts(shapeMark('rect', 0.5, 0.5, 0.1, 0.2, 'red'), 100, 200).box.map(Math.round), [10, 40, 40, 60]);
+});
+
+test('shapes are drawn in the page content: a frame, a highlight that lets the page through, lines for an arrow', async () => {
+  const document = await PDFDocument.create();
+  const page = document.addPage([300, 200]);
+  await drawMarks(document, page, [shapeMark('rect', 0.1, 0.1, 0.3, 0.3, 'red'), shapeMark('highlight', 0.5, 0.5, 0.9, 0.6), shapeMark('arrow', 0.1, 0.9, 0.5, 0.5, 'black')], newCache());
+  const content = Buffer.from(document.context.lookup(page.node.Contents().get(0)).getUnencodedContents()).toString();
+  assert.equal((content.match(/^S$/gm) ?? []).length, 4);
+  assert.equal((content.match(/^f$/gm) ?? []).length, 1);
+  assert.match(content, /\/GS-\d+ gs/);
 });

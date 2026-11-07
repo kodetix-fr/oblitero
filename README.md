@@ -118,7 +118,11 @@ certified digital signature) is out of scope.
   imported scan gets a transparent paper), or put a line of text anywhere on a
   page (a name, a date, a cross). Drag it where it belongs, or move it with the
   arrow keys; apply it to one page, the selected pages or all of them. It is a
-  picture of a signature, not a digital signature with a certificate.
+  picture of a signature, not a digital signature with a certificate. Text uses
+  the standard Helvetica font, and the dialog says so.
+- **Draw**: a rectangle, an arrow or a highlight on a page, with the mouse or the
+  keyboard, in red, blue or black (a highlight is yellow and lets the page show
+  through). The shapes are drawn into the page content and turn with the page.
 - **Properties**: a report of what each file carries (title, author, dates, XMP,
   embedded files, scripts, bookmarks, hidden layers, links, comments, form
   fields), and the properties of the file you download, which you write
