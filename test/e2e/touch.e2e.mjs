@@ -12,7 +12,7 @@ after(async () => {
   assert.deepEqual(errors, []);
 });
 
-test('a long press with a finger drags a page, with the same ghost and insertion bar, and a quick swipe moves nothing', async () => {
+test('a long press with a finger drags a page, with the same ghost and insertion bar, and a quick swipe moves nothing and does not go back', async () => {
   const path = await writePdf(app.dir, 'touch.pdf', [100, 200, 300].map((size) => ({ size, text: String(size) })));
   const page = await app.openApp();
   await page.setInputFiles('#pages-file', path);
