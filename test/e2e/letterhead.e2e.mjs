@@ -79,7 +79,7 @@ test('a letterhead goes under the content of the pages of the range, and over it
     [white, black, black],
     [blue, black, black],
   ]);
-  assert.match(await page.locator('#selection-summary').innerText(), /letterhead/);
+  await page.waitForFunction(() => document.getElementById('selection-summary').textContent.includes('letterhead'));
 
   await stamp('over');
   assert.deepEqual((await colors(page, await download(), points))[1], [blue, blue, black]);

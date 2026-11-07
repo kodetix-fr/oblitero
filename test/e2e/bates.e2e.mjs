@@ -45,7 +45,7 @@ test('Bates numbers go on across the parts of the ZIP, and a stamp is drawn on t
   await page.locator('#mark-text').fill('RECEIVED');
   await page.locator('#stamp-apply').click();
   await page.locator('#stamp-dialog').waitFor({ state: 'hidden' });
-  assert.match(await page.locator('#selection-summary').innerText(), /Bates/);
+  await page.waitForFunction(() => document.getElementById('selection-summary').textContent.includes('Bates'));
 
   const [download] = await Promise.all([page.waitForEvent('download'), page.locator('#download-parts').click()]);
   const files = readZip(readFileSync(await download.path())).map(({ data }) => data);
