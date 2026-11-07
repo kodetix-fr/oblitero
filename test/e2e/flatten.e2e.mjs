@@ -2,7 +2,7 @@ import test, { after, before } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { PDFDocument, PDFName, rgb } from '../../vendor/pdf-lib.esm.min.js';
+import { PDFDocument, PDFName } from '../../vendor/pdf-lib.esm.min.js';
 import { launchExtension } from './support/browser.mjs';
 
 let app;
