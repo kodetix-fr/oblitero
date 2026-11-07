@@ -210,7 +210,7 @@ test('the large view: double click or V, arrows and buttons, every kind of page,
       const state = await page.evaluate(() => ({
         active: document.activeElement?.getAttribute('aria-label'),
         open: [...document.querySelectorAll('dialog[open]')].map((dialog) => dialog.id),
-        stage: document.getElementById('preview-page').innerHTML.slice(0, 200),
+        stage: [...document.getElementById('preview-page').children].map((child) => `${child.tagName} ${child.textContent}`),
         count: document.getElementById('preview-count').textContent,
       }));
       throw new Error(`${error.message}\n${JSON.stringify(state)}`);
