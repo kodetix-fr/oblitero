@@ -20,3 +20,5 @@ export const pushGraphicsState: any;
 export const rgb: any;
 export const PDFRef: any;
 export const PDFStream: any;
+export const drawObject: any;
+export const setGraphicsState: any;

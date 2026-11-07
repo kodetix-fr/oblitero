@@ -191,6 +191,7 @@ export default {
   'props.props-keywords.placeholder': 'separated by commas',
   'props.write-the-creation-and': 'Write the creation and modification dates',
   'props.remove-the-links-and': 'Remove the links and comments from the pages',
+  'props.flatten': 'Draw the form fields and comments into the pages, so that they cannot be changed',
   'props.keep-bookmarks': 'Keep the bookmarks of the files (never when a page is redacted)',
   'props.props-reset': 'Reset',
   'props.props-cancel': 'Cancel',

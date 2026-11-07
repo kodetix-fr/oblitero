@@ -178,6 +178,7 @@ export default {
   'props.props-keywords.placeholder': 'separadas por comas',
   'props.write-the-creation-and': 'Escribir las fechas de creación y de modificación',
   'props.remove-the-links-and': 'Quitar los enlaces y los comentarios de las páginas',
+  'props.flatten': 'Dibujar los campos de formulario y los comentarios en las páginas, para que ya no se puedan cambiar',
   'props.keep-bookmarks': 'Conservar los marcadores de los archivos (nunca si una página está tachada)',
   'props.props-reset': 'Restablecer',
   'props.props-cancel': 'Cancelar',

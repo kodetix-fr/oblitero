@@ -110,7 +110,9 @@ certified digital signature) is out of scope.
   fields), and the properties of the file you download, which you write
   yourself. The download is a new document, so none of the document level data
   of your files is copied; links and comments stay on the copied pages unless
-  you ask to remove them. The dates can be left out. The bookmarks are kept,
+  you ask to remove them, or to draw them into the pages (flatten: the fields
+  and comments look the same and can no longer be changed). The dates can be
+  left out. The bookmarks are kept,
   pointing to the pages of the result, under the name of each file when there
   are several; they can be left out, and they never are kept when a page is
   redacted, since a bookmark can name what the rectangle hides.

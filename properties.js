@@ -1,4 +1,5 @@
 import { PDFArray, PDFDict, PDFDocument, PDFName } from './vendor/pdf-lib.esm.min.js';
+import { flattenAnnotations } from './flatten.js';
 
 const name = (value) => PDFName.of(value);
 
@@ -60,7 +61,7 @@ export async function inspectPdf(bytes) {
   };
 }
 
-// settings: { title, author, subject, keywords, dates, stripAnnotations, bookmarks }; the bookmarks are written by the output. The output is a new document, so the properties of
+// settings: { title, author, subject, keywords, dates, stripAnnotations, flatten, bookmarks }; the bookmarks are written by the output. The output is a new document, so the properties of
 // the sources are not in it; what is written here is what the user typed.
 export function applyProperties(output, settings) {
   if (settings.title) output.setTitle(settings.title);
@@ -73,6 +74,7 @@ export function applyProperties(output, settings) {
     output.getInfoDict().delete(name('ModDate'));
   }
   if (settings.stripAnnotations) for (const page of output.getPages()) page.node.delete(name('Annots'));
+  else if (settings.flatten) flattenAnnotations(output);
 }
 
-export const DEFAULT_PROPERTIES = { title: '', author: '', subject: '', keywords: '', dates: true, stripAnnotations: false, bookmarks: true };
+export const DEFAULT_PROPERTIES = { title: '', author: '', subject: '', keywords: '', dates: true, stripAnnotations: false, flatten: false, bookmarks: true };

@@ -178,6 +178,7 @@ export default {
   'props.props-keywords.placeholder': 'durch Kommas getrennt',
   'props.write-the-creation-and': 'Erstellungs- und Änderungsdatum schreiben',
   'props.remove-the-links-and': 'Links und Kommentare von den Seiten entfernen',
+  'props.flatten': 'Formularfelder und Kommentare in die Seiten zeichnen, damit sie nicht mehr geändert werden können',
   'props.keep-bookmarks': 'Lesezeichen der Dateien behalten (nie, wenn eine Seite geschwärzt ist)',
   'props.props-reset': 'Zurücksetzen',
   'props.props-cancel': 'Abbrechen',

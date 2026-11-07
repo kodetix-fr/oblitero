@@ -178,6 +178,7 @@ export default {
   'props.props-keywords.placeholder': 'dipisahkan koma',
   'props.write-the-creation-and': 'Tulis tanggal pembuatan dan perubahan',
   'props.remove-the-links-and': 'Hapus tautan dan komentar dari halaman',
+  'props.flatten': 'Gambar kolom formulir dan komentar ke dalam halaman, agar tidak dapat diubah lagi',
   'props.keep-bookmarks': 'Pertahankan penanda buku dari file (tidak pernah jika ada halaman yang dihitamkan)',
   'props.props-reset': 'Setel ulang',
   'props.props-cancel': 'Batal',
