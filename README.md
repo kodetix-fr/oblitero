@@ -37,7 +37,8 @@ certified digital signature) is out of scope.
   empties the screen, and Undo brings it back.
 - **Pages**: click selects, Shift+click selects a range, a rectangle dragged on
   the background selects what it touches, and a field takes a list such as
-  `1-3, 7, 10-` (Odd and Even are one click). Rotate, hide, drag to reorder (the
+  `1-3, 7, 10-` (Odd and Even are one click). Rotate, hide, drag to reorder (with
+  a finger or a pen, a long press starts the drag; the
   whole selection travels with the page you grab, and a drop lands next to the
   nearest page, gaps and the end included). Every change can be undone and
   redone. A hidden page stays in the grid, dimmed, and is left out of every

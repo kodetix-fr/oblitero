@@ -9,6 +9,7 @@ Notable changes to Oblitero. The format follows
 ### Added
 
 - **Reverse** the order of the selected pages, and **interleave** them one file at a time (the fronts and backs of a scan).
+- **Drag with a finger or a pen**: a long press starts the drag of a page or a file row.
 - **Crop** the selected pages, keeping or destroying what is outside, and put the result on **A4 or Letter** with a margin.
 - **Turn by any angle** and **mirror** the selected pages.
 - **Bates numbers** that go on across the parts, and **stamps** (a framed text or an image) at a position.
