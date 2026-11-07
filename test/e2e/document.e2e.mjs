@@ -392,3 +392,18 @@ test('Find and redact covers what it finds on every page, keeps what the user sw
   assert.match(checked[2].text, /KEEP-ME-ENTIRELY/);
   await page.close();
 });
+
+test('a duplex scan in two files: reverse the backs, then interleave', async () => {
+  const fronts = await writePdf(app.dir, 'fronts.pdf', [100, 101, 102].map((size) => ({ size, text: '' })));
+  const backs = await writePdf(app.dir, 'backs.pdf', [202, 201, 200].map((size) => ({ size, text: '' })));
+  page = await app.openApp();
+  await page.setInputFiles('#pages-file', [fronts, backs]);
+  await page.locator('#grid li').nth(5).waitFor();
+  assert.equal(await page.locator('#interleave').isDisabled(), true);
+  for (const n of [4, 5, 6]) await card(n).click();
+  await page.locator('#reverse').click();
+  await page.locator('#select-all').click();
+  await page.locator('#interleave').click();
+  assert.deepEqual(await widths(), [100, 200, 101, 201, 102, 202]);
+  await page.close();
+});

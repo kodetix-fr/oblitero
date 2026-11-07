@@ -70,7 +70,28 @@ export function rotatePages(pages, ids, delta) {
   );
 }
 
-export const removePages = (pages, ids) => pages.filter((page) => !ids.has(page.id));
+// Puts `order` (the pages of `ids`, rearranged) back into the places those pages held.
+function refill(pages, ids, order) {
+  let next = 0;
+  return pages.map((page) => (ids.has(page.id) ? order[next++] : page));
+}
+
+export const reversePages = (pages, ids) => refill(pages, ids, pages.filter((page) => ids.has(page.id)).reverse());
+
+// One page of each file in turn, in the order the files first appear: the fronts and the backs of a duplex scan. A file with
+// more pages ends the sequence with the rest.
+export function interleavePages(pages, ids) {
+  const groups = new Map();
+  for (const page of pages) if (ids.has(page.id)) groups.set(page.file, [...(groups.get(page.file) ?? []), page]);
+  const longest = Math.max(0, ...[...groups.values()].map((group) => group.length));
+  const order = [];
+  for (let index = 0; index < longest; index++) {
+    for (const group of groups.values()) if (index < group.length) order.push(group[index]);
+  }
+  return refill(pages, ids, order);
+}
+
+export const removePages =(pages, ids) => pages.filter((page) => !ids.has(page.id));
 
 // Consecutive pages that come from the same file make one run (a blank page is a run of its own file, null).
 export function runsOf(pages) {
