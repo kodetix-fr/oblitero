@@ -218,6 +218,8 @@ li[data-hidden] .hidden-mark { display: grid; }
 .drag-image { position: fixed; top: -1000px; left: -1000px; width: 130px; height: 160px; }
 .drag-image.held { z-index: 1000; pointer-events: none; opacity: .9; }
 #grid li, #file-list .file { -webkit-touch-callout: none; user-select: none; }
+/* A horizontal swipe on the lists is a drag, never a scroll of the page nor a step back in the history. */
+#grid, #file-list { touch-action: pan-y pinch-zoom; }
 .drag-image canvas { position: absolute; width: 90px; height: auto; background: #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, .45); }
 .drag-image-count {
   position: absolute; right: 0; bottom: 0; z-index: 4; display: grid; place-items: center; min-width: 26px; height: 26px; padding: 0 7px; border-radius: 999px;
