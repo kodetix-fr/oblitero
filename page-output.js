@@ -1,5 +1,4 @@
 import { buildPdf, fitPaper } from './export.js';
-import { flattenAnnotations } from './flatten.js';
 import { compressPdf, formatSize } from './compress.js';
 import { recode } from './photo.js';
 import { applyProperties } from './properties.js';
@@ -53,11 +52,7 @@ export function createOutput(documents, settings, say) {
     }
     return buildPdf(documents.map((document) => document.bytes), entries, burn, async (output) => {
       const { stamps, paper } = settings();
-      if (paper) {
-        // The pages are drawn anew on the paper, without their annotations: flattening them first keeps what they show.
-        if (properties.flatten && !properties.stripAnnotations) flattenAnnotations(output);
-        await fitPaper(output, paper.size, paper.margin);
-      }
+      if (paper) await fitPaper(output, paper.size, paper.margin);
       if (bookmarked) writeOutline(output, outlineFor(entries, trees, documents.map((document) => document.name)));
       await applyStamps(output, stamps, null, offset);
       applyProperties(output, properties);

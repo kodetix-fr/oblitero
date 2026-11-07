@@ -101,7 +101,7 @@ export default {
   'redact.redact-title': 'Hitamkan halaman',
   'redact.drag-on-the-page': 'Seret di atas halaman untuk menutupi yang harus hilang. Dengan keyboard, fokuskan halaman: tombol panah menggerakkan garis bidik (Shift untuk langkah lebih besar), Enter memulai persegi panjang dan Enter lagi menempatkannya; Tab berpindah antar persegi panjang, yang bergerak dengan tombol panah, berubah ukuran dengan Shift dan tombol panah, dan dihapus dengan Delete. Pada PDF yang diunduh, seluruh halaman menjadi gambar, sehingga isi yang tertutup tidak ada lagi.',
   'crop.title': 'Pangkas halaman',
-  'crop.hint': 'Seret di halaman untuk membingkai bagian yang disimpan; persegi panjang baru menggantikan yang terakhir, dan Kosongkan membatalkan pemangkasan. Halaman yang dipilih dipangkas ke bagian yang sama dari halamannya. Keyboard bekerja seperti saat menghitamkan. Tautan dan komentar halaman yang dipangkas tidak disimpan.',
+  'crop.hint': 'Seret di halaman untuk membingkai bagian yang disimpan; persegi panjang baru menggantikan yang terakhir, dan Kosongkan membatalkan pemangkasan. Halaman yang dipilih dipangkas ke bagian yang sama dari halamannya. Keyboard bekerja seperti saat menghitamkan.',
   'crop.remove': 'Hapus bagian di luar (halaman menjadi gambar)',
   'redact.redact-layer.aria': 'Halaman. Tombol panah menggerakkan garis bidik, Enter memulai persegi panjang dan Enter lagi menempatkannya, Tab menuju persegi panjang.',
   'redact.redact-undo': 'Urungkan',

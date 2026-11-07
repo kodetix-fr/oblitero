@@ -101,7 +101,7 @@ export default {
   'redact.redact-title': 'Tarjar página',
   'redact.drag-on-the-page': 'Arraste sobre a página para cobrir o que deve desaparecer. Pelo teclado, coloque o foco na página: as setas movem a mira (Shift para passos maiores), Enter inicia um retângulo e Enter de novo o posiciona; Tab percorre os retângulos, que se movem com as setas, mudam de tamanho com Shift e as setas, e são removidos com Delete. No PDF baixado, a página inteira vira uma imagem, então o conteúdo coberto deixa de existir.',
   'crop.title': 'Recortar páginas',
-  'crop.hint': 'Arraste na página para enquadrar o que fica; um novo retângulo substitui o anterior, e Limpar remove o recorte. As páginas selecionadas são recortadas na mesma parte da página. O teclado funciona como ao tarjar. Os links e comentários de uma página recortada não são mantidos.',
+  'crop.hint': 'Arraste na página para enquadrar o que fica; um novo retângulo substitui o anterior, e Limpar remove o recorte. As páginas selecionadas são recortadas na mesma parte da página. O teclado funciona como ao tarjar.',
   'crop.remove': 'Remover o que fica de fora (a página vira uma imagem)',
   'redact.redact-layer.aria': 'Página. As setas movem a mira, Enter inicia um retângulo e Enter de novo o posiciona, Tab vai para os retângulos.',
   'redact.redact-undo': 'Desfazer',

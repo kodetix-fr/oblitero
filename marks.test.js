@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { crc32, deflateSync } from 'node:zlib';
-import { PDFDocument, PDFName, degrees } from './vendor/pdf-lib.esm.min.js';
+import { PDFDocument, PDFName, PDFString, degrees } from './vendor/pdf-lib.esm.min.js';
 import { buildPdf, fitPaper } from './export.js';
 import { drawMarks, imageMark, newCache, textMark } from './marks.js';
 import { blankPage, createPages, rotateMark } from './pages-model.js';
@@ -129,4 +129,24 @@ test('a page put on a sheet of paper is scaled within the margin, centered, on a
   ]);
   const content = Buffer.from(output.context.lookup(output.getPage(0).node.Contents().get(0)).getUnencodedContents()).toString();
   assert.match(content, /^q\n2\.56\d* 0 0 2\.56\d* 36 41\.0\d* cm\n\/Page-\d+ Do\nQ/);
+});
+
+test('a cropped page and a page put on paper keep their links, moved with the content; a link outside the crop goes', async () => {
+  const source = await PDFDocument.create();
+  const page = source.addPage([300, 200]);
+  const link = (rect, uri) => source.context.register(source.context.obj({ Type: 'Annot', Subtype: 'Link', Rect: rect, A: { S: 'URI', URI: PDFString.of(uri) } }));
+  page.node.addAnnot(link([160, 160, 200, 190], 'https://inside.example'));
+  page.node.addAnnot(link([10, 10, 40, 40], 'https://outside.example'));
+  const bytes = await source.save();
+  const [entry] = createPages(1);
+  // The top right quarter of the page.
+  const crop = { x: 0.5, y: 0, w: 0.5, h: 0.5, remove: false };
+  const rects = (document) =>
+    document.getPages().map((p) => (p.node.Annots()?.asArray() ?? []).map((ref) => document.context.lookup(ref).lookup(PDFName.of('Rect')).asArray().map((n) => Math.round(n.asNumber()))));
+  const cropped = await PDFDocument.load(await buildPdf([bytes], [{ ...entry, crop }], noBurn));
+  assert.deepEqual(rects(cropped), [[[10, 60, 50, 90]]]);
+
+  const output = await PDFDocument.load(bytes);
+  await fitPaper(output, [600, 400], 0);
+  assert.deepEqual(rects(output), [[[320, 320, 400, 380], [20, 20, 80, 80]]]);
 });
