@@ -60,7 +60,7 @@ export async function inspectPdf(bytes) {
   };
 }
 
-// settings: { title, author, subject, keywords, dates, stripAnnotations }. The output is a new document, so the properties of
+// settings: { title, author, subject, keywords, dates, stripAnnotations, bookmarks }; the bookmarks are written by the output. The output is a new document, so the properties of
 // the sources are not in it; what is written here is what the user typed.
 export function applyProperties(output, settings) {
   if (settings.title) output.setTitle(settings.title);
@@ -75,4 +75,4 @@ export function applyProperties(output, settings) {
   if (settings.stripAnnotations) for (const page of output.getPages()) page.node.delete(name('Annots'));
 }
 
-export const DEFAULT_PROPERTIES = { title: '', author: '', subject: '', keywords: '', dates: true, stripAnnotations: false };
+export const DEFAULT_PROPERTIES = { title: '', author: '', subject: '', keywords: '', dates: true, stripAnnotations: false, bookmarks: true };

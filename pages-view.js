@@ -341,7 +341,7 @@ export function initPages() {
     documents.forEach((document, file) => {
       if (!document.doc || held.has(file)) return;
       closeRender(document.doc);
-      Object.assign(document, { doc: null, bytes: null, original: null, photo: null });
+      Object.assign(document, { doc: null, bytes: null, original: null, photo: null, outline: null });
     });
   }
 

@@ -110,7 +110,10 @@ certified digital signature) is out of scope.
   fields), and the properties of the file you download, which you write
   yourself. The download is a new document, so none of the document level data
   of your files is copied; links and comments stay on the copied pages unless
-  you ask to remove them. The dates can be left out.
+  you ask to remove them. The dates can be left out. The bookmarks are kept,
+  pointing to the pages of the result, under the name of each file when there
+  are several; they can be left out, and they never are kept when a page is
+  redacted, since a bookmark can name what the rectangle hides.
 - **Extract text**: the text of the shown pages (or of the selection) to a .txt
   file. A redacted page is written as `[redacted page]`.
 - **Export images**: the pages as PNG or JPEG at 72, 150 or 300 dpi, as a ZIP.

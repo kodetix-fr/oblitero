@@ -2,7 +2,8 @@ import { buildPdf } from './export.js';
 import { compressPdf, formatSize } from './compress.js';
 import { recode } from './photo.js';
 import { applyProperties } from './properties.js';
-import { burnPage } from './render.js';
+import { burnPage, outlineTree } from './render.js';
+import { outlineFor, writeOutline } from './outline.js';
 import { applyStamps } from './stamps.js';
 import { t } from './i18n.js';
 
@@ -22,8 +23,19 @@ export function createOutput(documents, settings, say) {
       }
       return burned.get(key);
     };
+    const { properties } = settings();
+    // A bookmark can name what a rectangle hides, so a document with a redaction has none.
+    const bookmarked = properties.bookmarks && redacted === 0;
+    const trees = [];
+    if (bookmarked) {
+      for (const file of new Set(entries.map((entry) => entry.file).filter((file) => file !== null))) {
+        documents[file].outline ??= outlineTree(documents[file].doc);
+        trees[file] = await documents[file].outline;
+      }
+    }
     return buildPdf(documents.map((document) => document.bytes), entries, burn, async (output) => {
-      const { stamps, properties } = settings();
+      const { stamps } = settings();
+      if (bookmarked) writeOutline(output, outlineFor(entries, trees, documents.map((document) => document.name)));
       await applyStamps(output, stamps);
       applyProperties(output, properties);
     });

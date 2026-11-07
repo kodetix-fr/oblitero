@@ -61,18 +61,25 @@ export async function entrySize(doc, entry) {
   return pageSize(doc, entry.source, entry.rotation);
 }
 
-// The indexes of the pages where the top-level entries of the outline of a file begin.
-export async function outlineStarts(doc) {
-  const starts = new Set();
-  for (const { dest } of (await doc.getOutline()) ?? []) {
+// The outline of a file as a tree of { title, page, items }, `page` being the index of the page an entry points to, or null
+// when it points nowhere in the file.
+export async function outlineTree(doc) {
+  const pageOf = async (dest) => {
     try {
       const target = typeof dest === 'string' ? await doc.getDestination(dest) : dest;
-      if (target) starts.add(typeof target[0] === 'number' ? target[0] : await doc.getPageIndex(target[0]));
+      if (!target) return null;
+      return typeof target[0] === 'number' ? target[0] : await doc.getPageIndex(target[0]);
     } catch {
-      continue;
+      return null;
     }
-  }
-  return starts;
+  };
+  const walk = (items) => Promise.all(items.map(async (item) => ({ title: item.title, page: await pageOf(item.dest), items: await walk(item.items ?? []) })));
+  return walk((await doc.getOutline()) ?? []);
+}
+
+// The indexes of the pages where the top-level entries of the outline of a file begin.
+export async function outlineStarts(doc) {
+  return new Set((await outlineTree(doc)).map((item) => item.page).filter((page) => page !== null));
 }
 
 const bitmaps = new WeakMap();
