@@ -86,6 +86,10 @@ export function nearestEntry(container, entry, idOf, event, axis, blocked = new 
   return { element: best.element, id: idOf(best.element), after };
 }
 
+const LONG_PRESS_MS = 400;
+const PRESS_SLOP = 8;
+const GHOST_GRIP = 30;
+
 // Lets the entries of `container` (elements that match `entry`, each with draggable=true) be dragged to a new place
 // among them. The drop lands before or after the entry NEAREST to the pointer, so the gaps between entries and the
 // empty space after the last one count too; over the dragged entries themselves there is no target.
@@ -93,7 +97,7 @@ export function nearestEntry(container, entry, idOf, event, axis, blocked = new 
 /**
  * @param {HTMLElement} container
  * @param {{ entry: string, idOf: (element: any) => number, axis: 'x' | 'y', state: { source: number | null, group: Set<number> },
- *   group?: (id: number) => Set<number>, ghost?: (event: DragEvent, group: Set<number>) => void,
+ *   group?: (id: number) => Set<number>, ghost?: (group: Set<number>) => HTMLElement,
  *   onMove: (ids: Set<number>, targetId: number, after: boolean) => void }} options
  */
 export function sortable(container, { entry, idOf, axis, state, group = (id) => new Set([id]), ghost, onMove }) {
@@ -111,7 +115,12 @@ export function sortable(container, { entry, idOf, axis, state, group = (id) => 
     state.group = group(state.source);
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('text/plain', String(state.source));
-    ghost?.(event, state.group);
+    const image = ghost?.(state.group);
+    if (image) {
+      document.body.append(image);
+      event.dataTransfer.setDragImage(image, GHOST_GRIP, GHOST_GRIP);
+      setTimeout(() => image.remove());
+    }
     setTimeout(() => {
       for (const other of container.querySelectorAll(entry)) if (state.group.has(idOf(other))) other.classList.add('dragging');
     });
@@ -146,6 +155,67 @@ export function sortable(container, { entry, idOf, axis, state, group = (id) => 
     if (!hit) return;
     event.preventDefault();
     onMove(moving, hit.id, hit.after);
+  });
+
+  // A finger or a pen does not start the HTML drag: a long press starts the same one, and a move before it scrolls as usual.
+  container.addEventListener('pointerdown', (event) => {
+    if (event.pointerType === 'mouse' || !event.isPrimary) return;
+    const element = /** @type {Element} */ (event.target).closest?.(entry);
+    if (!element || !container.contains(element)) return;
+    const gesture = new AbortController();
+    const options = { signal: gesture.signal };
+    const mine = (other) => other.pointerId === event.pointerId;
+    let image = null;
+    let dragging = false;
+    const follow = (point) => image && Object.assign(image.style, { left: `${point.clientX - GHOST_GRIP}px`, top: `${point.clientY - GHOST_GRIP}px` });
+    const end = () => {
+      clearTimeout(timer);
+      gesture.abort();
+      image?.remove();
+      state.source = null;
+      state.group = new Set();
+      clearMarks();
+    };
+    const timer = setTimeout(() => {
+      dragging = true;
+      state.source = idOf(element);
+      state.group = group(state.source);
+      for (const other of container.querySelectorAll(entry)) if (state.group.has(idOf(other))) other.classList.add('dragging');
+      image = ghost?.(state.group) ?? null;
+      if (image) {
+        image.classList.add('held');
+        document.body.append(image);
+        follow(event);
+      }
+      container.setPointerCapture(event.pointerId);
+    }, LONG_PRESS_MS);
+    container.addEventListener('contextmenu', (other) => other.preventDefault(), options);
+    container.addEventListener('touchmove', (other) => dragging && other.cancelable && other.preventDefault(), { ...options, passive: false });
+    container.addEventListener('pointermove', (other) => {
+      if (!mine(other)) return;
+      if (!dragging) {
+        if (Math.hypot(other.clientX - event.clientX, other.clientY - event.clientY) > PRESS_SLOP) end();
+        return;
+      }
+      follow(other);
+      const hit = target(other);
+      document.querySelectorAll('[data-drop]').forEach((marked) => marked.removeAttribute('data-drop'));
+      if (hit) hit.element.dataset.drop = hit.after ? 'after' : 'before';
+    }, options);
+    container.addEventListener('pointerup', (other) => {
+      if (!mine(other)) return;
+      const moving = state.group;
+      const hit = dragging ? target(other) : null;
+      const dropped = dragging;
+      end();
+      if (!dropped) return;
+      // The click that follows the lift would select the card.
+      const swallow = (click) => click.stopPropagation();
+      container.addEventListener('click', swallow, { capture: true, once: true });
+      setTimeout(() => container.removeEventListener('click', swallow, { capture: true }));
+      if (hit) onMove(moving, hit.id, hit.after);
+    }, options);
+    container.addEventListener('pointercancel', (other) => mine(other) && end(), options);
   });
 }
 

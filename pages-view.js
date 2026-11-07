@@ -541,7 +541,7 @@ export function initPages() {
 
   // ---------- gestures: drag a page, lasso, keyboard ----------
 
-  function dragGhost(event, group) {
+  function dragGhost(group) {
     const ghost = document.createElement('div');
     ghost.className = 'drag-image';
     pages
@@ -558,9 +558,7 @@ export function initPages() {
       count.textContent = String(group.size);
       ghost.append(count);
     }
-    document.body.append(ghost);
-    event.dataTransfer.setDragImage(ghost, 30, 30);
-    setTimeout(() => ghost.remove());
+    return ghost;
   }
 
   sortable(grid, {
