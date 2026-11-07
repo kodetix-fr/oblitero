@@ -62,7 +62,11 @@ certified digital signature) is out of scope.
   upright. The page of the photos cannot change while one of them carries a
   redaction, a signature or a text.
 - **Cut**: the scissors that appear between two pages cut the document there.
-  The parts get their own color, and one click downloads them as a ZIP. "Cut
+  The parts get their own color, and one click downloads them as a ZIP. With
+  several files, "One PDF per file" makes a ZIP with a result for each file
+  instead (its pages, with the changes and the settings of the result, such as a
+  rotation, the numbers, a watermark or the compression), one file at a time,
+  and a report that says which ones could not be made. "Cut
   every N pages" places the cuts for you, and they can be moved or removed one
   by one. So do the other ways: at the chapters (the top-level entries of the
   outline), after each blank page (which is hidden: a batch scan with separator
