@@ -287,7 +287,7 @@ test('Shift and an arrow extend the selection from the keyboard, and H hides it'
   await page.close();
 });
 
-test('an encrypted PDF is refused, and what is open stays', async () => {
+test('an encrypted PDF whose password is not given is refused, and what is open stays', async () => {
   const body = [
     '<</Type/Catalog/Pages 2 0 R>>',
     '<</Type/Pages/Kids[3 0 R]/Count 1>>',
@@ -308,6 +308,8 @@ test('an encrypted PDF is refused, and what is open stays', async () => {
 
   await open(await writePdf(app.dir, `open-${counter++}.pdf`, [{ size: 100 }]), 1);
   await page.setInputFiles('#pages-file', encrypted);
+  await page.locator('#password-dialog').waitFor({ state: 'visible' });
+  await page.locator('#password-cancel').click();
   await page.waitForFunction(() => document.getElementById('pages-status').textContent.includes('locked.pdf'));
   assert.match(await page.locator('#pages-status').innerText(), /Cannot read locked\.pdf.*encrypted/);
   assert.equal(await page.locator('#grid li').count(), 1);

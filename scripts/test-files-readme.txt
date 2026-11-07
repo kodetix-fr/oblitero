@@ -176,10 +176,10 @@ signature-transparente.png
 Utilise-les avec formulaire-a-remplir.pdf (dossier pages).
 
 
-a-refuser/     Fichiers que chaque outil doit refuser avec un message
+a-refuser/     Fichiers que chaque outil doit refuser, ouvrir ou reparer avec un message
 ----------------------------------------------------------------------
-chiffre-mot-de-passe-secret.pdf   vrai PDF chiffre (mot de passe : secret)
-tronque.pdf                       PDF coupe a 60 %
+chiffre-mot-de-passe-secret.pdf   vrai PDF chiffre (mot de passe : secret) : Oblitero le demande puis l'ouvre
+tronque.pdf                       PDF coupe a 60 % : Oblitero garde les pages encore lisibles et dit combien
 pas-un-pdf.pdf                    texte avec extension .pdf
 vide.pdf                          0 octet
     Le document deja ouvert ne doit pas etre modifie par un refus.

@@ -46,3 +46,28 @@ npm pack pdfjs-dist@6.5.438 && tar -xzf pdfjs-dist-6.5.438.tgz
 shasum -a 256 package/legacy/build/pdf.min.mjs vendor/pdfjs/pdf.min.mjs                 # identical
 shasum -a 256 package/legacy/build/pdf.worker.min.mjs vendor/pdfjs/pdf.worker.min.mjs   # identical
 ```
+
+## qpdf/
+
+| | |
+|---|---|
+| Project | [qpdf](https://github.com/qpdf/qpdf) 12.2.0, compiled to WebAssembly by [qpdf-wasm](https://github.com/neslinesli93/qpdf-wasm) |
+| Version | **0.3.1** (npm package `@neslinesli93/qpdf-wasm`), built and published by the GitHub workflow of the project, with a build provenance attestation |
+| Licences | qpdf: Apache-2.0, `qpdf/LICENSE_QPDF` and `qpdf/NOTICE_QPDF.txt`; the wrapper: ISC, `qpdf/LICENSE_QPDF_WASM`; zlib: `qpdf/LICENSE_ZLIB` (from `zlib.h`); libjpeg-turbo: `qpdf/LICENSE_JPEG_TURBO.txt`. Taken from the commits the build pins: qpdf `856d32c6`, zlib `21767c65`, jpeg-turbo `7aa2a898` |
+| Source | `npm pack @neslinesli93/qpdf-wasm@0.3.1`, files `package/dist/qpdf.js` and `package/dist/qpdf.wasm` (no `eval` and no `new Function`) |
+| npm package integrity | `sha512-pN6wK7JSq66dtmFpncxPAvuOrILm+sdrm1SI8ZKMCl3TSKKHQeCXoes4p8gXNez8dpEhZ0st+qeN4tLbeCm3kw==` |
+| sha256 of the `qpdf-wasm-0.3.1.tgz` package | `bdb7c4a6b55a096771c738c2410387a8cd55dccbcaa0cd4762337c88896e8728` |
+| sha256 of `qpdf.js` | `c0e8fe62e0c3385dd8cb5d6b613f74d87a4138a3a3343e2add45a067a14d0884` |
+| sha256 of `qpdf.wasm` | `69a17eecb26ef73e6b853487500802b18523c7b453382de0063bb2d387edb6bd` |
+
+`qpdf.js` is a classic script, not a module: `qpdf-run.js` adds it to the page the first time it is needed, and it fetches `qpdf.wasm` from the extension. It opens a password-protected PDF, repairs a damaged one and protects the result with a password.
+
+### Verify
+
+```
+npm pack @neslinesli93/qpdf-wasm@0.3.1 && tar -xzf neslinesli93-qpdf-wasm-0.3.1.tgz
+shasum -a 256 package/dist/qpdf.js vendor/qpdf/qpdf.js       # identical
+shasum -a 256 package/dist/qpdf.wasm vendor/qpdf/qpdf.wasm   # identical
+gh attestation verify vendor/qpdf/qpdf.wasm --repo neslinesli93/qpdf-wasm   # signed by the workflow of the project
+gh attestation verify vendor/qpdf/qpdf.js --repo neslinesli93/qpdf-wasm
+```

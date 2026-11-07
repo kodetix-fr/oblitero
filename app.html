@@ -44,6 +44,7 @@
     <symbol id="i-file-plus" viewBox="0 0 24 24"><path d="M7 3.5h6.5L18.5 8.5v11a1.5 1.5 0 0 1-1.5 1.5H7a1.5 1.5 0 0 1-1.5-1.5V5A1.5 1.5 0 0 1 7 3.5z"/><path d="M13.5 3.5v5h5M12 11.5v6M9 14.5h6"/></symbol>
     <symbol id="i-blank" viewBox="0 0 24 24"><rect x="6" y="3.5" width="12" height="17" rx="1.6" stroke-dasharray="3 2.4"/></symbol>
     <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7.5a2 2 0 0 0 2 2h2.5"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
     <symbol id="i-crop" viewBox="0 0 24 24"><path d="M6 2v14a2 2 0 0 0 2 2h14M2 6h14a2 2 0 0 1 2 2v14"/></symbol>
     <symbol id="i-flip-h" viewBox="0 0 24 24"><path d="M12 3v18M9 6L3 18h6zM15 6l6 12h-6z"/></symbol>
     <symbol id="i-flip-v" viewBox="0 0 24 24"><path d="M3 12h18M6 9L18 3v6zM6 15l12 6v-6z"/></symbol>
@@ -173,6 +174,14 @@
             <div class="out-row">
               <label class="field"><span data-i18n="paper.size">Size</span> <select id="paper-size"><option value="as-is" data-i18n="paper.as-is">As it is</option><option value="a4" data-i18n="photo.size.a4">A4</option><option value="letter" data-i18n="photo.size.letter">Letter</option></select></label>
               <label class="field" id="paper-margin-field" hidden><span data-i18n="app.photo-settings-margin">Margin</span> <select id="paper-margin" aria-label="Margin around the pages" data-i18n-aria="paper.margin.aria"></select></label>
+            </div>
+          </section>
+          <section class="out-group">
+            <h3 data-i18n="protect.title">Password</h3>
+            <label class="field"><span data-i18n="protect.label">To open</span> <input type="password" id="protect-password" autocomplete="new-password" spellcheck="false" placeholder="none" data-i18n-placeholder="protect.none"></label>
+            <div class="out-row" id="protect-options" hidden>
+              <label class="field"><input type="checkbox" id="protect-print" checked> <span data-i18n="protect.print">Allow printing</span></label>
+              <label class="field"><input type="checkbox" id="protect-copy" checked> <span data-i18n="protect.copy">Allow copying text</span></label>
             </div>
           </section>
           <section class="out-group" id="photo-settings" hidden>
@@ -439,6 +448,25 @@
     </div>
   </dialog>
 
+  <dialog id="password-dialog" aria-labelledby="password-title">
+    <form method="dialog" id="password-form">
+      <div class="dlg-head">
+        <svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg>
+        <h2 id="password-title" data-i18n="password.title">Password</h2>
+      </div>
+      <div class="dlg-body">
+        <p class="hint" id="password-file"></p>
+        <label class="field wide"><span data-i18n="password.label">Password</span> <input type="password" id="password-input" autocomplete="off" spellcheck="false"></label>
+        <p class="hint wide" id="password-error" role="alert"></p>
+        <p class="hint wide" data-i18n="password.hint">The file is opened here, in memory; the password is not kept.</p>
+      </div>
+      <div class="dlg-foot">
+        <span class="sep"></span>
+        <button type="button" class="btn" id="password-cancel" data-i18n="redact.redact-cancel">Cancel</button>
+        <button type="submit" class="btn primary" id="password-open"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="password.open">Open</span></button>
+      </div>
+    </form>
+  </dialog>
   <dialog id="blank-dialog" aria-labelledby="blank-title">
     <div class="dlg-head">
       <svg class="ic" aria-hidden="true"><use href="#i-blank-off"/></svg>
