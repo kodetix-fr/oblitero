@@ -1,7 +1,7 @@
 import { openInfo } from './pdf-info.js';
 import { buildPdf } from './export.js';
 import { LEVELS, formatSize } from './compress.js';
-import { createOutput } from './page-output.js';
+import { createOutput, eachFile } from './page-output.js';
 import { pageCard } from './page-card.js';
 import { createThumbs } from './page-thumbs.js';
 import { initMarquee } from './page-marquee.js';
@@ -105,6 +105,7 @@ export function initPages() {
     cutSize: byId('cut-size'),
     clearCuts: byId('clear-cuts'),
     downloadParts: byId('download-parts'),
+    downloadEach: byId('download-each'),
     photoSize: sizeSelect,
     photoMargin: marginSelect,
   };
@@ -306,6 +307,8 @@ export function initPages() {
     controls.showHidden.disabled = false;
     controls.clearCuts.hidden = cuts.size === 0;
     controls.downloadParts.disabled = parts < 2;
+    controls.downloadEach.hidden = new Set(visible(pages).map((page) => page.file).filter((file) => file !== null)).size < 2;
+    controls.downloadEach.disabled = controls.downloadEach.hidden;
     partsLabel.textContent = parts < 2 ? t('parts.zip') : t('parts.zip-n', { n: parts });
     resultSummary.textContent = [pagesOf(shown), parts < 2 ? t('result.one-file') : t('result.files', { n: parts })].join(t('list-gap'));
     const names = used();
@@ -929,6 +932,22 @@ export function initPages() {
       }
       download(await buildZip(files), `${stem()}-split.zip`);
       return savedText();
+    }),
+  );
+  // Each file gets its own result: its shown pages, with their changes and the settings of the result.
+  controls.downloadEach.addEventListener('click', () =>
+    run('status.batch', async () => {
+      const shown = visible(pages);
+      const files = [...new Set(shown.map((page) => page.file).filter((file) => file !== null))];
+      const groups = files.map((file) => ({ name: `${documents[file].name.replace(/\.[^.]+$/, '')}.pdf`, entries: shown.filter((page) => page.file === file) }));
+      let done = 0;
+      const result = await eachFile(groups, (entries) => {
+        say('status.batch-at', { n: ++done, total: groups.length });
+        return asPdf(entries);
+      });
+      const report = new Blob([`${result.report.join('\n')}\n`], { type: 'text/plain' });
+      download(await buildZip([...result.files, { name: t('batch.report-name'), blob: report }]), `${stem()}-each.zip`);
+      return result.failed ? () => t('status.batch-failed', { n: result.failed, total: groups.length }) : savedText();
     }),
   );
   controls.compare.addEventListener('click', () =>

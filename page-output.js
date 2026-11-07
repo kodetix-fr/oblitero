@@ -8,6 +8,22 @@ import { outlineFor, writeOutline } from './outline.js';
 import { applyStamps } from './stamps.js';
 import { t } from './i18n.js';
 
+// Makes one result for each group of pages ({ name, entries }), one after the other so that a single result is in memory at a
+// time; a group that fails is reported and the others still come out. Resolves with the files and one line of report per group.
+export async function eachFile(groups, make) {
+  const files = [];
+  const report = [];
+  for (const { name, entries } of groups) {
+    try {
+      files.push({ name, blob: await make(entries) });
+      report.push(t('batch.line-done', { name }));
+    } catch (error) {
+      report.push(t('batch.line-failed', { name, message: error.message }));
+    }
+  }
+  return { files, report, failed: groups.length - files.length };
+}
+
 // Turns pages into PDF files, with what the document has set. `settings()` gives { stamps, properties, compression, paper }.
 export function createOutput(documents, settings, say) {
   let saved = { before: 0, after: 0 };
