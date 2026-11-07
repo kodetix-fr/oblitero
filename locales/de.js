@@ -101,7 +101,7 @@ export default {
   'redact.redact-title': 'Seite schwärzen',
   'redact.drag-on-the-page': 'Ziehe auf der Seite, um zu verdecken, was verschwinden soll. Mit der Tastatur: Fokussiere die Seite; die Pfeiltasten bewegen das Fadenkreuz (mit Umschalt in größeren Schritten), die Eingabetaste startet ein Rechteck und noch einmal die Eingabetaste setzt es; Tab springt durch die Rechtecke, die sich mit den Pfeiltasten verschieben, mit Umschalt und den Pfeiltasten in der Größe ändern und mit Entf entfernen lassen. Im heruntergeladenen PDF wird die ganze Seite zu einem Bild, der verdeckte Inhalt existiert also nicht mehr.',
   'crop.title': 'Seiten zuschneiden',
-  'crop.hint': 'Ziehe auf der Seite, um zu rahmen, was bleiben soll; ein neues Rechteck ersetzt das letzte, und Leeren hebt den Zuschnitt auf. Die ausgewählten Seiten werden auf denselben Anteil ihrer Seite zugeschnitten. Die Tastatur funktioniert wie beim Schwärzen. Links und Kommentare einer zugeschnittenen Seite bleiben nicht erhalten.',
+  'crop.hint': 'Ziehe auf der Seite, um zu rahmen, was bleiben soll; ein neues Rechteck ersetzt das letzte, und Leeren hebt den Zuschnitt auf. Die ausgewählten Seiten werden auf denselben Anteil ihrer Seite zugeschnitten. Die Tastatur funktioniert wie beim Schwärzen.',
   'crop.remove': 'Entfernen, was außerhalb liegt (die Seite wird zum Bild)',
   'redact.redact-layer.aria': 'Seite. Die Pfeiltasten bewegen das Fadenkreuz, die Eingabetaste startet ein Rechteck und noch einmal die Eingabetaste setzt es, Tab springt zu den Rechtecken.',
   'redact.redact-undo': 'Rückgängig',
