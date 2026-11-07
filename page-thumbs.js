@@ -9,7 +9,7 @@ export function createThumbs(docOf) {
   const thumbs = new Map();
   let generation = 0;
   let renders = Promise.resolve();
-  const keyOf = (page) => `${generation}:${page.id}:${page.rotation}:${page.angle}:${page.flip}`;
+  const keyOf = (page) => `${generation}:${page.id}:${page.rotation}:${page.angle}:${page.flip}:${JSON.stringify(page.crop)}`;
 
   async function draw(thumb, current) {
     if (current !== generation) return;
@@ -53,7 +53,7 @@ export function createThumbs(docOf) {
       if (!thumb) {
         const canvas = document.createElement('canvas');
         canvas.dataset.key = key;
-        thumb = { canvas, file: page.file, source: page.source, blank: page.blank, rotation: page.rotation, angle: page.angle, flip: page.flip, state: 'idle' };
+        thumb = { canvas, file: page.file, source: page.source, blank: page.blank, rotation: page.rotation, angle: page.angle, flip: page.flip, crop: page.crop, state: 'idle' };
         thumbs.set(key, thumb);
       }
       observer.observe(thumb.canvas);

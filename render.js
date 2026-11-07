@@ -45,20 +45,32 @@ export async function pageSize(doc, index, rotation) {
   return { width, height };
 }
 
-// `adjusted` is the page of the document, when its angle and its mirror are to be drawn too.
+// `adjusted` is the page of the document, when its angle, its mirror and its crop are to be drawn too.
 export async function renderPage(doc, index, rotation, canvas, scale, adjusted = null) {
   const page = await doc.getPage(index + 1);
   const viewport = viewportOf(page, scale, rotation);
-  canvas.width = Math.ceil(viewport.width);
-  canvas.height = Math.ceil(viewport.height);
-  const transform = adjusted && adjustMatrix(adjusted, viewport.width, viewport.height);
-  await page.render({ canvas, viewport, background: '#ffffff', ...(transform && { transform }) }).promise;
+  const crop = adjusted?.crop ?? { x: 0, y: 0, w: 1, h: 1 };
+  canvas.width = Math.ceil(viewport.width * crop.w);
+  canvas.height = Math.ceil(viewport.height * crop.h);
+  const turn = (adjusted && adjustMatrix(adjusted, viewport.width, viewport.height)) ?? [1, 0, 0, 1, 0, 0];
+  const transform = multiply([1, 0, 0, 1, -crop.x * viewport.width, -crop.y * viewport.height], turn);
+  await page.render({ canvas, viewport, background: '#ffffff', transform }).promise;
 }
 
-// The size of a page as it is displayed, in points: its rotation applied.
+// The size of a page as it is displayed, in points: its rotation and its crop applied.
 export async function entrySize(doc, entry) {
   if (entry.blank) return entry.rotation % 180 ? { width: entry.blank.height, height: entry.blank.width } : entry.blank;
-  return pageSize(doc, entry.source, entry.rotation);
+  const { width, height } = await pageSize(doc, entry.source, entry.rotation);
+  return entry.crop ? { width: width * entry.crop.w, height: height * entry.crop.h } : { width, height };
+}
+
+// A part of a canvas, as fractions of it.
+function cropCanvas(canvas, { x, y, w, h }) {
+  const part = document.createElement('canvas');
+  part.width = Math.max(1, Math.round(canvas.width * w));
+  part.height = Math.max(1, Math.round(canvas.height * h));
+  part.getContext('2d').drawImage(canvas, -Math.round(canvas.width * x), -Math.round(canvas.height * y));
+  return part;
 }
 
 // The outline of a file as a tree of { title, page, items }, `page` being the index of the page an entry points to, or null
@@ -111,8 +123,8 @@ async function paintMarks(canvas, marks) {
   }
 }
 
-// A page as it will be downloaded, drawn at `scale`: its rotation applied, a blank page white, the rectangles painted black.
-// The rectangles grow to whole pixels outward, so no sliver of what they cover stays visible at their edges.
+// A page as it will be downloaded, drawn at `scale`: its rotation applied, a blank page white, the rectangles painted black,
+// then cut to its crop. The rectangles grow to whole pixels outward, so no sliver of what they cover stays visible at their edges.
 export async function paintEntry(doc, entry, scale, withMarks = false) {
   const canvas = document.createElement('canvas');
   if (entry.blank) {
@@ -123,7 +135,7 @@ export async function paintEntry(doc, entry, scale, withMarks = false) {
     context.fillStyle = '#ffffff';
     context.fillRect(0, 0, canvas.width, canvas.height);
   } else {
-    await renderPage(doc, entry.source, entry.rotation, canvas, scale, entry);
+    await renderPage(doc, entry.source, entry.rotation, canvas, scale, { ...entry, crop: null });
   }
   const context = canvas.getContext('2d');
   context.fillStyle = '#000000';
@@ -133,7 +145,7 @@ export async function paintEntry(doc, entry, scale, withMarks = false) {
     context.fillRect(left, top, Math.ceil((x + w) * canvas.width) - left, Math.ceil((y + h) * canvas.height) - top);
   }
   if (withMarks) await paintMarks(canvas, entry.marks);
-  return canvas;
+  return entry.crop ? cropCanvas(canvas, entry.crop) : canvas;
 }
 
 const toBlob = async (canvas, type, quality) => {
@@ -142,10 +154,15 @@ const toBlob = async (canvas, type, quality) => {
   return blob;
 };
 
+// The picture that replaces a page in the output. A crop that removes what is outside cuts the picture, the marks drawn in it;
+// otherwise the page is whole and the output crops it and draws the marks.
 export async function burnPage(doc, entry) {
   const { width, height } = await pageSize(doc, entry.source, entry.rotation);
-  const canvas = await paintEntry(doc, entry, Math.min(BURN_SCALE, MAX_SIDE / Math.max(width, height)));
-  return { bytes: new Uint8Array(await (await toBlob(canvas, 'image/jpeg', 0.92)).arrayBuffer()), width, height };
+  const scale = Math.min(BURN_SCALE, MAX_SIDE / Math.max(width, height));
+  const removed = entry.crop?.remove;
+  const canvas = await paintEntry(doc, removed ? entry : { ...entry, crop: null }, scale, removed);
+  const size = removed ? { width: width * entry.crop.w, height: height * entry.crop.h } : { width, height };
+  return { bytes: new Uint8Array(await (await toBlob(canvas, 'image/jpeg', 0.92)).arrayBuffer()), ...size };
 }
 
 // A page as a PNG or JPEG file at `dpi`, lowered when the page would not fit in a canvas.

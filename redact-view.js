@@ -1,5 +1,5 @@
 import { pageSize, renderPage } from './render.js';
-import { ARROWS, askDialog, byId, fitScale } from './dom.js';
+import { ARROWS, askDialog, byId, fitScale, setI18n } from './dom.js';
 import { clamp } from './math.js';
 import { plural, t } from './i18n.js';
 
@@ -12,8 +12,9 @@ function place(element, { x, y, w, h }) {
   Object.assign(element.style, { left: `${x * 100}%`, top: `${y * 100}%`, width: `${w * 100}%`, height: `${h * 100}%` });
 }
 
-// Resolves with the rectangles (fractions of the displayed page) when the user is done, null when they cancel.
-export async function openRedactor(doc, entry) {
+// Resolves with the rectangles (fractions of the displayed page) when the user is done, null when they cancel. With `crop`, the
+// page holds one rectangle, and the dialog resolves with { rect, remove }, `rect` being null when there is none.
+export async function openRedactor(doc, entry, { crop = false } = {}) {
   const dialog = byId('redact-dialog');
   const stage = byId('redact-stage');
   const canvas = byId('redact-canvas');
@@ -23,13 +24,25 @@ export async function openRedactor(doc, entry) {
   const count = byId('redact-count');
   const live = byId('redact-live');
 
+  const remove = /** @type {HTMLInputElement} */ (byId('crop-remove'));
+  dialog.dataset.mode = crop ? 'crop' : 'redact';
+  setI18n(byId('redact-title'), crop ? 'crop.title' : 'redact.redact-title');
+  setI18n(byId('redact-hint'), crop ? 'crop.hint' : 'redact.drag-on-the-page');
+  byId('redact-icon').setAttribute('href', crop ? '#i-crop' : '#i-redact');
+  byId('crop-remove-field').hidden = !crop;
+  remove.checked = !!entry.crop?.remove;
+
+  // Rectangles are fractions of the whole page, whatever its crop.
   const { width, height } = await pageSize(doc, entry.source, entry.rotation);
   const scale = fitScale(width, height, 280);
   stage.style.width = `${width * scale}px`;
   stage.style.height = `${height * scale}px`;
-  await renderPage(doc, entry.source, entry.rotation, canvas, scale * devicePixelRatio, entry);
+  await renderPage(doc, entry.source, entry.rotation, canvas, scale * devicePixelRatio, { ...entry, crop: null });
 
-  let rectangles = entry.redactions.slice();
+  let rectangles = crop ? (entry.crop ? [{ x: entry.crop.x, y: entry.crop.y, w: entry.crop.w, h: entry.crop.h }] : []) : entry.redactions.slice();
+  const add = (made) => {
+    rectangles = crop ? [made] : [...rectangles, made];
+  };
   const session = new AbortController();
   const { signal } = session;
 
@@ -67,7 +80,7 @@ export async function openRedactor(doc, entry) {
     layer.replaceChildren(...nodes);
     undo.disabled = rectangles.length === 0;
     clear.disabled = rectangles.length === 0;
-    count.textContent = rectangles.length ? plural(rectangles.length, 'count.rectangle.one', 'count.rectangle.other') : '';
+    count.textContent = rectangles.length && !crop ? plural(rectangles.length, 'count.rectangle.one', 'count.rectangle.other') : '';
     if (focusIndex !== null) /** @type {HTMLElement | undefined} */ (layer.children[focusIndex])?.focus();
   }
 
@@ -89,7 +102,7 @@ export async function openRedactor(doc, entry) {
         const made = between(anchor, cursor);
         anchor = null;
         if (made.w >= MIN_SIZE && made.h >= MIN_SIZE) {
-          rectangles.push(made);
+          add(made);
           focusIndex = rectangles.length - 1;
           say(t('redact.say-added', { n: rectangles.length }));
         } else {
@@ -159,7 +172,7 @@ export async function openRedactor(doc, entry) {
       const options = { signal: gesture.signal };
       const finish = (made) => {
         gesture.abort();
-        if (made && made.w >= MIN_SIZE && made.h >= MIN_SIZE) rectangles.push(made);
+        if (made && made.w >= MIN_SIZE && made.h >= MIN_SIZE) add(made);
         draw();
       };
       layer.addEventListener('pointermove', (e) => place(draft, spanTo(point(e))), options);
@@ -187,6 +200,6 @@ export async function openRedactor(doc, entry) {
   draw();
   return askDialog(dialog, 'redact-cancel', (finish, closed) => {
     closed.addEventListener('abort', () => session.abort());
-    byId('redact-done').addEventListener('click', () => finish(rectangles), { signal: closed });
+    byId('redact-done').addEventListener('click', () => finish(crop ? { rect: rectangles[0] ?? null, remove: remove.checked } : rectangles), { signal: closed });
   });
 }

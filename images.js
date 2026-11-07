@@ -6,7 +6,7 @@ export const MARGINS = [
   ['small', 18],
   ['large', 36],
 ];
-const SIZES = { a4: [595.28, 841.89], letter: [612, 792] };
+export const SIZES = { a4: [595.28, 841.89], letter: [612, 792] };
 const PX_TO_PT = 0.75;
 
 export function kindOf(bytes) {

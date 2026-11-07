@@ -237,6 +237,8 @@ dialog::backdrop { background: var(--shade); }
 .dlg-stage { display: grid; place-items: center; min-height: 0; padding: 14px; overflow: auto; background: var(--stage); }
 .sheet-stage { position: relative; box-shadow: 0 2px 12px rgba(0, 0, 0, .35); }
 .sheet-stage canvas { display: block; width: 100%; height: 100%; background: #fff; }
+#redact-dialog[data-mode="crop"] #redact-stage { overflow: hidden; }
+#redact-dialog[data-mode="crop"] #redact-layer .box { opacity: 1; background: transparent; outline: 2px dashed #fff; box-shadow: 0 0 0 100vmax rgba(15, 15, 26, .55); }
 #redact-layer { position: absolute; inset: 0; cursor: crosshair; touch-action: none; }
 #redact-layer .box { opacity: .75; }
 #redact-layer .box.draft { opacity: .5; outline: 1px dashed #fff; }

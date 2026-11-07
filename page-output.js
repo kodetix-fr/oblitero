@@ -1,4 +1,5 @@
-import { buildPdf } from './export.js';
+import { buildPdf, fitPaper } from './export.js';
+import { flattenAnnotations } from './flatten.js';
 import { compressPdf, formatSize } from './compress.js';
 import { recode } from './photo.js';
 import { applyProperties } from './properties.js';
@@ -7,7 +8,7 @@ import { outlineFor, writeOutline } from './outline.js';
 import { applyStamps } from './stamps.js';
 import { t } from './i18n.js';
 
-// Turns pages into PDF files, with what the document has set. `settings()` gives { stamps, properties, compression }.
+// Turns pages into PDF files, with what the document has set. `settings()` gives { stamps, properties, compression, paper }.
 export function createOutput(documents, settings, say) {
   let saved = { before: 0, after: 0 };
 
@@ -17,7 +18,7 @@ export function createOutput(documents, settings, say) {
     const redacted = entries.filter((entry) => entry.redactions.length > 0).length;
     let drawn = 0;
     const burn = (entry) => {
-      const key = JSON.stringify([entry.file, entry.source, entry.rotation, entry.angle, entry.flip, entry.redactions]);
+      const key = JSON.stringify([entry.file, entry.source, entry.rotation, entry.angle, entry.flip, entry.crop, entry.redactions]);
       if (!burned.has(key)) {
         say('status.redacting', { n: ++drawn, total: redacted });
         burned.set(key, burnPage(documents[entry.file].doc, entry));
@@ -35,7 +36,12 @@ export function createOutput(documents, settings, say) {
       }
     }
     return buildPdf(documents.map((document) => document.bytes), entries, burn, async (output) => {
-      const { stamps } = settings();
+      const { stamps, paper } = settings();
+      if (paper) {
+        // The pages are drawn anew on the paper, without their annotations: flattening them first keeps what they show.
+        if (properties.flatten && !properties.stripAnnotations) flattenAnnotations(output);
+        await fitPaper(output, paper.size, paper.margin);
+      }
       if (bookmarked) writeOutline(output, outlineFor(entries, trees, documents.map((document) => document.name)));
       await applyStamps(output, stamps, null, offset);
       applyProperties(output, properties);

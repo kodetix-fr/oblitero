@@ -9,6 +9,7 @@ Notable changes to Oblitero. The format follows
 ### Added
 
 - **Reverse** the order of the selected pages, and **interleave** them one file at a time (the fronts and backs of a scan).
+- **Crop** the selected pages, keeping or destroying what is outside, and put the result on **A4 or Letter** with a margin.
 - **Turn by any angle** and **mirror** the selected pages.
 - **Bates numbers** that go on across the parts, and **stamps** (a framed text or an image) at a position.
 - **Letterhead**: the first page of a PDF under or over every page, or a range, with an opacity.

@@ -15,14 +15,16 @@ export async function placeMark({ doc, entry, draft, number, selectedCount }) {
   const error = byId('place-error');
   const isText = draft.kind === 'text';
 
-  const shown = await entrySize(doc, entry);
+  // A mark is placed on the whole page, as its fractions say, whatever its crop.
+  const whole = { ...entry, crop: null };
+  const shown = await entrySize(doc, whole);
   const scale = fitScale(shown.width, shown.height, 340);
   const stageWidth = shown.width * scale;
   const stageHeight = shown.height * scale;
   stage.style.width = `${stageWidth}px`;
   stage.style.height = `${stageHeight}px`;
   const canvas = byId('place-canvas');
-  const painted = await paintEntry(doc, entry, scale * devicePixelRatio, true);
+  const painted = await paintEntry(doc, whole, scale * devicePixelRatio, true);
   canvas.width = painted.width;
   canvas.height = painted.height;
   canvas.getContext('2d').drawImage(painted, 0, 0);
