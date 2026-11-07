@@ -44,7 +44,9 @@ certified digital signature) is out of scope.
   download; Show brings it back. Download the result or only the selected pages.
   The thumbnails have a size slider, and a double click (or V) shows a page large,
   with the arrows or the wheel to go to the next one. Add a blank page (the size of the page
-  before it) and Duplicate act on the selection.
+  before it) and Duplicate act on the selection. Reverse turns the order of the
+  selected pages around, and Interleave takes one page of each file in turn: a
+  duplex scan that arrives as the fronts and the backs (reverse the backs first).
 - **Photos**: photos and screenshots (JPEG, PNG, WebP) become pages like any
   other, in the order you give them, with a page size (fit, A4, Letter) and a
   margin chosen in the result panel. A photo stored sideways by a phone is turned

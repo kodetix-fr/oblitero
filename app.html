@@ -44,6 +44,8 @@
     <symbol id="i-file-plus" viewBox="0 0 24 24"><path d="M7 3.5h6.5L18.5 8.5v11a1.5 1.5 0 0 1-1.5 1.5H7a1.5 1.5 0 0 1-1.5-1.5V5A1.5 1.5 0 0 1 7 3.5z"/><path d="M13.5 3.5v5h5M12 11.5v6M9 14.5h6"/></symbol>
     <symbol id="i-blank" viewBox="0 0 24 24"><rect x="6" y="3.5" width="12" height="17" rx="1.6" stroke-dasharray="3 2.4"/></symbol>
     <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7.5a2 2 0 0 0 2 2h2.5"/></symbol>
+    <symbol id="i-reverse" viewBox="0 0 24 24"><path d="M7 4v16M4 17l3 3 3-3M17 20V4M14 7l3-3 3 3"/></symbol>
+    <symbol id="i-interleave" viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="7" rx="1.5"/><rect x="14" y="13" width="6" height="7" rx="1.5"/><path d="M14 7.5h6M4 16.5h6"/></symbol>
     <symbol id="i-text" viewBox="0 0 24 24"><path d="M5.5 7V5.5h13V7M12 5.5v13M9 18.5h6"/></symbol>
     <symbol id="i-image" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M5 17l4.5-4.5 3 3 2.5-2.5L19 17"/></symbol>
     <symbol id="i-compress" viewBox="0 0 24 24"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></symbol>
@@ -123,6 +125,8 @@
           <button type="button" class="btn sm icon-only" id="move-earlier" aria-label="Move earlier" title="Move earlier (Alt+Left)" data-i18n-title="app.move-earlier.title" data-i18n-aria="app.move-earlier.aria"><svg class="ic" aria-hidden="true"><use href="#i-left"/></svg></button>
           <button type="button" class="btn sm icon-only" id="move-later" aria-label="Move later" title="Move later (Alt+Right)" data-i18n-title="app.move-later.title" data-i18n-aria="app.move-later.aria"><svg class="ic" aria-hidden="true"><use href="#i-right"/></svg></button>
           <button type="button" class="btn sm icon-only" id="duplicate" aria-label="Duplicate" title="Duplicate the selected pages" data-i18n-title="app.duplicate.title" data-i18n-aria="app.duplicate.aria"><svg class="ic" aria-hidden="true"><use href="#i-copy"/></svg></button>
+          <button type="button" class="btn sm icon-only" id="reverse" aria-label="Reverse" title="Reverse the order of the selected pages" data-i18n-title="app.reverse.title" data-i18n-aria="app.reverse.aria"><svg class="ic" aria-hidden="true"><use href="#i-reverse"/></svg></button>
+          <button type="button" class="btn sm icon-only" id="interleave" aria-label="Interleave" title="Interleave the selected pages: one page of each file in turn, as the fronts and backs of a scan" data-i18n-title="app.interleave.title" data-i18n-aria="app.interleave.aria"><svg class="ic" aria-hidden="true"><use href="#i-interleave"/></svg></button>
           <span class="vsep"></span>
           <button type="button" class="btn sm" id="hide" title="Hide the selected pages from the result (Del)" data-i18n-title="app.hide.title"><svg class="ic" aria-hidden="true"><use id="hide-icon" href="#i-eye-off"/></svg><span id="hide-label">Hide</span></button>
           <button type="button" class="btn sm" id="cut" title="Cut after the selected pages (C)" data-i18n-title="app.cut.title"><svg class="ic" aria-hidden="true"><use href="#i-cut"/></svg><span data-i18n="app.cut">Cut</span></button>

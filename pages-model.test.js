@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { blankPage, createPages, cutBefore, cutEvery, cutToFit, duplicate, insertEntries, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, removePages, rotateMark, rotatePages, runsOf, rotateRect, showAll, toggleCuts, toggleHidden, visible } from './pages-model.js';
+import { blankPage, createPages, cutBefore, cutEvery, cutToFit, duplicate, insertEntries, interleavePages, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, removePages, reversePages, rotateMark, rotatePages, runsOf, rotateRect, showAll, toggleCuts, toggleHidden, visible } from './pages-model.js';
 
 const ids = (pages) => pages.map((page) => page.id);
 const close = (actual, expected) => {
@@ -224,4 +224,21 @@ test('a mark turns with its page, and four quarter turns bring it back', () => {
   assert.equal(turned[0].marks[0].turn, 0);
   close(turned[0].marks[0], picture);
   assert.ok(Math.abs(turned[0].marks[1].y - 0.2) < 1e-9);
+});
+
+test('reverse turns the order of the selected pages around and leaves the others in place', () => {
+  const pages = createPages(5);
+  assert.deepEqual(ids(reversePages(pages, new Set([0, 1, 2, 3, 4]))), [4, 3, 2, 1, 0]);
+  assert.deepEqual(ids(reversePages(pages, new Set([1, 2, 4]))), [0, 4, 2, 3, 1]);
+});
+
+test('interleave takes one page of each file in turn, and a longer file ends with its rest', () => {
+  const fronts = createPages(3, { file: 0 });
+  const backs = createPages(2, { file: 1, firstId: 3 });
+  const pages = [...fronts, ...backs];
+  assert.deepEqual(ids(interleavePages(pages, new Set(ids(pages)))), [0, 3, 1, 4, 2]);
+  const scanned = [...fronts, ...createPages(3, { file: 1, firstId: 3 })];
+  const all = new Set(ids(scanned));
+  assert.deepEqual(ids(interleavePages(reversePages(scanned, new Set([3, 4, 5])), all)), [0, 5, 1, 4, 2, 3]);
+  assert.deepEqual(ids(interleavePages(pages, new Set([0, 1, 9]))), [0, 1, 2, 3, 4]);
 });

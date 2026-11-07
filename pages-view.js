@@ -12,7 +12,7 @@ import { initPreview } from './preview-view.js';
 import { initFiles } from './files-view.js';
 import { buildZip } from './zip.js';
 import { burnPage, closeRender, entryImage, entrySize, inkOf, openRender, outlineStarts, pageRuns, pageSize, paintEntry, renderPage, textOf } from './render.js';
-import { blankPage, createPages, cutBefore, cutEvery, cutToFit, duplicate, insertEntries, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, removePages, rotatePages, runsOf, showAll, toggleCuts, toggleHidden, visible } from './pages-model.js';
+import { blankPage, createPages, cutBefore, cutEvery, cutToFit, duplicate, insertEntries, interleavePages, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, removePages, reversePages, rotatePages, runsOf, showAll, toggleCuts, toggleHidden, visible } from './pages-model.js';
 import { createHistory } from './history.js';
 import { pagesOf, plural, t } from './i18n.js';
 import { clamp } from './math.js';
@@ -68,6 +68,8 @@ export function initPages() {
     preview: byId('preview-open'),
     addBlank: byId('add-blank'),
     duplicate: byId('duplicate'),
+    reverse: byId('reverse'),
+    interleave: byId('interleave'),
     selectOdd: byId('select-odd'),
     selectEven: byId('select-even'),
     hideBlank: byId('hide-blank'),
@@ -253,6 +255,8 @@ export function initPages() {
     controls.redact.disabled = chosen.length !== 1 || chosen[0].hidden || !!chosen[0].blank;
     controls.redact.title = t(controls.redact.disabled ? 'redact.one-page-title' : 'app.redact.title');
     controls.duplicate.disabled = none;
+    controls.reverse.disabled = chosen.length < 2;
+    controls.interleave.disabled = new Set(chosen.map((page) => page.file)).size < 2;
     controls.addFiles.disabled = false;
     controls.clearAll.disabled = empty;
     controls.addBlank.disabled = empty;
@@ -685,6 +689,8 @@ export function initPages() {
   marginSelect.addEventListener('change', layoutPhotos);
   controls.addBlank.addEventListener('click', guarded(addBlank));
   controls.duplicate.addEventListener('click', duplicateSelected);
+  controls.reverse.addEventListener('click', () => commit({ pages: reversePages(pages, selected) }));
+  controls.interleave.addEventListener('click', () => commit({ pages: interleavePages(pages, selected) }));
   controls.hideBlank.addEventListener('click', () => hideBlankPages());
   controls.extractText.addEventListener('click', extractText);
   const exportDialog = byId('export-dialog');
