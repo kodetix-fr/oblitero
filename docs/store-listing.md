@@ -92,7 +92,7 @@ Tools, or Productivity like Obturo: pick it in the dashboard menu.
 The Chrome FAQ asks for a disclosure even when data is only processed locally. The files are not collected, but they are handled, and no box of the form describes a file the user opens. **Website content** is the closest ("text, images, sounds, videos or hyperlinks"): tick it.
 
 - Certifications: all of them, as no data is sold, transferred, used outside the single purpose, used for advertising or read by a human.
-- Policy URL: https://kodetix.fr/en/oblitero/confidentialite (to create, rendered from `docs/PRIVACY.md`).
+- Policy URL: https://kodetix.fr/en/oblitero/confidentialite (rendered from `docs/PRIVACY.md`).
 - Support: support@kodetix.fr.
 
 ## 7. Visuals
