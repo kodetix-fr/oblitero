@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { blankPage, createPages, cutBefore, cutEvery, cutToFit, duplicate, insertEntries, interleavePages, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, removePages, reversePages, rotateMark, rotatePages, runsOf, rotateRect, showAll, toggleCuts, toggleHidden, visible } from './pages-model.js';
+import { blankPage, createPages, cutBefore, cutEvery, cutToFit, duplicate, insertEntries, interleavePages, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, removePages, reversePages, rotateMark, setCrop, rotatePages, runsOf, rotateRect, showAll, toggleCuts, toggleHidden, visible } from './pages-model.js';
 
 const ids = (pages) => pages.map((page) => page.id);
 const close = (actual, expected) => {
@@ -241,4 +241,13 @@ test('interleave takes one page of each file in turn, and a longer file ends wit
   const all = new Set(ids(scanned));
   assert.deepEqual(ids(interleavePages(reversePages(scanned, new Set([3, 4, 5])), all)), [0, 5, 1, 4, 2, 3]);
   assert.deepEqual(ids(interleavePages(pages, new Set([0, 1, 9]))), [0, 1, 2, 3, 4]);
+});
+
+test('a crop turns with its page and goes on the selected pages that are not blank', () => {
+  const pages = [...createPages(2), blankPage(2, 100, 100)];
+  const crop = { x: 0.1, y: 0.2, w: 0.3, h: 0.4, remove: true };
+  const cropped = setCrop(pages, new Set([0, 2]), crop);
+  assert.deepEqual(cropped.map((page) => page.crop), [crop, null, null]);
+  assert.deepEqual(rotatePages(cropped, new Set([0]), 90)[0].crop, { ...rotateRect(crop, 90), remove: true });
+  assert.equal(setCrop(cropped, new Set([0]), null)[0].crop, null);
 });

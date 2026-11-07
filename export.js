@@ -1,7 +1,8 @@
-import { PDFDocument, concatTransformationMatrix, degrees, popGraphicsState, pushGraphicsState } from './vendor/pdf-lib.esm.min.js';
+import { PDFDocument, concatTransformationMatrix, degrees, drawObject, popGraphicsState, pushGraphicsState } from './vendor/pdf-lib.esm.min.js';
 import { drawMarks, newCache } from './marks.js';
 import { dropUnreachable, isolatePages } from './page-links.js';
-import { contentMatrix, isAdjusted } from './page-adjust.js';
+import { contentMatrix, isAdjusted, pageBox, uprightMatrix } from './page-adjust.js';
+import { multiply } from './find.js';
 
 const parsed = new WeakMap();
 
@@ -28,10 +29,46 @@ function loadIsolated(bytes) {
   return parsed.get(bytes);
 }
 
-// `sources` are the bytes of the files the pages come from (an entry names its file by index). A page with redactions is
-// replaced by the picture burnPage returns, so nothing of its content survives; a blank page is an empty page. The output
-// is a new document: the metadata, outline and attachments of the sources are not carried over. `finish(output)` runs on the
-// finished document, before it is saved (page numbers, watermarks).
+// Replaces page `index` of `output` by a new page of `size` that draws `box` of the old one (in its coordinates) upright, scaled
+// by `scale` from (x, y). What is outside the box stays in the file, clipped; the annotations of the page are left out.
+async function redraw(output, index, box, size, { x = 0, y = 0, scale = 1 } = {}) {
+  const page = output.getPage(index);
+  const rotation = page.getRotation().angle;
+  if (!page.node.Contents()) page.pushOperators();
+  const embedded = await output.embedPage(page, box);
+  output.removePage(index);
+  const fresh = output.insertPage(index, size);
+  const place = multiply([scale, 0, 0, scale, x, y], uprightMatrix(rotation, box.right - box.left, box.top - box.bottom));
+  fresh.pushOperators(pushGraphicsState(), concatTransformationMatrix(...place), drawObject(fresh.node.newXObject('Page', embedded.ref)), popGraphicsState());
+}
+
+const shownBox = (page) => pageBox(page.getCropBox(), page.getRotation().angle, { x: 0, y: 0, w: 1, h: 1 });
+const shownSize = (page, box) => (page.getRotation().angle % 180 ? [box.top - box.bottom, box.right - box.left] : [box.right - box.left, box.top - box.bottom]);
+
+async function cropLast(output, crop) {
+  const index = output.getPageCount() - 1;
+  const page = output.getPage(index);
+  const box = pageBox(page.getCropBox(), page.getRotation().angle, crop);
+  await redraw(output, index, box, shownSize(page, box));
+}
+
+// Puts every page on a sheet of `paper` ([width, height] in points, turned to the side of the page), as large as it fits within
+// `margin`, centered. The annotations of the pages are left out.
+export async function fitPaper(output, paper, margin) {
+  for (let index = 0; index < output.getPageCount(); index++) {
+    const page = output.getPage(index);
+    const box = shownBox(page);
+    const [width, height] = shownSize(page, box);
+    const sheet = width > height ? [Math.max(...paper), Math.min(...paper)] : [Math.min(...paper), Math.max(...paper)];
+    const scale = Math.min((sheet[0] - 2 * margin) / width, (sheet[1] - 2 * margin) / height);
+    await redraw(output, index, box, sheet, { x: (sheet[0] - width * scale) / 2, y: (sheet[1] - height * scale) / 2, scale });
+  }
+}
+
+// `sources` are the bytes of the files the pages come from (an entry names its file by index). A page with redactions, or
+// with a crop that removes what is outside, is replaced by the picture burnPage returns, so nothing of its content survives; a
+// blank page is an empty page. The output is a new document: the metadata and attachments of the sources are not carried
+// over. `finish(output)` runs on the finished document, before it is saved (bookmarks, page numbers, watermarks).
 export async function buildPdf(sources, entries, burnPage, finish) {
   const load = (file) => loadIsolated(sources[file]);
   const output = await PDFDocument.create({ updateMetadata: false });
@@ -40,7 +77,8 @@ export async function buildPdf(sources, entries, burnPage, finish) {
   output.setCreationDate(new Date());
   output.setModificationDate(new Date());
 
-  const copied = (entry) => entry.file !== null && entry.redactions.length === 0;
+  const burned = (entry) => entry.redactions.length > 0 || !!entry.crop?.remove;
+  const copied = (entry) => entry.file !== null && !burned(entry);
   const key = (entry) => `${entry.file}:${entry.source}`;
 
   // The pages of one file are copied together, so that fonts and images they share are stored once. A page that is used
@@ -61,7 +99,7 @@ export async function buildPdf(sources, entries, burnPage, finish) {
   for (const entry of entries) {
     if (entry.blank) {
       output.addPage([entry.blank.width, entry.blank.height]).setRotation(degrees(entry.rotation));
-    } else if (entry.redactions.length > 0) {
+    } else if (burned(entry)) {
       const { bytes, width, height } = await burnPage(entry);
       const image = await output.embedJpg(bytes);
       output.addPage([width, height]).drawImage(image, { x: 0, y: 0, width, height });
@@ -73,7 +111,9 @@ export async function buildPdf(sources, entries, burnPage, finish) {
       output.addPage(page);
       adjustContent(output, page, entry);
     }
+    if (entry.crop?.remove) continue;
     await drawMarks(output, output.getPages().at(-1), entry.marks, marked);
+    if (entry.crop) await cropLast(output, entry.crop);
   }
   await finish?.(output);
   await dropUnreachable(output);

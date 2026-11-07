@@ -5,14 +5,14 @@ import { createOutput } from './page-output.js';
 import { pageCard } from './page-card.js';
 import { createThumbs } from './page-thumbs.js';
 import { initMarquee } from './page-marquee.js';
-import { MARGINS, PAGE_SIZES, imagesToPdf } from './images.js';
+import { MARGINS, PAGE_SIZES, SIZES, imagesToPdf } from './images.js';
 import { readPhoto } from './photo.js';
 import { initCompare } from './compare-view.js';
 import { initPreview } from './preview-view.js';
 import { initFiles } from './files-view.js';
 import { buildZip } from './zip.js';
 import { burnPage, closeRender, entryImage, entrySize, inkOf, openRender, outlineStarts, pageRuns, pageSize, paintEntry, renderPage, textOf } from './render.js';
-import { blankPage, createPages, cutBefore, cutEvery, canAdjust, cutToFit, duplicate, insertEntries, interleavePages, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, removePages, reversePages, rotatePages, setAngle, runsOf, showAll, toggleCuts, toggleFlip, toggleHidden, visible } from './pages-model.js';
+import { blankPage, createPages, cutBefore, cutEvery, canAdjust, cutToFit, duplicate, insertEntries, interleavePages, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, removePages, reversePages, rotatePages, setAngle, setCrop, runsOf, showAll, toggleCuts, toggleFlip, toggleHidden, visible } from './pages-model.js';
 import { createHistory } from './history.js';
 import { pagesOf, plural, t } from './i18n.js';
 import { clamp } from './math.js';
@@ -96,6 +96,7 @@ export function initPages() {
     showHidden: byId('show-hidden'),
     cut: byId('cut'),
     redact: byId('redact'),
+    crop: byId('crop'),
     downloadAll: byId('download-all'),
     downloadSelected: byId('download-selected'),
     cutEvery: byId('cut-every'),
@@ -112,6 +113,8 @@ export function initPages() {
   let busy = false;
   let view = 'pages';
   let compression = 'none';
+  const paperSize = /** @type {HTMLSelectElement} */ (byId('paper-size'));
+  const paperMargin = /** @type {HTMLSelectElement} */ (byId('paper-margin'));
   const comparer = initCompare();
   const previewer = initPreview();
   const choices = (select, prefix, ids) =>
@@ -125,6 +128,8 @@ export function initPages() {
   choices(sizeSelect, 'photo.size.', PAGE_SIZES);
   choices(marginSelect, 'photo.margin.', MARGINS.map(([id]) => id));
   marginSelect.value = 'none';
+  choices(paperMargin, 'photo.margin.', MARGINS.map(([id]) => id));
+  paperMargin.value = 'small';
   const stampDialog = initStamps();
   const finder = initFind();
   const signer = initSign();
@@ -258,6 +263,7 @@ export function initPages() {
     controls.redact.disabled = chosen.length !== 1 || chosen[0].hidden || !!chosen[0].blank;
     controls.redact.title = t(controls.redact.disabled ? 'redact.one-page-title' : 'app.redact.title');
     controls.duplicate.disabled = none;
+    controls.crop.disabled = !chosen.some((page) => !page.blank);
     controls.reverse.disabled = chosen.length < 2;
     const adjustable = chosen.filter(canAdjust);
     for (const key of ['angle', 'flipH', 'flipV']) controls[key].disabled = adjustable.length === 0;
@@ -658,7 +664,11 @@ export function initPages() {
     const lead = pages.find((page) => page.file !== null && !page.hidden) ?? pages.find((page) => page.file !== null);
     return (lead ? documents[lead.file].name : 'document').replace(/\.[^.]+$/, '');
   };
-  const output = createOutput(documents, () => ({ stamps, properties, compression }), say);
+  const paper = () => (paperSize.value === 'as-is' ? null : { size: SIZES[paperSize.value], margin: MARGINS.find(([id]) => id === paperMargin.value)[1] });
+  paperSize.addEventListener('change', () => {
+    byId('paper-margin-field').hidden = paperSize.value === 'as-is';
+  });
+  const output = createOutput(documents, () => ({ stamps, properties, compression, paper: paper() }), say);
   const { build, squeeze, asPdf, savedText } = output;
 
   async function run(label, work) {
@@ -875,6 +885,15 @@ export function initPages() {
       const page = pages.find((entry) => entry.id === id);
       const rectangles = await openRedactor(documents[page.file].doc, page);
       if (rectangles) commit({ pages: pages.map((page) => (page.id === id ? { ...page, redactions: rectangles } : page)) });
+    } catch (error) {
+      say('status.cannot-open-page', { message: error.message });
+    }
+  });
+  controls.crop.addEventListener('click', async () => {
+    const page = pages.find((entry) => selected.has(entry.id) && !entry.blank);
+    try {
+      const result = await openRedactor(documents[page.file].doc, page, { crop: true });
+      if (result) commit({ pages: setCrop(pages, selected, result.rect && { ...result.rect, remove: result.remove }) });
     } catch (error) {
       say('status.cannot-open-page', { message: error.message });
     }

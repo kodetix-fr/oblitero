@@ -44,6 +44,7 @@
     <symbol id="i-file-plus" viewBox="0 0 24 24"><path d="M7 3.5h6.5L18.5 8.5v11a1.5 1.5 0 0 1-1.5 1.5H7a1.5 1.5 0 0 1-1.5-1.5V5A1.5 1.5 0 0 1 7 3.5z"/><path d="M13.5 3.5v5h5M12 11.5v6M9 14.5h6"/></symbol>
     <symbol id="i-blank" viewBox="0 0 24 24"><rect x="6" y="3.5" width="12" height="17" rx="1.6" stroke-dasharray="3 2.4"/></symbol>
     <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7.5a2 2 0 0 0 2 2h2.5"/></symbol>
+    <symbol id="i-crop" viewBox="0 0 24 24"><path d="M6 2v14a2 2 0 0 0 2 2h14M2 6h14a2 2 0 0 1 2 2v14"/></symbol>
     <symbol id="i-flip-h" viewBox="0 0 24 24"><path d="M12 3v18M9 6L3 18h6zM15 6l6 12h-6z"/></symbol>
     <symbol id="i-flip-v" viewBox="0 0 24 24"><path d="M3 12h18M6 9L18 3v6zM6 15l12 6v-6z"/></symbol>
     <symbol id="i-reverse" viewBox="0 0 24 24"><path d="M7 4v16M4 17l3 3 3-3M17 20V4M14 7l3-3 3 3"/></symbol>
@@ -132,6 +133,7 @@
           <button type="button" class="btn sm icon-only" id="duplicate" aria-label="Duplicate" title="Duplicate the selected pages" data-i18n-title="app.duplicate.title" data-i18n-aria="app.duplicate.aria"><svg class="ic" aria-hidden="true"><use href="#i-copy"/></svg></button>
           <button type="button" class="btn sm icon-only" id="reverse" aria-label="Reverse" title="Reverse the order of the selected pages" data-i18n-title="app.reverse.title" data-i18n-aria="app.reverse.aria"><svg class="ic" aria-hidden="true"><use href="#i-reverse"/></svg></button>
           <button type="button" class="btn sm icon-only" id="interleave" aria-label="Interleave" title="Interleave the selected pages: one page of each file in turn, as the fronts and backs of a scan" data-i18n-title="app.interleave.title" data-i18n-aria="app.interleave.aria"><svg class="ic" aria-hidden="true"><use href="#i-interleave"/></svg></button>
+          <button type="button" class="btn sm icon-only" id="crop" aria-label="Crop" title="Crop the selected pages to a rectangle" data-i18n-title="app.crop.title" data-i18n-aria="app.crop.aria"><svg class="ic" aria-hidden="true"><use href="#i-crop"/></svg></button>
           <span class="vsep"></span>
           <button type="button" class="btn sm" id="hide" title="Hide the selected pages from the result (Del)" data-i18n-title="app.hide.title"><svg class="ic" aria-hidden="true"><use id="hide-icon" href="#i-eye-off"/></svg><span id="hide-label">Hide</span></button>
           <button type="button" class="btn sm" id="cut" title="Cut after the selected pages (C)" data-i18n-title="app.cut.title"><svg class="ic" aria-hidden="true"><use href="#i-cut"/></svg><span data-i18n="app.cut">Cut</span></button>
@@ -166,6 +168,13 @@
             <h2 class="out-title" data-i18n="app.result">Result</h2>
             <p id="result-summary" class="out-summary" role="status"></p>
           </div>
+          <section class="out-group">
+            <h3 data-i18n="paper.title">Paper</h3>
+            <div class="out-row">
+              <label class="field"><span data-i18n="paper.size">Size</span> <select id="paper-size"><option value="as-is" data-i18n="paper.as-is">As it is</option><option value="a4" data-i18n="photo.size.a4">A4</option><option value="letter" data-i18n="photo.size.letter">Letter</option></select></label>
+              <label class="field" id="paper-margin-field" hidden><span data-i18n="app.photo-settings-margin">Margin</span> <select id="paper-margin" aria-label="Margin around the pages" data-i18n-aria="paper.margin.aria"></select></label>
+            </div>
+          </section>
           <section class="out-group" id="photo-settings" hidden>
             <h3 data-i18n="app.photo-settings-photos">Photos</h3>
             <label class="field"><span data-i18n="app.photo-settings-page">Page</span> <select id="images-size" aria-label="Page size of the photos" data-i18n-aria="app.images-size.aria"></select></label>
@@ -218,12 +227,12 @@
 
   <dialog id="redact-dialog" aria-labelledby="redact-title">
     <div class="dlg-head">
-      <svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg>
+      <svg class="ic" aria-hidden="true"><use id="redact-icon" href="#i-redact"/></svg>
       <h2 id="redact-title" data-i18n="redact.redact-title">Redact page</h2>
       <span class="sep"></span>
       <span id="redact-count" class="summary"></span>
     </div>
-    <p class="hint" data-i18n="redact.drag-on-the-page">Drag on the page to cover what must disappear. With the keyboard, focus the page: arrows move the crosshair (Shift for bigger steps), Enter starts a rectangle and Enter again places it; Tab goes through the rectangles, which move with the arrows, resize with Shift and the arrows, and go with Delete. In the downloaded PDF the whole page becomes a picture, so the covered content no longer exists.</p>
+    <p class="hint" id="redact-hint" data-i18n="redact.drag-on-the-page">Drag on the page to cover what must disappear. With the keyboard, focus the page: arrows move the crosshair (Shift for bigger steps), Enter starts a rectangle and Enter again places it; Tab goes through the rectangles, which move with the arrows, resize with Shift and the arrows, and go with Delete. In the downloaded PDF the whole page becomes a picture, so the covered content no longer exists.</p>
     <span id="redact-live" class="vh" role="status"></span>
     <div class="dlg-stage">
       <div id="redact-stage" class="sheet-stage">
@@ -234,6 +243,7 @@
     <div class="dlg-foot">
       <button type="button" class="btn" id="redact-undo"><svg class="ic" aria-hidden="true"><use href="#i-undo"/></svg><span data-i18n="redact.redact-undo">Undo</span></button>
       <button type="button" class="btn ghost" id="redact-clear"><svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg><span data-i18n="redact.redact-clear">Clear</span></button>
+      <label class="field" id="crop-remove-field" hidden><input type="checkbox" id="crop-remove"> <span data-i18n="crop.remove">Remove what is outside (the page becomes a picture)</span></label>
       <span class="sep"></span>
       <button type="button" class="btn" id="redact-cancel" data-i18n="redact.redact-cancel">Cancel</button>
       <button type="button" class="btn primary" id="redact-done"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="redact.redact-done">Done</span></button>

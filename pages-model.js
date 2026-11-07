@@ -1,10 +1,10 @@
 // A page of the document: where it comes from (`file`, and `source`, its index in that file) and what was done to it.
 export function createPages(count, { file = 0, firstId = 0 } = {}) {
-  return Array.from({ length: count }, (_, source) => ({ id: firstId + source, file, source, rotation: 0, angle: 0, flip: false, redactions: [], marks: [], hidden: false }));
+  return Array.from({ length: count }, (_, source) => ({ id: firstId + source, file, source, rotation: 0, angle: 0, flip: false, crop: null, redactions: [], marks: [], hidden: false }));
 }
 
 export function blankPage(id, width, height) {
-  return { id, file: null, source: null, blank: { width, height }, rotation: 0, angle: 0, flip: false, redactions: [], marks: [], hidden: false };
+  return { id, file: null, source: null, blank: { width, height }, rotation: 0, angle: 0, flip: false, crop: null, redactions: [], marks: [], hidden: false };
 }
 
 // Puts new entries right before or after the entry `targetId`, or at the end when there is no such entry.
@@ -64,6 +64,7 @@ export function rotatePages(pages, ids, delta) {
           ...page,
           rotation: (page.rotation + delta + 360) % 360,
           redactions: page.redactions.map((rect) => rotateRect(rect, delta)),
+          crop: page.crop && { ...page.crop, ...rotateRect(page.crop, delta) },
           marks: page.marks.map((mark) => rotateMark(mark, delta)),
         }
       : page,
@@ -97,6 +98,10 @@ export const canAdjust = (page) => !page.blank && page.redactions.length === 0;
 export const setAngle = (pages, ids, angle) => pages.map((page) => (ids.has(page.id) && canAdjust(page) ? { ...page, angle } : page));
 
 export const toggleFlip = (pages, ids) => pages.map((page) => (ids.has(page.id) && canAdjust(page) ? { ...page, flip: !page.flip } : page));
+
+// A crop is a rectangle of the displayed page ({ x, y, w, h } as fractions) and whether what is outside is destroyed (`remove`):
+// then the page becomes a picture of what is inside. null takes the crop away.
+export const setCrop = (pages, ids, crop) => pages.map((page) => (ids.has(page.id) && !page.blank ? { ...page, crop } : page));
 
 export const removePages = (pages, ids) => pages.filter((page) => !ids.has(page.id));
 
