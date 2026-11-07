@@ -22,3 +22,4 @@ export const PDFRef: any;
 export const PDFStream: any;
 export const drawObject: any;
 export const setGraphicsState: any;
+export const BlendMode: any;

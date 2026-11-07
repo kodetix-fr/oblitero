@@ -8,6 +8,7 @@ Notable changes to Oblitero. The format follows
 
 ### Added
 
+- **Draw** rectangles, arrows and highlights on a page, written into its content.
 - **Reverse** the order of the selected pages, and **interleave** them one file at a time (the fronts and backs of a scan).
 - **One PDF per file**: the same changes and settings on many files, in a ZIP with a report.
 - **Drag with a finger or a pen**: a long press starts the drag of a page or a file row.
