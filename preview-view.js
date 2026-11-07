@@ -61,13 +61,17 @@ export function initPreview() {
     flip(step);
   }, { passive: false });
 
+  // The close event comes after the dialog has closed, and it can come after the dialog opened again: then it is stale.
   dialog.addEventListener('close', () => {
+    if (dialog.open) return;
     token += 1;
-    source.close?.();
+    source?.close?.();
+    source = null;
   });
   byId('preview-close').addEventListener('click', () => dialog.close());
 
   async function show(next, title) {
+    source?.close?.();
     source = next;
     page = next.start ?? 0;
     wheel = 0;
