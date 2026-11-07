@@ -46,7 +46,7 @@ async function drawAndRead(tool, color, from, to, points) {
 }
 
 const reddish = ([r, g, b]) => r > 150 && g < 100 && b < 100;
-const bluish = ([r, g, b]) => b > 150 && r < 100;
+const bluish = ([r, , b]) => b > 150 && r < 100;
 const yellowish = ([r, g, b]) => r > 230 && g > 200 && b < 200;
 const white = ([r, g, b]) => r > 240 && g > 240 && b > 240;
 
