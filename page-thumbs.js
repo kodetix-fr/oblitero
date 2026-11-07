@@ -9,7 +9,7 @@ export function createThumbs(docOf) {
   const thumbs = new Map();
   let generation = 0;
   let renders = Promise.resolve();
-  const keyOf = (page) => `${generation}:${page.id}:${page.rotation}`;
+  const keyOf = (page) => `${generation}:${page.id}:${page.rotation}:${page.angle}:${page.flip}`;
 
   async function draw(thumb, current) {
     if (current !== generation) return;
@@ -25,7 +25,7 @@ export function createThumbs(docOf) {
         thumb.canvas.width = Math.ceil(size.width * fit);
         thumb.canvas.height = Math.ceil(size.height * fit);
       } else {
-        await renderPage(doc, thumb.source, thumb.rotation, thumb.canvas, fit * THUMB_QUALITY * devicePixelRatio);
+        await renderPage(doc, thumb.source, thumb.rotation, thumb.canvas, fit * THUMB_QUALITY * devicePixelRatio, thumb);
       }
       thumb.state = 'done';
     } catch {
@@ -53,7 +53,7 @@ export function createThumbs(docOf) {
       if (!thumb) {
         const canvas = document.createElement('canvas');
         canvas.dataset.key = key;
-        thumb = { canvas, file: page.file, source: page.source, blank: page.blank, rotation: page.rotation, state: 'idle' };
+        thumb = { canvas, file: page.file, source: page.source, blank: page.blank, rotation: page.rotation, angle: page.angle, flip: page.flip, state: 'idle' };
         thumbs.set(key, thumb);
       }
       observer.observe(thumb.canvas);

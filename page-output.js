@@ -15,7 +15,7 @@ export function createOutput(documents, settings, say) {
     const redacted = entries.filter((entry) => entry.redactions.length > 0).length;
     let drawn = 0;
     const burn = (entry) => {
-      const key = JSON.stringify([entry.file, entry.source, entry.rotation, entry.redactions]);
+      const key = JSON.stringify([entry.file, entry.source, entry.rotation, entry.angle, entry.flip, entry.redactions]);
       if (!burned.has(key)) {
         say('status.redacting', { n: ++drawn, total: redacted });
         burned.set(key, burnPage(documents[entry.file].doc, entry));

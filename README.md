@@ -47,6 +47,9 @@ certified digital signature) is out of scope.
   before it) and Duplicate act on the selection. Reverse turns the order of the
   selected pages around, and Interleave takes one page of each file in turn: a
   duplex scan that arrives as the fronts and the backs (reverse the backs first).
+  An angle in degrees turns the selected pages to straighten a crooked scan, and
+  the mirror buttons flip them left to right or top to bottom; a page that carries
+  a redaction keeps its angle, so the black rectangle stays on what it covers.
 - **Photos**: photos and screenshots (JPEG, PNG, WebP) become pages like any
   other, in the order you give them, with a page size (fit, A4, Letter) and a
   margin chosen in the result panel. A photo stored sideways by a phone is turned

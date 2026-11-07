@@ -1,8 +1,18 @@
-import { PDFDocument, degrees } from './vendor/pdf-lib.esm.min.js';
+import { PDFDocument, concatTransformationMatrix, degrees, popGraphicsState, pushGraphicsState } from './vendor/pdf-lib.esm.min.js';
 import { drawMarks, newCache } from './marks.js';
 import { dropUnreachable, isolatePages } from './page-links.js';
+import { contentMatrix, isAdjusted } from './page-adjust.js';
 
 const parsed = new WeakMap();
+
+// The angle and the mirror of an entry, as a change of coordinates around the content of its copied page.
+function adjustContent(output, page, entry) {
+  if (!isAdjusted(entry)) return;
+  page.node.normalize();
+  page.getContentStream();
+  const before = page.createContentStream(pushGraphicsState(), concatTransformationMatrix(...contentMatrix(entry, page.getCropBox(), page.getRotation().angle)));
+  page.node.wrapContentStreams(output.context.register(before), output.context.register(page.createContentStream(popGraphicsState())));
+}
 
 // Copying pages does not change the document they come from, so that the parts of a file can share one parse.
 function loadIsolated(bytes) {
@@ -61,6 +71,7 @@ export async function buildPdf(sources, entries, burnPage, finish) {
       else [page] = await output.copyPages(await load(entry.file), [entry.source]);
       page.setRotation(degrees((page.getRotation().angle + entry.rotation) % 360));
       output.addPage(page);
+      adjustContent(output, page, entry);
     }
     await drawMarks(output, output.getPages().at(-1), entry.marks, marked);
   }

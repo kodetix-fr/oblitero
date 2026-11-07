@@ -12,7 +12,7 @@ import { initPreview } from './preview-view.js';
 import { initFiles } from './files-view.js';
 import { buildZip } from './zip.js';
 import { burnPage, closeRender, entryImage, entrySize, inkOf, openRender, outlineStarts, pageRuns, pageSize, paintEntry, renderPage, textOf } from './render.js';
-import { blankPage, createPages, cutBefore, cutEvery, cutToFit, duplicate, insertEntries, interleavePages, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, removePages, reversePages, rotatePages, runsOf, showAll, toggleCuts, toggleHidden, visible } from './pages-model.js';
+import { blankPage, createPages, cutBefore, cutEvery, canAdjust, cutToFit, duplicate, insertEntries, interleavePages, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, removePages, reversePages, rotatePages, setAngle, runsOf, showAll, toggleCuts, toggleFlip, toggleHidden, visible } from './pages-model.js';
 import { createHistory } from './history.js';
 import { pagesOf, plural, t } from './i18n.js';
 import { clamp } from './math.js';
@@ -87,6 +87,9 @@ export function initPages() {
     selectNone: byId('select-none'),
     rotateLeft: byId('rotate-left'),
     rotateRight: byId('rotate-right'),
+    angle: /** @type {HTMLInputElement} */ (byId('angle')),
+    flipH: byId('flip-h'),
+    flipV: byId('flip-v'),
     earlier: byId('move-earlier'),
     later: byId('move-later'),
     hide: byId('hide'),
@@ -256,6 +259,10 @@ export function initPages() {
     controls.redact.title = t(controls.redact.disabled ? 'redact.one-page-title' : 'app.redact.title');
     controls.duplicate.disabled = none;
     controls.reverse.disabled = chosen.length < 2;
+    const adjustable = chosen.filter(canAdjust);
+    for (const key of ['angle', 'flipH', 'flipV']) controls[key].disabled = adjustable.length === 0;
+    const angles = new Set(adjustable.map((page) => page.angle));
+    if (document.activeElement !== controls.angle) controls.angle.value = angles.size === 1 ? String([...angles][0]) : '';
     controls.interleave.disabled = new Set(chosen.map((page) => page.file)).size < 2;
     controls.addFiles.disabled = false;
     controls.clearAll.disabled = empty;
@@ -816,6 +823,16 @@ export function initPages() {
   });
   controls.rotateLeft.addEventListener('click', () => rotateSelected(-90));
   controls.rotateRight.addEventListener('click', () => rotateSelected(90));
+  controls.angle.addEventListener('change', () => {
+    const angle = clamp(Number(controls.angle.value) || 0, -180, 180);
+    commit({ pages: setAngle(pages, selected, angle) });
+  });
+  controls.flipH.addEventListener('click', () => commit({ pages: toggleFlip(pages, selected) }));
+  // Top to bottom is left to right and a half turn.
+  controls.flipV.addEventListener('click', () => {
+    const ids = new Set(pages.filter((page) => selected.has(page.id) && canAdjust(page)).map((page) => page.id));
+    commit({ pages: rotatePages(toggleFlip(pages, ids), ids, 180) });
+  });
   controls.earlier.addEventListener('click', () => moveSelected(-1));
   controls.later.addEventListener('click', () => moveSelected(1));
   controls.hide.addEventListener('click', hideSelected);
@@ -926,7 +943,7 @@ export function initPages() {
       canvas.width = 40;
       canvas.height = 52;
     } else {
-      renderPage(documents[page.file].doc, page.source, page.rotation, canvas, 0.35 * devicePixelRatio).catch(() => {});
+      renderPage(documents[page.file].doc, page.source, page.rotation, canvas, 0.35 * devicePixelRatio, page).catch(() => {});
     }
     return canvas;
   }

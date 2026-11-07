@@ -27,7 +27,7 @@ export async function openRedactor(doc, entry) {
   const scale = fitScale(width, height, 280);
   stage.style.width = `${width * scale}px`;
   stage.style.height = `${height * scale}px`;
-  await renderPage(doc, entry.source, entry.rotation, canvas, scale * devicePixelRatio);
+  await renderPage(doc, entry.source, entry.rotation, canvas, scale * devicePixelRatio, entry);
 
   let rectangles = entry.redactions.slice();
   const session = new AbortController();

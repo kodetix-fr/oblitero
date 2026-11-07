@@ -9,6 +9,7 @@ Notable changes to Oblitero. The format follows
 ### Added
 
 - **Reverse** the order of the selected pages, and **interleave** them one file at a time (the fronts and backs of a scan).
+- **Turn by any angle** and **mirror** the selected pages.
 
 ## [0.1.0] - 2026-11-06
 
