@@ -201,20 +201,14 @@ test('the large view: double click or V, arrows and buttons, every kind of page,
     assert.equal(await page.locator('#preview-prev').isDisabled(), true);
     await page.keyboard.press('ArrowRight');
     assert.equal(await count(), 'Page 2 of 3');
-    await page.keyboard.press('Escape');
-    await page.waitForFunction(() => !document.querySelector('dialog[open]'));
-
-    await card(1).focus();
-    await page.keyboard.press('v');
-    await page.locator('#preview-page canvas').waitFor({ timeout: 10000 }).catch(async (error) => {
-      const state = await page.evaluate(() => ({
-        active: document.activeElement?.getAttribute('aria-label'),
-        open: [...document.querySelectorAll('dialog[open]')].map((dialog) => dialog.id),
-        stage: [...document.getElementById('preview-page').children].map((child) => `${child.tagName} ${child.textContent}`),
-        count: document.getElementById('preview-count').textContent,
-      }));
-      throw new Error(`${error.message}\n${JSON.stringify(state)}`);
+    // Closed and opened again at once: the close event of the first view comes after the second one opened.
+    await page.evaluate(() => {
+      document.getElementById('preview-dialog').close();
+      const first = /** @type {HTMLElement} */ (document.querySelector('#grid .card'));
+      first.focus();
+      first.dispatchEvent(new KeyboardEvent('keydown', { key: 'v', bubbles: true }));
     });
+    await page.locator('#preview-page canvas').waitFor();
     assert.equal(await count(), 'Page 1 of 3');
     await page.locator('#preview-close').click();
 
