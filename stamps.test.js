@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { PDFArray, PDFDict, PDFDocument, PDFName, PDFRawStream, decodePDFRawStream, degrees } from './vendor/pdf-lib.esm.min.js';
-import { NO_STAMPS, anchor, applyStamps, bandText, checkText, cornerOf, label, tileCenters, toPage } from './stamps.js';
+import { NO_STAMPS, anchor, applyStamps, bandText, checkText, cornerOf, drawSheet, label, tileCenters, toPage } from './stamps.js';
 
 test('label writes a number in the three formats', () => {
   assert.deepEqual([label('number', 3, 12), label('of', 3, 12), label('page', 3, 12)], ['3', '3 / 12', 'Page 3']);
@@ -123,4 +123,30 @@ test('applyStamps can stamp a one-page output as a given page of a longer docume
   const contents = (document) => document.getPages()[0].node.Contents();
   assert.ok(contents(output));
   assert.equal(contents(skipped), undefined);
+});
+
+test('a letterhead fills the displayed page, upright, under the content or over it', async () => {
+  const paper = await PDFDocument.create();
+  paper.addPage([200, 100]);
+  const output = await PDFDocument.create();
+  const page = output.addPage([400, 400]);
+  page.drawText('body', { x: 10, y: 10, size: 10 });
+  const turned = output.addPage([100, 200]);
+  turned.setRotation(degrees(90));
+  const [sheet] = await output.embedPdf(await paper.save(), [0]);
+  const decode = (ref) => new TextDecoder().decode(output.context.lookup(ref).getUnencodedContents());
+  const contents = (target) => target.node.Contents().asArray().map(decode);
+
+  drawSheet(page, sheet, true, 1);
+  const under = contents(page);
+  assert.match(under[0], /^q\n2 0 0 2 0 100 cm\n\/Sheet-\d+ Do\nQ/);
+  assert.ok(under.slice(1).some((text) => text.includes('<626F6479> Tj')));
+
+  drawSheet(page, sheet, false, 0.5);
+  assert.match(contents(page).at(-1), /\/Sheet-\d+ gs\n2 0 0 2 0 100 cm\n/);
+  assert.ok(page.node.Resources().lookup(PDFName.of('ExtGState')));
+
+  drawSheet(turned, sheet, false, 1);
+  assert.match(contents(turned).at(-1), /0 1 -1 0 100 0 cm/);
+  assert.ok(turned.node.Contents() instanceof PDFArray);
 });
