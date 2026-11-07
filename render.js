@@ -3,6 +3,7 @@ import { multiply, runBox } from './find.js';
 import { readingText } from './reading-order.js';
 import { TEXT_RISE } from './marks.js';
 import { textSizeOn } from './pages-model.js';
+import { adjustMatrix } from './page-adjust.js';
 import { t } from './i18n.js';
 
 const resource = (path) => new URL(`vendor/pdfjs/${path}`, import.meta.url).href;
@@ -44,12 +45,14 @@ export async function pageSize(doc, index, rotation) {
   return { width, height };
 }
 
-export async function renderPage(doc, index, rotation, canvas, scale) {
+// `adjusted` is the page of the document, when its angle and its mirror are to be drawn too.
+export async function renderPage(doc, index, rotation, canvas, scale, adjusted = null) {
   const page = await doc.getPage(index + 1);
   const viewport = viewportOf(page, scale, rotation);
   canvas.width = Math.ceil(viewport.width);
   canvas.height = Math.ceil(viewport.height);
-  await page.render({ canvas, viewport, background: '#ffffff' }).promise;
+  const transform = adjusted && adjustMatrix(adjusted, viewport.width, viewport.height);
+  await page.render({ canvas, viewport, background: '#ffffff', ...(transform && { transform }) }).promise;
 }
 
 // The size of a page as it is displayed, in points: its rotation applied.
@@ -113,7 +116,7 @@ export async function paintEntry(doc, entry, scale, withMarks = false) {
     context.fillStyle = '#ffffff';
     context.fillRect(0, 0, canvas.width, canvas.height);
   } else {
-    await renderPage(doc, entry.source, entry.rotation, canvas, scale);
+    await renderPage(doc, entry.source, entry.rotation, canvas, scale, entry);
   }
   const context = canvas.getContext('2d');
   context.fillStyle = '#000000';
@@ -179,6 +182,7 @@ export async function textOf(doc, index) {
 export async function pageRuns(doc, entry) {
   const page = await doc.getPage(entry.source + 1);
   const viewport = viewportOf(page, 1, entry.rotation);
+  const shown = multiply(adjustMatrix(entry, viewport.width, viewport.height) ?? [1, 0, 0, 1, 0, 0], viewport.transform);
   const { items } = await page.getTextContent();
   const runs = [];
   let text = '';
@@ -188,7 +192,7 @@ export async function pageRuns(doc, entry) {
       continue;
     }
     if (text && !/\s$/.test(text) && !/^\s/.test(item.str)) text += ' ';
-    const box = runBox(multiply(viewport.transform, item.transform), item.width * viewport.scale, viewport.width, viewport.height);
+    const box = runBox(multiply(shown, item.transform), item.width * viewport.scale, viewport.width, viewport.height);
     runs.push({ start: text.length, end: text.length + item.str.length, box });
     text += item.str;
     if (item.hasEOL) text += '\n';

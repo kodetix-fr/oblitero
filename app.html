@@ -44,6 +44,8 @@
     <symbol id="i-file-plus" viewBox="0 0 24 24"><path d="M7 3.5h6.5L18.5 8.5v11a1.5 1.5 0 0 1-1.5 1.5H7a1.5 1.5 0 0 1-1.5-1.5V5A1.5 1.5 0 0 1 7 3.5z"/><path d="M13.5 3.5v5h5M12 11.5v6M9 14.5h6"/></symbol>
     <symbol id="i-blank" viewBox="0 0 24 24"><rect x="6" y="3.5" width="12" height="17" rx="1.6" stroke-dasharray="3 2.4"/></symbol>
     <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7.5a2 2 0 0 0 2 2h2.5"/></symbol>
+    <symbol id="i-flip-h" viewBox="0 0 24 24"><path d="M12 3v18M9 6L3 18h6zM15 6l6 12h-6z"/></symbol>
+    <symbol id="i-flip-v" viewBox="0 0 24 24"><path d="M3 12h18M6 9L18 3v6zM6 15l12 6v-6z"/></symbol>
     <symbol id="i-reverse" viewBox="0 0 24 24"><path d="M7 4v16M4 17l3 3 3-3M17 20V4M14 7l3-3 3 3"/></symbol>
     <symbol id="i-interleave" viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="7" rx="1.5"/><rect x="14" y="13" width="6" height="7" rx="1.5"/><path d="M14 7.5h6M4 16.5h6"/></symbol>
     <symbol id="i-text" viewBox="0 0 24 24"><path d="M5.5 7V5.5h13V7M12 5.5v13M9 18.5h6"/></symbol>
@@ -121,6 +123,9 @@
         <div class="group sel-actions">
           <button type="button" class="btn sm icon-only" id="rotate-left" aria-label="Rotate left" title="Rotate left (Shift+R)" data-i18n-title="app.rotate-left.title" data-i18n-aria="app.rotate-left.aria"><svg class="ic" aria-hidden="true"><use href="#i-rot-left"/></svg></button>
           <button type="button" class="btn sm icon-only" id="rotate-right" aria-label="Rotate right" title="Rotate right (R)" data-i18n-title="app.rotate-right.title" data-i18n-aria="app.rotate-right.aria"><svg class="ic" aria-hidden="true"><use href="#i-rot-right"/></svg></button>
+          <label class="field angle" title="Turn the selected pages by an angle, in degrees, clockwise: to straighten a scan" data-i18n-title="app.angle.title"><input type="number" id="angle" min="-180" max="180" step="0.5" value="0" aria-label="Angle in degrees" data-i18n-aria="app.angle.aria">°</label>
+          <button type="button" class="btn sm icon-only" id="flip-h" aria-label="Mirror left to right" title="Mirror the selected pages left to right" data-i18n-title="app.flip-h.title" data-i18n-aria="app.flip-h.aria"><svg class="ic" aria-hidden="true"><use href="#i-flip-h"/></svg></button>
+          <button type="button" class="btn sm icon-only" id="flip-v" aria-label="Mirror top to bottom" title="Mirror the selected pages top to bottom" data-i18n-title="app.flip-v.title" data-i18n-aria="app.flip-v.aria"><svg class="ic" aria-hidden="true"><use href="#i-flip-v"/></svg></button>
           <span class="vsep"></span>
           <button type="button" class="btn sm icon-only" id="move-earlier" aria-label="Move earlier" title="Move earlier (Alt+Left)" data-i18n-title="app.move-earlier.title" data-i18n-aria="app.move-earlier.aria"><svg class="ic" aria-hidden="true"><use href="#i-left"/></svg></button>
           <button type="button" class="btn sm icon-only" id="move-later" aria-label="Move later" title="Move later (Alt+Right)" data-i18n-title="app.move-later.title" data-i18n-aria="app.move-later.aria"><svg class="ic" aria-hidden="true"><use href="#i-right"/></svg></button>

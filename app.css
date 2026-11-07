@@ -285,6 +285,8 @@ dialog::backdrop { background: var(--shade); }
 .out-group select, #language { height: 28px; padding: 0 8px; border: 1px solid var(--field-line); border-radius: var(--r-s); background: var(--surface); }
 .out-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
 .out-row input[type="number"] { width: 52px; }
+.field.angle { gap: 2px; }
+.field.angle input { width: 58px; }
 .out-actions { padding-top: 4px; border-top: 1px solid var(--line); }
 .out-actions .btn { width: 100%; }
 .seg { display: inline-flex; gap: 2px; justify-self: start; padding: 2px; border-radius: 9px; background: var(--surface-2); }

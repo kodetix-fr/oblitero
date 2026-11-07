@@ -1,10 +1,10 @@
 // A page of the document: where it comes from (`file`, and `source`, its index in that file) and what was done to it.
 export function createPages(count, { file = 0, firstId = 0 } = {}) {
-  return Array.from({ length: count }, (_, source) => ({ id: firstId + source, file, source, rotation: 0, redactions: [], marks: [], hidden: false }));
+  return Array.from({ length: count }, (_, source) => ({ id: firstId + source, file, source, rotation: 0, angle: 0, flip: false, redactions: [], marks: [], hidden: false }));
 }
 
 export function blankPage(id, width, height) {
-  return { id, file: null, source: null, blank: { width, height }, rotation: 0, redactions: [], marks: [], hidden: false };
+  return { id, file: null, source: null, blank: { width, height }, rotation: 0, angle: 0, flip: false, redactions: [], marks: [], hidden: false };
 }
 
 // Puts new entries right before or after the entry `targetId`, or at the end when there is no such entry.
@@ -91,7 +91,14 @@ export function interleavePages(pages, ids) {
   return refill(pages, ids, order);
 }
 
-export const removePages =(pages, ids) => pages.filter((page) => !ids.has(page.id));
+// The angle and the mirror move the content under the rectangles, so they leave alone a page that has some, and a blank page.
+export const canAdjust = (page) => !page.blank && page.redactions.length === 0;
+
+export const setAngle = (pages, ids, angle) => pages.map((page) => (ids.has(page.id) && canAdjust(page) ? { ...page, angle } : page));
+
+export const toggleFlip = (pages, ids) => pages.map((page) => (ids.has(page.id) && canAdjust(page) ? { ...page, flip: !page.flip } : page));
+
+export const removePages = (pages, ids) => pages.filter((page) => !ids.has(page.id));
 
 // Consecutive pages that come from the same file make one run (a blank page is a run of its own file, null).
 export function runsOf(pages) {
