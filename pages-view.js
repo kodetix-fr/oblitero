@@ -18,6 +18,9 @@ import { pagesOf, plural, t } from './i18n.js';
 import { clamp } from './math.js';
 import { openRedactor } from './redact-view.js';
 import { openDrawing } from './draw-view.js';
+import { askPassword } from './password-view.js';
+import { WrongPassword, decryptPdf, protectPdf } from './qpdf-run.js';
+import { rebuildPdf } from './repair.js';
 import { NO_STAMPS, applyStamps } from './stamps.js';
 import { initFind } from './find-view.js';
 import { initSign } from './sign-view.js';
@@ -395,30 +398,59 @@ export function initPages() {
   const isPdf = (bytes) => new TextDecoder('latin1').decode(bytes.subarray(0, 1024)).includes('%PDF-');
 
   // A PDF is a file of its own; a photo becomes a file of one page, laid out as the Photos settings say.
+  async function opened(bytes) {
+    const { count, fields } = await openInfo(bytes);
+    const doc = await openRender(bytes);
+    // The screen reads a file with PDF.js and the result is built with pdf-lib: a page they count differently would be another page.
+    if (doc.numPages !== count) {
+      closeRender(doc);
+      throw new Error('The two readers do not see the same pages');
+    }
+    return { bytes, doc, count, fields, repaired: null };
+  }
+
+  // A file the readers refuse: an encrypted one is opened with its password (none first, as many files only restrict their
+  // permissions), and a damaged one is rewritten from the pages that can still be read.
+  async function recover(bytes, name, failure) {
+    if (/encrypt/i.test(failure.message)) {
+      for (let password = '', wrong = false; password !== null; password = await askPassword(name, wrong), wrong = true) {
+        try {
+          return await opened(await decryptPdf(bytes, password));
+        } catch (error) {
+          if (!(error instanceof WrongPassword)) throw error;
+        }
+      }
+      throw new Error(t('password.cancelled'));
+    }
+    const { bytes: rebuilt, pages, declared } = await rebuildPdf(bytes);
+    return { ...(await opened(rebuilt)), repaired: { pages, declared } };
+  }
+
   async function load(file) {
     const bytes = new Uint8Array(await file.arrayBuffer());
     if (isPdf(bytes)) {
-      const { count, fields } = await openInfo(bytes);
-      const doc = await openRender(bytes);
-      // The screen reads a file with PDF.js and the result is built with pdf-lib: a page they count differently would be another page.
-      if (doc.numPages !== count) {
-        closeRender(doc);
-        throw new Error('The two readers do not see the same pages');
-      }
-      return { name: file.name, bytes, doc, count, fields, values: {} };
+      const result = await opened(bytes).catch((failure) => recover(bytes, file.name, failure));
+      return { name: file.name, values: {}, ...result };
     }
     const photo = await readPhoto(file);
     const pdf = await imagesToPdf([photo], photoLayout());
-    return { name: file.name, bytes: pdf, doc: await openRender(pdf), count: 1, fields: [], values: {}, photo };
+    return { name: file.name, bytes: pdf, doc: await openRender(pdf), count: 1, fields: [], values: {}, photo, repaired: null };
   }
 
   // The pages of PDF files and photos go into the document, before or after the page `targetId` (at the end without one).
   async function insert(files, targetId = null, after = true) {
     const added = [];
     const unreadable = [];
+    const repaired = [];
     for (const file of files) {
       try {
         const document = await load(file);
+        const lost = document.repaired;
+        if (lost) {
+          repaired.push(() =>
+            lost.declared ? t('repair.done', { name: file.name, kept: pagesOf(lost.pages), total: pagesOf(lost.declared) }) : t('repair.done-unknown', { name: file.name, kept: pagesOf(lost.pages) }),
+          );
+        }
         documents.push(document);
         added.push(...createPages(document.count, { file: documents.length - 1, firstId: nextId }));
         nextId += document.count;
@@ -426,7 +458,8 @@ export function initPages() {
         unreadable.push(file.name);
       }
     }
-    setStatus(unreadable.length ? () => t('status.cannot-read', { names: unreadable.join(', ') }) : '');
+    if (unreadable.length) repaired.push(() => t('status.cannot-read', { names: unreadable.join(', ') }));
+    setStatus(() => repaired.map((note) => note()).join(' '));
     if (added.length === 0) return;
     const first = pages.length === 0;
     selected = first ? new Set() : new Set(added.map((page) => page.id));
@@ -672,7 +705,13 @@ export function initPages() {
   paperSize.addEventListener('change', () => {
     byId('paper-margin-field').hidden = paperSize.value === 'as-is';
   });
-  const output = createOutput(documents, () => ({ stamps, properties, compression, paper: paper() }), say);
+  const protectPassword = /** @type {HTMLInputElement} */ (byId('protect-password'));
+  protectPassword.addEventListener('input', () => {
+    byId('protect-options').hidden = !protectPassword.value;
+  });
+  const protection = () =>
+    protectPassword.value ? { password: protectPassword.value, print: byId('protect-print').checked, copy: byId('protect-copy').checked } : null;
+  const output = createOutput(documents, () => ({ stamps, properties, compression, paper: paper(), protection: protection() }), say, protectPdf);
   const { build, squeeze, asPdf, savedText } = output;
 
   async function run(label, work) {
@@ -911,7 +950,7 @@ export function initPages() {
     run('status.preview', async () => {
       const chosen = shownSelected();
       const entries = chosen.length ? chosen : visible(pages);
-      const blob = await asPdf(entries);
+      const blob = await asPdf(entries, { preview: true });
       const title = t(chosen.length ? 'preview.selection' : 'preview.title');
       await previewer.openPdf(new Uint8Array(await blob.arrayBuffer()), title, [pagesOf(entries.length), formatSize(blob.size)].join(t('list-gap')));
     }),
@@ -935,7 +974,7 @@ export function initPages() {
       let offset = 0;
       for (const part of parts) {
         say('status.splitting-at', { n: files.length + 1, total: parts.length });
-        files.push({ name: `${stem()}-${String(files.length + 1).padStart(3, '0')}.pdf`, blob: await asPdf(part, offset) });
+        files.push({ name: `${stem()}-${String(files.length + 1).padStart(3, '0')}.pdf`, blob: await asPdf(part, { offset }) });
         offset += part.length;
       }
       download(await buildZip(files), `${stem()}-split.zip`);

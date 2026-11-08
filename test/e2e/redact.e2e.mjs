@@ -167,7 +167,7 @@ test('a rectangle can be placed, moved, resized and removed with the keyboard al
   assert.equal(await page.locator('#grid .badge').first().innerText(), '1 redacted');
 });
 
-test('a file whose pages the two readers count differently is refused', async () => {
+test('a file whose pages the two readers count differently is rebuilt from the pages both can read', async () => {
   const source = await PDFDocument.load(readFileSync(await writePdf(app.dir, 'typeless-source.pdf', [{ size: 300, text: 'COVER' }, { size: 300, text: 'INSIDE' }, { size: 300, text: 'LAST' }])));
   source.getPage(0).node.delete(PDFName.of('Type'));
   const path = join(app.dir, 'typeless.pdf');
@@ -175,6 +175,7 @@ test('a file whose pages the two readers count differently is refused', async ()
   const tab = await app.openApp();
   await tab.setInputFiles('#pages-file', path);
   await tab.waitForFunction(() => /typeless\.pdf/.test(document.getElementById('pages-status').textContent));
-  assert.equal(await tab.locator('#grid li').count(), 0);
+  assert.equal(await tab.locator('#grid li').count(), 2);
+  assert.equal(await tab.locator('#pages-status').innerText(), 'typeless.pdf was damaged and has been repaired: 2 pages recovered out of 3 pages.');
   await tab.close();
 });

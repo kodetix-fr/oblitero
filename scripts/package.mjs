@@ -201,7 +201,7 @@ function main() {
   const files = paths.map((rel) => ({ path: rel, data: readFileSync(join(root, rel)) }));
 
   // The licenses travel with the code: ours at the root, the third-party components' next to them
-  const missingLicenses = ['LICENSE', 'vendor/pdf-lib.LICENSE', 'vendor/pdfjs/LICENSE'].filter((l) => !paths.includes(l));
+  const missingLicenses = ['LICENSE', 'vendor/pdf-lib.LICENSE', 'vendor/pdfjs/LICENSE', 'vendor/qpdf/LICENSE_QPDF', 'vendor/qpdf/NOTICE_QPDF.txt', 'vendor/qpdf/LICENSE_QPDF_WASM', 'vendor/qpdf/LICENSE_ZLIB', 'vendor/qpdf/LICENSE_JPEG_TURBO.txt'].filter((l) => !paths.includes(l));
   if (missingLicenses.length) throw new Error(`License missing from the package: ${missingLicenses.join(', ')}`);
 
   // The files cited by the manifest must be in the package

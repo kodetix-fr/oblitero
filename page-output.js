@@ -23,8 +23,9 @@ export async function eachFile(groups, make) {
   return { files, report, failed: groups.length - files.length };
 }
 
-// Turns pages into PDF files, with what the document has set. `settings()` gives { stamps, properties, compression, paper }.
-export function createOutput(documents, settings, say) {
+// Turns pages into PDF files, with what the document has set. `settings()` gives { stamps, properties, compression, paper,
+// protection }; `protect(bytes, password, permissions)` encrypts a download.
+export function createOutput(documents, settings, say, protect) {
   let saved = { before: 0, after: 0 };
 
   // `burned` keeps the pictures of the redacted pages from one build to the next, when they are many builds of the same pages.
@@ -64,7 +65,8 @@ export function createOutput(documents, settings, say) {
   return {
     build,
     squeeze,
-    async asPdf(entries, offset = 0) {
+    // A preview is shown here, so it is not encrypted.
+    async asPdf(entries, { offset = 0, preview = false } = {}) {
       const bytes = await build(entries, new Map(), offset);
       let result = bytes;
       if (settings().compression !== 'none') {
@@ -73,6 +75,8 @@ export function createOutput(documents, settings, say) {
       }
       saved.before += bytes.length;
       saved.after += result.length;
+      const { protection } = settings();
+      if (protection && !preview) result = await protect(result, protection.password, protection);
       return new Blob([result], { type: 'application/pdf' });
     },
     savedText() {

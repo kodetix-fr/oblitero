@@ -123,6 +123,9 @@ certified digital signature) is out of scope.
 - **Draw**: a rectangle, an arrow or a highlight on a page, with the mouse or the
   keyboard, in red, blue or black (a highlight is yellow and lets the page show
   through). The shapes are drawn into the page content and turn with the page.
+- **Password**: the result panel takes a password to open the downloaded files
+  (AES-256, by qpdf), with or without printing and copying the text. The preview
+  is not protected, and the password is not kept.
 - **Properties**: a report of what each file carries (title, author, dates, XMP,
   embedded files, scripts, bookmarks, hidden layers, links, comments, form
   fields), and the properties of the file you download, which you write
@@ -161,8 +164,10 @@ after the page, V shows it large, Ctrl/Cmd+Z and Shift+Ctrl/Cmd+Z undo and redo.
   the result, so that none can carry a redacted or hidden page along. Web links
   stay, and so do notes and what form fields show; attachments, media and
   private application data of a page do not.
-- A PDF whose pages two readers count differently (a damaged page tree) is
-  refused rather than risk showing one page and writing another.
+- A damaged PDF (cut short, a lost cross-reference table or page tree, or pages
+  two readers count differently) is rebuilt from the pages that can still be
+  read, and the status says how many were recovered out of how many; a page
+  with nothing left to read is gone. A file with no readable page is refused.
 - Compression only touches JPEG photos (single filter, gray or color). Images
   in other encodings are kept as they are, so a PDF made of scanned PNG pages
   or of vector drawings may not shrink; the result says so. Bookmarks, forms and
@@ -178,7 +183,8 @@ after the page, V shows it large, Ctrl/Cmd+Z and Shift+Ctrl/Cmd+Z undo and redo.
   before them, a table row by row. It is a guess from the layout, so a page with
   a sidebar, a table whose cells hold long text, or vertical text can come out in
   the wrong order.
-- Encrypted PDF files are refused.
+- A password-protected PDF is opened with its password, decrypted in memory by
+  qpdf (RC4 and AES); its result is a file without that password.
 - Needs Chrome 124 or newer. The tests run on Chrome 124 and on the Chromium that
   ships with Playwright 1.57. Chrome 116 cannot open a PDF: it lacks
   `Promise.withResolvers`, which PDF.js uses. Versions 117 to 123 are not tested.
