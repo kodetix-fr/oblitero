@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { crc32, deflateSync } from 'node:zlib';
-import { PDFDocument, PDFName, degrees } from './vendor/pdf-lib.esm.min.js';
+import { PDFDocument, PDFName, PDFString, degrees } from './vendor/pdf-lib.esm.min.js';
 import { buildPdf, fitPaper } from './export.js';
-import { drawMarks, imageMark, newCache, textMark } from './marks.js';
+import { drawMarks, imageMark, newCache, shapeMark, shapeParts, textMark } from './marks.js';
 import { blankPage, createPages, rotateMark } from './pages-model.js';
 
 function png(width, height) {
@@ -129,4 +129,47 @@ test('a page put on a sheet of paper is scaled within the margin, centered, on a
   ]);
   const content = Buffer.from(output.context.lookup(output.getPage(0).node.Contents().get(0)).getUnencodedContents()).toString();
   assert.match(content, /^q\n2\.56\d* 0 0 2\.56\d* 36 41\.0\d* cm\n\/Page-\d+ Do\nQ/);
+});
+
+test('a shape turns with its page, and an arrow has its head at the second point', () => {
+  const arrow = shapeMark('arrow', 0.1, 0.2, 0.5, 0.2, 'blue');
+  const turned = rotateMark(arrow, 90);
+  assert.deepEqual([turned.x1, turned.y1, turned.x2, turned.y2], [0.8, 0.1, 0.8, 0.5]);
+  const back = rotateMark(turned, -90);
+  assert.ok(['x1', 'y1', 'x2', 'y2'].every((key) => Math.abs(back[key] - arrow[key]) < 1e-9) && back.turn === 0);
+  const { lines, box } = shapeParts(arrow, 100, 100);
+  assert.equal(box, null);
+  assert.equal(lines.length, 3);
+  assert.ok(lines.slice(1).every(([x, y, hx]) => x === 50 && y === 20 && hx < 50));
+  assert.deepEqual(shapeParts(shapeMark('rect', 0.5, 0.5, 0.1, 0.2, 'red'), 100, 200).box.map(Math.round), [10, 40, 40, 60]);
+});
+
+test('shapes are drawn in the page content: a frame, a highlight that lets the page through, lines for an arrow', async () => {
+  const document = await PDFDocument.create();
+  const page = document.addPage([300, 200]);
+  await drawMarks(document, page, [shapeMark('rect', 0.1, 0.1, 0.3, 0.3, 'red'), shapeMark('highlight', 0.5, 0.5, 0.9, 0.6), shapeMark('arrow', 0.1, 0.9, 0.5, 0.5, 'black')], newCache());
+  const content = Buffer.from(document.context.lookup(page.node.Contents().get(0)).getUnencodedContents()).toString();
+  assert.equal((content.match(/^S$/gm) ?? []).length, 4);
+  assert.equal((content.match(/^f$/gm) ?? []).length, 1);
+  assert.match(content, /\/GS-\d+ gs/);
+});
+
+test('a cropped page and a page put on paper keep their links, moved with the content; a link outside the crop goes', async () => {
+  const source = await PDFDocument.create();
+  const page = source.addPage([300, 200]);
+  const link = (rect, uri) => source.context.register(source.context.obj({ Type: 'Annot', Subtype: 'Link', Rect: rect, A: { S: 'URI', URI: PDFString.of(uri) } }));
+  page.node.addAnnot(link([160, 160, 200, 190], 'https://inside.example'));
+  page.node.addAnnot(link([10, 10, 40, 40], 'https://outside.example'));
+  const bytes = await source.save();
+  const [entry] = createPages(1);
+  // The top right quarter of the page.
+  const crop = { x: 0.5, y: 0, w: 0.5, h: 0.5, remove: false };
+  const rects = (document) =>
+    document.getPages().map((p) => (p.node.Annots()?.asArray() ?? []).map((ref) => document.context.lookup(ref).lookup(PDFName.of('Rect')).asArray().map((n) => Math.round(n.asNumber()))));
+  const cropped = await PDFDocument.load(await buildPdf([bytes], [{ ...entry, crop }], noBurn));
+  assert.deepEqual(rects(cropped), [[[10, 60, 50, 90]]]);
+
+  const output = await PDFDocument.load(bytes);
+  await fitPaper(output, [600, 400], 0);
+  assert.deepEqual(rects(output), [[[320, 320, 400, 380], [20, 20, 80, 80]]]);
 });

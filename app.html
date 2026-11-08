@@ -44,6 +44,7 @@
     <symbol id="i-file-plus" viewBox="0 0 24 24"><path d="M7 3.5h6.5L18.5 8.5v11a1.5 1.5 0 0 1-1.5 1.5H7a1.5 1.5 0 0 1-1.5-1.5V5A1.5 1.5 0 0 1 7 3.5z"/><path d="M13.5 3.5v5h5M12 11.5v6M9 14.5h6"/></symbol>
     <symbol id="i-blank" viewBox="0 0 24 24"><rect x="6" y="3.5" width="12" height="17" rx="1.6" stroke-dasharray="3 2.4"/></symbol>
     <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7.5a2 2 0 0 0 2 2h2.5"/></symbol>
+    <symbol id="i-shapes" viewBox="0 0 24 24"><rect x="3" y="3" width="10" height="8" rx="1"/><path d="M8 21l11-11M19 10h-5M19 10v5"/></symbol>
     <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
     <symbol id="i-crop" viewBox="0 0 24 24"><path d="M6 2v14a2 2 0 0 0 2 2h14M2 6h14a2 2 0 0 1 2 2v14"/></symbol>
     <symbol id="i-flip-h" viewBox="0 0 24 24"><path d="M12 3v18M9 6L3 18h6zM15 6l6 12h-6z"/></symbol>
@@ -107,10 +108,11 @@
           <span class="group-name" aria-hidden="true" data-i18n="app.group-add">Add</span>
           <button type="button" class="btn sm" id="sign" title="Sign with a drawn, typed or imported signature" data-i18n-title="app.sign.title"><svg class="ic" aria-hidden="true"><use href="#i-sign"/></svg><span data-i18n="app.sign">Sign</span></button>
           <button type="button" class="btn sm" id="add-text" title="Put a line of text anywhere on a page: a name, a date, a cross" data-i18n-title="app.add-text.title"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg><span data-i18n="app.add-text">Add text</span></button>
+          <button type="button" class="btn sm" id="draw" title="Draw a rectangle, an arrow or a highlight on a page" data-i18n-title="app.draw.title"><svg class="ic" aria-hidden="true"><use href="#i-shapes"/></svg><span data-i18n="app.draw">Draw</span></button>
           <button type="button" class="btn sm" id="fill-form" title="Fill the fields of a form: text, check boxes and lists. The values are written on the page." data-i18n-title="app.fill-form.title"><svg class="ic" aria-hidden="true"><use href="#i-form"/></svg><span data-i18n="app.fill-form">Fill form</span></button>
           <button type="button" class="btn sm" id="add-blank" title="Add a blank page after the selection" data-i18n-title="app.add-blank.title"><svg class="ic" aria-hidden="true"><use href="#i-file-plus"/></svg><span data-i18n="app.add-blank.label">Blank page</span></button>
           <button type="button" class="btn sm" id="stamps" title="Number the pages and add a watermark to what you download" data-i18n-title="app.stamps.title"><svg class="ic" aria-hidden="true"><use href="#i-hash"/></svg><span data-i18n="app.stamps">Numbers and watermark</span></button>
-          <button type="button" class="btn sm ghost danger" id="clear-marks" hidden title="Remove the signatures and texts of the selected pages, or of all the pages" data-i18n-title="app.clear-marks.title"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span data-i18n="app.clear-marks">Remove signatures and texts</span></button>
+          <button type="button" class="btn sm ghost danger" id="clear-marks" hidden title="Remove the signatures, texts and drawings of the selected pages, or of all the pages" data-i18n-title="app.clear-marks.title"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span data-i18n="app.clear-marks">Remove what was added</span></button>
         </div>
       </div>
       <div class="subbar selbar page-only">
@@ -416,6 +418,36 @@
     </div>
   </dialog>
 
+  <dialog id="draw-dialog" aria-labelledby="draw-title">
+    <div class="dlg-head">
+      <svg class="ic" aria-hidden="true"><use href="#i-shapes"/></svg>
+      <h2 id="draw-title" data-i18n="draw.title">Draw on the page</h2>
+    </div>
+    <p class="hint" data-i18n="draw.hint">Choose a tool and drag on the page: a rectangle, an arrow that points where you let go, or a highlight. With the keyboard, focus the page: arrows move the crosshair (Shift for bigger steps), Enter starts a shape and Enter again places it. The shapes are drawn into the page.</p>
+    <span id="draw-live" class="vh" role="status"></span>
+    <div class="draw-tools">
+      <div class="seg" role="radiogroup" aria-label="Tool" data-i18n-aria="draw.tool">
+        <label><input type="radio" name="draw-tool" value="rect" checked> <span data-i18n="draw.rect">Rectangle</span></label>
+        <label><input type="radio" name="draw-tool" value="arrow"> <span data-i18n="draw.arrow">Arrow</span></label>
+        <label><input type="radio" name="draw-tool" value="highlight"> <span data-i18n="draw.highlight">Highlighter</span></label>
+      </div>
+      <label class="field"><span data-i18n="draw.color">Color</span> <select id="draw-color"><option value="red" data-i18n="draw.red">Red</option><option value="blue" data-i18n="draw.blue">Blue</option><option value="black" data-i18n="draw.black">Black</option></select></label>
+    </div>
+    <div class="dlg-stage">
+      <div id="draw-stage" class="sheet-stage">
+        <canvas id="draw-canvas"></canvas>
+        <canvas id="draw-overlay"></canvas>
+        <div id="draw-layer" tabindex="0" role="group" aria-label="Page. Arrow keys move the crosshair, Enter starts a shape and Enter again places it." data-i18n-aria="draw.layer.aria"><span id="draw-crosshair" class="crosshair"></span></div>
+      </div>
+    </div>
+    <div class="dlg-foot">
+      <button type="button" class="btn" id="draw-undo"><svg class="ic" aria-hidden="true"><use href="#i-undo"/></svg><span data-i18n="redact.redact-undo">Undo</span></button>
+      <button type="button" class="btn ghost" id="draw-clear"><svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg><span data-i18n="redact.redact-clear">Clear</span></button>
+      <span class="sep"></span>
+      <button type="button" class="btn" id="draw-cancel" data-i18n="redact.redact-cancel">Cancel</button>
+      <button type="button" class="btn primary" id="draw-done"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="redact.redact-done">Done</span></button>
+    </div>
+  </dialog>
   <dialog id="place-dialog" aria-labelledby="place-title">
     <div class="dlg-head">
       <svg class="ic" aria-hidden="true"><use href="#i-sign"/></svg>
@@ -424,7 +456,8 @@
       <span id="place-where" class="summary"></span>
     </div>
     <div class="place-options">
-      <label class="field" id="place-text-field" hidden><span data-i18n="place.place-text-field">Text</span> <input type="text" id="place-text" maxlength="80" spellcheck="false"></label>
+      <label class="field" id="place-text-field" hidden><span data-i18n="place.place-text-field">Text</span> <input type="text" id="place-text" maxlength="80" spellcheck="false" aria-describedby="place-font-hint"></label>
+        <p class="hint" id="place-font-hint" hidden data-i18n="place.font-hint">The text uses the standard Helvetica font: Latin letters, digits and common punctuation.</p>
       <button type="button" class="btn sm" id="place-date" hidden data-i18n="place.place-date">Today</button>
       <label class="field" id="place-size-field" hidden><span data-i18n="place.place-size-field">Size</span> <input type="range" id="place-size" min="12" max="70" value="25" aria-label="Size of the text" data-i18n-aria="place.place-size.aria"></label>
       <span id="place-error" role="alert" class="hint"></span>

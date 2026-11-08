@@ -17,6 +17,7 @@ import { createHistory } from './history.js';
 import { pagesOf, plural, t } from './i18n.js';
 import { clamp } from './math.js';
 import { openRedactor } from './redact-view.js';
+import { openDrawing } from './draw-view.js';
 import { askPassword } from './password-view.js';
 import { WrongPassword, decryptPdf, protectPdf } from './qpdf-run.js';
 import { rebuildPdf } from './repair.js';
@@ -82,6 +83,7 @@ export function initPages() {
     sign: byId('sign'),
     properties: byId('properties'),
     addText: byId('add-text'),
+    draw: byId('draw'),
     clearMarks: byId('clear-marks'),
     exportImages: byId('export-images'),
     undo: byId('undo'),
@@ -293,6 +295,7 @@ export function initPages() {
     controls.fillForm.disabled = !fillable;
     controls.fillForm.title = t(fillable ? 'app.fill-form.title' : 'form.none-title');
     controls.addText.disabled = shown === 0;
+    controls.draw.disabled = shown === 0;
     controls.clearMarks.disabled = false;
     controls.clearMarks.hidden = !pages.some((page) => page.marks.length);
     controls.exportImages.disabled = shown === 0;
@@ -775,6 +778,11 @@ export function initPages() {
     commit({ pages: pages.map((page) => (reach.has(page.id) ? { ...page, marks: [...page.marks, made] } : page)) });
     setStatus(() => t(noticeKey, { pages: pagesOf(reach.size) }));
   }
+  controls.draw.addEventListener('click', guarded(async () => {
+    const target = lastSelected() ?? visible(pages)[0];
+    const shapes = await openDrawing(docOf(target), target);
+    if (shapes) commit({ pages: pages.map((page) => (page.id === target.id ? { ...page, marks: [...page.marks.filter((mark) => mark.kind !== 'shape'), ...shapes] } : page)) });
+  }));
   controls.properties.addEventListener('click', guarded(async () => {
     const result = await propertiesDialog.open(used().map((document) => ({ name: document.name, bytes: document.original ?? document.bytes })), properties);
     if (result) commit({ properties: result });

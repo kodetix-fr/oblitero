@@ -8,11 +8,12 @@ Notable changes to Oblitero. The format follows
 
 ### Added
 
+- **Draw** rectangles, arrows and highlights on a page, written into its content.
 - **Open password-protected PDFs** (RC4 and AES, by qpdf compiled to WebAssembly), **protect the result** with a password (AES-256) and **repair damaged files** from the pages that can still be read.
 - **Reverse** the order of the selected pages, and **interleave** them one file at a time (the fronts and backs of a scan).
 - **One PDF per file**: the same changes and settings on many files, in a ZIP with a report.
 - **Drag with a finger or a pen**: a long press starts the drag of a page or a file row.
-- **Crop** the selected pages, keeping or destroying what is outside, and put the result on **A4 or Letter** with a margin.
+- **Crop** the selected pages, keeping or destroying what is outside, and put the result on **A4 or Letter** with a margin; links and comments move with the content.
 - **Turn by any angle** and **mirror** the selected pages.
 - **Bates numbers** that go on across the parts, and **stamps** (a framed text or an image) at a position.
 - **Letterhead**: the first page of a PDF under or over every page, or a range, with an opacity.

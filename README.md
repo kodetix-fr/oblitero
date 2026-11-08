@@ -50,8 +50,8 @@ certified digital signature) is out of scope.
   duplex scan that arrives as the fronts and the backs (reverse the backs first).
   Crop frames the part of the selected pages to keep, drawn on one of them; the
   rest stays in the file, clipped, unless "remove what is outside" is on, and then
-  the page becomes a picture of the frame. Links and comments of a cropped page
-  are not kept. The Paper setting of the result puts every page on A4 or Letter
+  the page becomes a picture of the frame. Links and comments move with the
+  content, and those outside the frame go. The Paper setting of the result puts every page on A4 or Letter
   with a margin, turned to its side.
   An angle in degrees turns the selected pages to straighten a crooked scan, and
   the mirror buttons flip them left to right or top to bottom; a page that carries
@@ -118,7 +118,11 @@ certified digital signature) is out of scope.
   imported scan gets a transparent paper), or put a line of text anywhere on a
   page (a name, a date, a cross). Drag it where it belongs, or move it with the
   arrow keys; apply it to one page, the selected pages or all of them. It is a
-  picture of a signature, not a digital signature with a certificate.
+  picture of a signature, not a digital signature with a certificate. Text uses
+  the standard Helvetica font, and the dialog says so.
+- **Draw**: a rectangle, an arrow or a highlight on a page, with the mouse or the
+  keyboard, in red, blue or black (a highlight is yellow and lets the page show
+  through). The shapes are drawn into the page content and turn with the page.
 - **Password**: the result panel takes a password to open the downloaded files
   (AES-256, by qpdf), with or without printing and copying the text. The preview
   is not protected, and the password is not kept.

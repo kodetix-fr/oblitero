@@ -1,7 +1,7 @@
 import * as pdfjs from './vendor/pdfjs/pdf.min.mjs';
 import { multiply, runBox } from './find.js';
 import { readingText } from './reading-order.js';
-import { TEXT_RISE } from './marks.js';
+import { HIGHLIGHT_OPACITY, TEXT_RISE, shapeParts } from './marks.js';
 import { textSizeOn } from './pages-model.js';
 import { adjustMatrix } from './page-adjust.js';
 import { t } from './i18n.js';
@@ -96,10 +96,41 @@ export async function outlineStarts(doc) {
 
 const bitmaps = new WeakMap();
 
+// A shape drawn on a canvas as it will be in the PDF.
+export function paintShape(context, mark, width, height) {
+  const { box, lines, thickness, color } = shapeParts(mark, width, height);
+  const css = `rgb(${color.map((part) => Math.round(part * 255)).join(' ')})`;
+  context.save();
+  if (box && mark.shape === 'highlight') {
+    context.globalAlpha = HIGHLIGHT_OPACITY;
+    context.globalCompositeOperation = 'multiply';
+    context.fillStyle = css;
+    context.fillRect(...box);
+  } else if (box) {
+    context.strokeStyle = css;
+    context.lineWidth = thickness;
+    context.strokeRect(...box);
+  }
+  context.strokeStyle = css;
+  context.lineWidth = thickness;
+  context.lineCap = 'round';
+  for (const [x1, y1, x2, y2] of lines) {
+    context.beginPath();
+    context.moveTo(x1, y1);
+    context.lineTo(x2, y2);
+    context.stroke();
+  }
+  context.restore();
+}
+
 // The pictures and the lines of text put on a page, drawn on its canvas as they will be in the PDF.
 async function paintMarks(canvas, marks) {
   const context = canvas.getContext('2d');
   for (const mark of marks) {
+    if (mark.kind === 'shape') {
+      paintShape(context, mark, canvas.width, canvas.height);
+      continue;
+    }
     const radians = (mark.turn * Math.PI) / 180;
     context.save();
     if (mark.kind === 'image') {
