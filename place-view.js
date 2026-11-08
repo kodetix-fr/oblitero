@@ -32,6 +32,7 @@ export async function placeMark({ doc, entry, draft, number, selectedCount }) {
   byId('scope-selection').hidden = selectedCount < 2;
   query('input[name="place-scope"][value="page"]').checked = true;
   byId('place-text-field').hidden = !isText;
+  byId('place-font-hint').hidden = !isText;
   byId('place-date').hidden = !isText;
   byId('place-size-field').hidden = !isText;
   error.textContent = '';

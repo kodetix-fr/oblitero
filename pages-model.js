@@ -51,6 +51,12 @@ export function rotateRect({ x, y, w, h }, delta) {
 export function rotateMark(mark, delta) {
   const turn = (mark.turn + delta + 360) % 360;
   if (mark.kind === 'image') return { ...mark, ...rotateRect(mark, delta), turn };
+  if (mark.kind === 'shape') {
+    const point = (x, y) => (delta > 0 ? [1 - y, x] : [y, 1 - x]);
+    const [x1, y1] = point(mark.x1, mark.y1);
+    const [x2, y2] = point(mark.x2, mark.y2);
+    return { ...mark, x1, y1, x2, y2, turn };
+  }
   return { ...mark, x: delta > 0 ? 1 - mark.y : mark.y, y: delta > 0 ? mark.x : 1 - mark.x, turn };
 }
 
