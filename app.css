@@ -264,6 +264,27 @@ dialog::backdrop { background: var(--shade); }
 .dlg-body .hint:empty { display: none; }
 #stamp-dialog[open], #export-dialog[open] { grid-template-rows: auto minmax(0, 1fr) auto; }
 #export-dialog { width: min(420px, calc(100vw - 32px)); }
+#password-dialog { width: min(400px, calc(100vw - 32px)); }
+#password-dialog[open] { grid-template-rows: auto minmax(0, 1fr) auto; }
+.pw-body { gap: 8px; padding: 22px 24px 18px; text-align: center; }
+.pw-lock { display: grid; place-items: center; width: 48px; height: 48px; margin: 0 auto 4px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-ink); }
+.pw-lock .ic { width: 24px; height: 24px; }
+.pw-file { margin-bottom: 8px; font-weight: 600; overflow-wrap: anywhere; }
+.pw-field { justify-self: start; color: var(--muted); font-size: 12px; font-weight: 600; }
+.pw-box { position: relative; display: flex; }
+#password-input { flex: 1; min-width: 0; height: 40px; padding: 0 44px 0 12px; border: 1px solid var(--field-line); border-radius: var(--r-s); background: var(--surface); font-size: 15px; letter-spacing: .04em; }
+#password-input:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.pw-box .btn { position: absolute; top: 5px; right: 5px; color: var(--muted); }
+.pw-box .btn[aria-pressed="true"] { color: var(--accent-ink); }
+.pw-error { padding: 7px 10px; border-radius: var(--r-s); background: var(--danger-soft); color: var(--danger); font-weight: 550; text-align: left; }
+.pw-error:empty { display: none; }
+.pw-box:has(+ .pw-error:not(:empty)) #password-input { border-color: var(--danger); }
+.pw-box:has(+ .pw-error:not(:empty)) #password-input:focus-visible { box-shadow: 0 0 0 3px var(--danger-soft); }
+.pw-hint { margin-top: 6px; color: var(--muted); font-size: 12px; }
+@media (prefers-reduced-motion: no-preference) {
+  .pw-box.shake { animation: pw-shake .32s ease-in-out; }
+  @keyframes pw-shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+}
 .dlg-body { display: grid; gap: 14px; padding: 14px 16px; overflow: auto; }
 .dlg-body fieldset { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; margin: 0; padding: 10px 14px 14px; border: 1px solid var(--line); border-radius: var(--r-m); }
 .dlg-body legend { padding: 0 6px; font-weight: 650; }

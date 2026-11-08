@@ -484,14 +484,18 @@
   <dialog id="password-dialog" aria-labelledby="password-title">
     <form method="dialog" id="password-form">
       <div class="dlg-head">
-        <svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg>
         <h2 id="password-title" data-i18n="password.title">Password</h2>
       </div>
-      <div class="dlg-body">
-        <p class="hint" id="password-file"></p>
-        <label class="field wide"><span data-i18n="password.label">Password</span> <input type="password" id="password-input" autocomplete="off" spellcheck="false"></label>
-        <p class="hint wide" id="password-error" role="alert"></p>
-        <p class="hint wide" data-i18n="password.hint">The file is opened here, in memory; the password is not kept.</p>
+      <div class="dlg-body pw-body">
+        <span class="pw-lock" aria-hidden="true"><svg class="ic"><use href="#i-lock"/></svg></span>
+        <p class="pw-file" id="password-file"></p>
+        <label class="pw-field" for="password-input" data-i18n="password.label">Password</label>
+        <span class="pw-box">
+          <input type="password" id="password-input" autocomplete="off" spellcheck="false" aria-describedby="password-error">
+          <button type="button" class="btn ghost icon" id="password-show" aria-pressed="false" aria-label="Show the password" title="Show the password" data-i18n-aria="password.show" data-i18n-title="password.show"><svg class="ic" aria-hidden="true"><use href="#i-eye"/></svg></button>
+        </span>
+        <p class="pw-error" id="password-error" role="alert"></p>
+        <p class="pw-hint" data-i18n="password.hint">The file is opened here, in memory; the password is not kept.</p>
       </div>
       <div class="dlg-foot">
         <span class="sep"></span>

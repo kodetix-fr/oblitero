@@ -266,6 +266,7 @@ export default {
   'status.cannot-read': 'No se puede leer {names}: formato no admitido, cifrado o dañado.',
   'password.title': 'Contraseña',
   'password.label': 'Contraseña',
+  'password.show': 'Mostrar la contraseña',
   'password.hint': 'El archivo se abre aquí, en memoria; la contraseña no se guarda.',
   'password.open': 'Abrir',
   'password.file': '{name} está protegido con contraseña.',

@@ -270,6 +270,7 @@ export default {
   'status.cannot-read': '{names}を読み取れません。PDF や画像ではないか、暗号化または破損しています。',
   'password.title': 'パスワード',
   'password.label': 'パスワード',
+  'password.show': 'パスワードを表示',
   'password.hint': 'ファイルはここ（メモリ内）で開かれます。パスワードは保持されません。',
   'password.open': '開く',
   'password.file': '{name} はパスワードで保護されています。',

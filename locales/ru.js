@@ -266,6 +266,7 @@ export default {
   'status.cannot-read': 'Не удалось прочитать {names}: это не PDF и не картинка, либо файл зашифрован или повреждён.',
   'password.title': 'Пароль',
   'password.label': 'Пароль',
+  'password.show': 'Показать пароль',
   'password.hint': 'Файл открывается здесь, в памяти; пароль не сохраняется.',
   'password.open': 'Открыть',
   'password.file': '{name} защищён паролем.',
