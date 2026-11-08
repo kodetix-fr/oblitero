@@ -113,7 +113,7 @@ export default {
   'redact.redact-title': 'Redact page',
   'redact.drag-on-the-page': 'Drag on the page to cover what must disappear. With the keyboard, focus the page: arrows move the crosshair (Shift for bigger steps), Enter starts a rectangle and Enter again places it; Tab goes through the rectangles, which move with the arrows, resize with Shift and the arrows, and go with Delete. In the downloaded PDF the whole page becomes a picture, so the covered content no longer exists.',
   'crop.title': 'Crop pages',
-  'crop.hint': 'Drag on the page to frame what to keep; a new rectangle replaces the last one, and Clear takes the crop away. The selected pages are cut to the same share of their page. The keyboard works as in redaction. Links and comments of a cropped page are not kept.',
+  'crop.hint': 'Drag on the page to frame what to keep; a new rectangle replaces the last one, and Clear takes the crop away. The selected pages are cut to the same share of their page. The keyboard works as in redaction.',
   'crop.remove': 'Remove what is outside (the page becomes a picture)',
   'redact.redact-layer.aria': 'Page. Arrow keys move the crosshair, Enter starts a rectangle and Enter again places it, Tab goes to the rectangles.',
   'redact.redact-undo': 'Undo',

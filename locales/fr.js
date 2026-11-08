@@ -103,7 +103,7 @@ export default {
   'redact.redact-title': 'Caviarder la page',
   'redact.drag-on-the-page': 'Fais glisser sur la page pour couvrir ce qui doit disparaître. Au clavier, place le focus sur la page : les flèches déplacent le réticule (Maj pour des pas plus grands), Entrée commence un rectangle et Entrée à nouveau le place ; Tab parcourt les rectangles, qui se déplacent avec les flèches, se redimensionnent avec Maj et les flèches, et s\'effacent avec Suppr. Dans le PDF téléchargé, toute la page devient une image : le contenu recouvert n\'existe plus.',
   'crop.title': 'Rogner les pages',
-  'crop.hint': 'Fais glisser sur la page pour cadrer ce qu\'il faut garder ; un nouveau rectangle remplace le précédent, et Effacer retire le rognage. Les pages sélectionnées sont coupées à la même part de leur page. Le clavier marche comme pour le caviardage. Les liens et commentaires d\'une page rognée ne sont pas gardés.',
+  'crop.hint': 'Fais glisser sur la page pour cadrer ce qu\'il faut garder ; un nouveau rectangle remplace le précédent, et Effacer retire le rognage. Les pages sélectionnées sont coupées à la même part de leur page. Le clavier marche comme pour le caviardage.',
   'crop.remove': 'Supprimer ce qui est dehors (la page devient une image)',
   'redact.redact-layer.aria': 'Page. Les flèches déplacent le réticule, Entrée commence un rectangle et Entrée à nouveau le place, Tab passe aux rectangles.',
   'redact.redact-undo': 'Annuler',

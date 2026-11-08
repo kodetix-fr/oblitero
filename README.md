@@ -50,8 +50,8 @@ certified digital signature) is out of scope.
   duplex scan that arrives as the fronts and the backs (reverse the backs first).
   Crop frames the part of the selected pages to keep, drawn on one of them; the
   rest stays in the file, clipped, unless "remove what is outside" is on, and then
-  the page becomes a picture of the frame. Links and comments of a cropped page
-  are not kept. The Paper setting of the result puts every page on A4 or Letter
+  the page becomes a picture of the frame. Links and comments move with the
+  content, and those outside the frame go. The Paper setting of the result puts every page on A4 or Letter
   with a margin, turned to its side.
   An angle in degrees turns the selected pages to straighten a crooked scan, and
   the mirror buttons flip them left to right or top to bottom; a page that carries
