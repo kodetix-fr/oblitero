@@ -101,7 +101,7 @@ export default {
   'redact.redact-title': 'Tachar página',
   'redact.drag-on-the-page': 'Arrastra sobre la página para cubrir lo que debe desaparecer. Con el teclado, enfoca la página: las flechas mueven la retícula (Mayús para pasos más grandes), Intro empieza un rectángulo y Intro otra vez lo coloca; Tab recorre los rectángulos, que se mueven con las flechas, se redimensionan con Mayús y las flechas, y se eliminan con Supr. En el PDF descargado, la página entera se convierte en una imagen, así que el contenido cubierto deja de existir.',
   'crop.title': 'Recortar páginas',
-  'crop.hint': 'Arrastra sobre la página para encuadrar lo que se queda; un rectángulo nuevo sustituye al anterior, y Borrar quita el recorte. Las páginas seleccionadas se recortan a la misma parte de su página. El teclado funciona como al tachar. Los enlaces y comentarios de una página recortada no se conservan.',
+  'crop.hint': 'Arrastra sobre la página para encuadrar lo que se queda; un rectángulo nuevo sustituye al anterior, y Borrar quita el recorte. Las páginas seleccionadas se recortan a la misma parte de su página. El teclado funciona como al tachar.',
   'crop.remove': 'Eliminar lo que queda fuera (la página se convierte en imagen)',
   'redact.redact-layer.aria': 'Página. Las flechas mueven la retícula, Intro empieza un rectángulo y Intro otra vez lo coloca, Tab pasa a los rectángulos.',
   'redact.redact-undo': 'Deshacer',

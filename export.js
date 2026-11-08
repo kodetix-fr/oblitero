@@ -1,4 +1,4 @@
-import { PDFDocument, concatTransformationMatrix, degrees, drawObject, popGraphicsState, pushGraphicsState } from './vendor/pdf-lib.esm.min.js';
+import { PDFArray, PDFDict, PDFDocument, PDFName, concatTransformationMatrix, degrees, drawObject, popGraphicsState, pushGraphicsState } from './vendor/pdf-lib.esm.min.js';
 import { drawMarks, newCache } from './marks.js';
 import { dropUnreachable, isolatePages } from './page-links.js';
 import { contentMatrix, isAdjusted, pageBox, uprightMatrix } from './page-adjust.js';
@@ -30,16 +30,54 @@ function loadIsolated(bytes) {
 }
 
 // Replaces page `index` of `output` by a new page of `size` that draws `box` of the old one (in its coordinates) upright, scaled
-// by `scale` from (x, y). What is outside the box stays in the file, clipped; the annotations of the page are left out.
+// by `scale` from (x, y). What is outside the box stays in the file, clipped; the annotations move with the content.
 async function redraw(output, index, box, size, { x = 0, y = 0, scale = 1 } = {}) {
   const page = output.getPage(index);
   const rotation = page.getRotation().angle;
   if (!page.node.Contents()) page.pushOperators();
   const embedded = await output.embedPage(page, box);
+  const annotations = page.node.Annots();
   output.removePage(index);
   const fresh = output.insertPage(index, size);
   const place = multiply([scale, 0, 0, scale, x, y], uprightMatrix(rotation, box.right - box.left, box.top - box.bottom));
   fresh.pushOperators(pushGraphicsState(), concatTransformationMatrix(...place), drawObject(fresh.node.newXObject('Page', embedded.ref)), popGraphicsState());
+  const kept = moveAnnotations(output.context, annotations, multiply(place, [1, 0, 0, 1, -box.left, -box.bottom]), size);
+  if (kept.length) fresh.node.set(PDFName.of('Annots'), output.context.obj(kept));
+}
+
+const POINT_KEYS = ['QuadPoints', 'L', 'Vertices', 'CL'];
+
+// The annotations of a redrawn page, moved with its content by `matrix`: the links and comments that still touch the new page
+// of `size`, with their rectangle and their points in its coordinates.
+// shortcut: on a page that had quarter turns, the appearance of a comment is fitted to its new rectangle, not turned with it;
+// turn it through its /Matrix if turned comments come up.
+export function moveAnnotations(context, annotations, matrix, [width, height]) {
+  const kept = [];
+  const move = (array) => {
+    const values = array.asArray().map((value) => value.asNumber());
+    const moved = [];
+    for (let i = 0; i + 1 < values.length; i += 2) {
+      moved.push(matrix[0] * values[i] + matrix[2] * values[i + 1] + matrix[4], matrix[1] * values[i] + matrix[3] * values[i + 1] + matrix[5]);
+    }
+    return moved;
+  };
+  for (let i = 0; i < (annotations?.size() ?? 0); i++) {
+    const annotation = annotations.lookupMaybe(i, PDFDict);
+    const rect = annotation?.lookupMaybe(PDFName.of('Rect'), PDFArray);
+    if (!rect || rect.size() !== 4) continue;
+    const [x1, y1, x2, y2] = move(rect);
+    const box = [Math.min(x1, x2), Math.min(y1, y2), Math.max(x1, x2), Math.max(y1, y2)];
+    if (box[2] <= 0 || box[3] <= 0 || box[0] >= width || box[1] >= height) continue;
+    annotation.set(PDFName.of('Rect'), context.obj(box));
+    for (const key of POINT_KEYS) {
+      const points = annotation.lookupMaybe(PDFName.of(key), PDFArray);
+      if (points) annotation.set(PDFName.of(key), context.obj(move(points)));
+    }
+    const ink = annotation.lookupMaybe(PDFName.of('InkList'), PDFArray);
+    if (ink) annotation.set(PDFName.of('InkList'), context.obj(ink.asArray().map((path) => move(context.lookup(path, PDFArray)))));
+    kept.push(annotations.get(i));
+  }
+  return kept;
 }
 
 const shownBox = (page) => pageBox(page.getCropBox(), page.getRotation().angle, { x: 0, y: 0, w: 1, h: 1 });
@@ -53,7 +91,7 @@ async function cropLast(output, crop) {
 }
 
 // Puts every page on a sheet of `paper` ([width, height] in points, turned to the side of the page), as large as it fits within
-// `margin`, centered. The annotations of the pages are left out.
+// `margin`, centered.
 export async function fitPaper(output, paper, margin) {
   for (let index = 0; index < output.getPageCount(); index++) {
     const page = output.getPage(index);
