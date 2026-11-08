@@ -36,13 +36,11 @@ export function initProperties() {
     const title = document.createElement('h4');
     title.textContent = info ? t('props.card-title', { name: file.name, pages: pagesOf(info.pages) }) : file.name;
     element.append(title);
+    const found = info ? facts(info).filter(([, value]) => value) : [[t('props.error'), t('props.unreadable')]];
     const list = document.createElement('dl');
-    for (const [label, value] of info ? facts(info) : [[t('props.error'), t('props.unreadable')]]) {
-      const term = Object.assign(document.createElement('dt'), { textContent: label });
-      const detail = Object.assign(document.createElement('dd'), { textContent: value || t('props.none'), className: value ? '' : 'none' });
-      list.append(term, detail);
-    }
-    element.append(list);
+    for (const [label, value] of found) list.append(Object.assign(document.createElement('dt'), { textContent: label }), Object.assign(document.createElement('dd'), { textContent: value }));
+    element.append(found.length ? list : Object.assign(document.createElement('p'), { className: 'none', textContent: t('props.nothing') }));
+    element.dataset.found = String(info ? found.length : 0);
     return element;
   }
 
@@ -81,8 +79,24 @@ export function initProperties() {
       }),
     );
     report.replaceChildren(...cards);
+    const count = cards.reduce((sum, card) => sum + Number(card.dataset.found), 0);
+    byId('props-summary').textContent = count ? t('props.found', { count }) : t('props.found-none');
+    byId('props-summary').toggleAttribute('data-found', count > 0);
+    byId('props-summary').removeAttribute('data-clean');
     return askDialog(dialog, 'props-cancel', (finish, signal) => {
       byId('props-reset').addEventListener('click', () => fill(DEFAULT_PROPERTIES), { signal });
+      byId('props-clean').addEventListener(
+        'click',
+        () => {
+          fill({ ...DEFAULT_PROPERTIES, dates: false, stripAnnotations: true, bookmarks: false });
+          const summary = byId('props-summary');
+          summary.textContent = t('props.cleaned');
+          summary.removeAttribute('data-found');
+          summary.toggleAttribute('data-clean', true);
+          byId('props-apply').focus();
+        },
+        { signal },
+      );
       byId('props-apply').addEventListener('click', () => finish(read()), { signal });
     });
   }

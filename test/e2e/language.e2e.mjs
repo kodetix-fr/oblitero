@@ -69,7 +69,7 @@ test('the picker changes the language of everything at once, a status included, 
   await page.locator('#language').selectOption('fr');
   await page.locator('#fill-form').click();
   assert.equal(await page.locator('#form-title').innerText(), fr['form.title']);
-  assert.equal(await page.locator('#form-fields .form-note').innerText(), `envoyer: ${fr['form.unsupported']}`);
+  assert.equal(await page.locator('#form-fields .form-note').innerText(), fr['form.unsupported'].replace('{name}', 'envoyer'));
   await page.keyboard.press('Escape');
   await page.locator('#language').selectOption('en');
   await page.locator('#language').selectOption('ja');

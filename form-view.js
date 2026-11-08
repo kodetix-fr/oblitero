@@ -34,7 +34,7 @@ export function initForm() {
   }
 
   function row(field, value, id) {
-    if (field.type === 'unsupported') return { node: element('p', { className: 'form-note', textContent: `${field.label}: ${t('form.unsupported')}` }) };
+    if (field.type === 'unsupported') return { node: element('p', { className: 'form-note', textContent: t('form.unsupported', { name: field.label }) }) };
     const node = element('div', { className: 'form-row' });
     const datalist = element('datalist');
     const input = control(field, value, id, datalist);
