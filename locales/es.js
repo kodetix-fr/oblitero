@@ -271,7 +271,7 @@ export default {
   'password.open': 'Abrir',
   'password.file': '{name} está protegido con contraseña.',
   'password.wrong': 'Contraseña incorrecta. Inténtalo de nuevo.',
-  'password.cancelled': 'No se dio ninguna contraseña',
+  'password.cancelled': '{names}: no se abrió, no se dio ninguna contraseña.',
   'protect.title': 'Contraseña',
   'protect.label': 'Para abrir',
   'protect.none': 'ninguna',

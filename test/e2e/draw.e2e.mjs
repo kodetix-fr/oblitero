@@ -21,6 +21,7 @@ after(async () => {
 async function drawAndRead(tool, color, from, to, points) {
   await page.locator('#draw').click();
   await page.locator('#draw-dialog').waitFor({ state: 'visible' });
+  assert.equal(await page.locator('#draw-overlay').evaluate((overlay) => getComputedStyle(overlay).backgroundColor), 'rgba(0, 0, 0, 0)', 'the shapes layer lets the page show');
   await page.locator(`input[name="draw-tool"][value="${tool}"]`).check();
   await page.locator('#draw-color').selectOption(color);
   const box = await page.locator('#draw-layer').boundingBox();

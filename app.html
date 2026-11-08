@@ -100,7 +100,7 @@
       <div class="subbar page-only">
         <div class="group" data-tone="protect" role="group" aria-label="Protect" data-i18n-aria="app.group-protect">
           <span class="group-name" aria-hidden="true" data-i18n="app.group-protect">Protect</span>
-          <button type="button" class="btn sm ink" id="find" title="Find e-mail addresses, phone numbers, IBAN, card numbers or words in the text, and cover them" data-i18n-title="app.find.title"><svg class="ic" aria-hidden="true"><use href="#i-find"/></svg><span data-i18n="app.find">Find and redact</span></button>
+          <button type="button" class="btn sm" id="find" title="Find e-mail addresses, phone numbers, IBAN, card numbers or words in the text, and cover them" data-i18n-title="app.find.title"><svg class="ic" aria-hidden="true"><use href="#i-find"/></svg><span data-i18n="app.find">Find and redact</span></button>
           <button type="button" class="btn sm" id="hide-blank" title="Hide the pages that hold no ink, such as the blank backs of a scan" data-i18n-title="app.hide-blank.title"><svg class="ic" aria-hidden="true"><use href="#i-blank-off"/></svg><span data-i18n="app.hide-blank">Hide blank pages</span></button>
           <button type="button" class="btn sm" id="properties" title="See what the files carry, and write the properties of the file you download" data-i18n-title="app.properties.title"><svg class="ic" aria-hidden="true"><use href="#i-info"/></svg><span data-i18n="app.properties">Properties</span></button>
         </div>
@@ -155,7 +155,7 @@
             <ul class="state-tools">
               <li><svg class="ic" aria-hidden="true"><use href="#i-pages"/></svg><span data-i18n="app.tool-merge">Merge</span></li>
               <li><svg class="ic" aria-hidden="true"><use href="#i-grip"/></svg><span data-i18n="app.tool-reorder">Reorder pages</span></li>
-              <li data-ink><svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg><span data-i18n="app.tool-redact">Redact</span></li>
+              <li><svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg><span data-i18n="app.tool-redact">Redact</span></li>
               <li><svg class="ic" aria-hidden="true"><use href="#i-sign"/></svg><span data-i18n="app.tool-sign">Sign</span></li>
               <li><svg class="ic" aria-hidden="true"><use href="#i-compress"/></svg><span data-i18n="app.tool-compress">Compress</span></li>
               <li><svg class="ic" aria-hidden="true"><use href="#i-hash"/></svg><span data-i18n="app.tool-number">Number pages</span></li>
@@ -380,7 +380,7 @@
       <button type="button" class="btn ghost" id="find-toggle" data-i18n="find.find-toggle">Select none</button>
       <span class="sep"></span>
       <button type="button" class="btn" id="find-cancel" data-i18n="find.find-cancel">Cancel</button>
-      <button type="button" class="btn primary" id="find-apply" disabled><svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg><span id="find-apply-label">Redact</span></button>
+      <button type="button" class="btn primary" id="find-apply" disabled><svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg><span id="find-apply-label" data-i18n="find.redact">Redact</span></button>
     </div>
   </dialog>
 
@@ -397,7 +397,7 @@
       </div>
       <div id="sign-draw" class="sign-pane">
         <canvas id="sign-pad" width="640" height="220" aria-label="Signature pad: draw with the pointer" data-i18n-aria="sign.sign-pad.aria"></canvas>
-        <div class="sign-row"><button type="button" class="btn sm ghost" id="sign-reset" data-i18n="sign.sign-reset">Clear</button><span class="hint" data-i18n="sign.sign-draw-no-pointer-use-type">No pointer? Use Type or Image.</span></div>
+        <div class="sign-row"><button type="button" class="btn sm" id="sign-reset" data-i18n="sign.sign-reset">Clear</button><span class="hint" data-i18n="sign.sign-draw-no-pointer-use-type">No pointer? Use Type or Image.</span></div>
       </div>
       <div id="sign-type" class="sign-pane" hidden>
         <label class="field wide"><span data-i18n="sign.sign-type-name">Name</span> <input type="text" id="sign-text" maxlength="40" spellcheck="false"></label>
@@ -450,7 +450,7 @@
   </dialog>
   <dialog id="place-dialog" aria-labelledby="place-title">
     <div class="dlg-head">
-      <svg class="ic" aria-hidden="true"><use href="#i-sign"/></svg>
+      <svg class="ic" aria-hidden="true"><use id="place-icon" href="#i-sign"/></svg>
       <h2 id="place-title" data-i18n="place.place-title">Place it on the page</h2>
       <span class="sep"></span>
       <span id="place-where" class="summary"></span>
@@ -484,6 +484,7 @@
   <dialog id="password-dialog" aria-labelledby="password-title">
     <form method="dialog" id="password-form">
       <div class="dlg-head">
+        <svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg>
         <h2 id="password-title" data-i18n="password.title">Password</h2>
       </div>
       <div class="dlg-body pw-body">

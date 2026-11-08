@@ -275,7 +275,7 @@ export default {
   'password.open': '開く',
   'password.file': '{name} はパスワードで保護されています。',
   'password.wrong': 'パスワードが違います。もう一度入力してください。',
-  'password.cancelled': 'パスワードが入力されませんでした',
+  'password.cancelled': '{names}：パスワードが入力されなかったため開いていません。',
   'protect.title': 'パスワード',
   'protect.label': '開くとき',
   'protect.none': 'なし',

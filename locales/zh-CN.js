@@ -271,7 +271,7 @@ export default {
   'password.open': '打开',
   'password.file': '{name} 受密码保护。',
   'password.wrong': '密码错误，请重试。',
-  'password.cancelled': '未输入密码',
+  'password.cancelled': '{names}：未打开，未输入密码。',
   'protect.title': '密码',
   'protect.label': '打开密码',
   'protect.none': '无',

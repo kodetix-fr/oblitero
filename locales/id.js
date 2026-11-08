@@ -271,7 +271,7 @@ export default {
   'password.open': 'Buka',
   'password.file': '{name} dilindungi kata sandi.',
   'password.wrong': 'Kata sandi salah. Coba lagi.',
-  'password.cancelled': 'Tidak ada kata sandi',
+  'password.cancelled': '{names}: tidak dibuka, tidak ada kata sandi.',
   'protect.title': 'Kata sandi',
   'protect.label': 'Untuk membuka',
   'protect.none': 'tidak ada',
