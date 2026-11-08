@@ -61,7 +61,7 @@ body:
     attributes:
       label: Oblitero version or commit
       description: Shown in `chrome://extensions`, or in `manifest.json`.
-      placeholder: 0.1.0, or the commit you loaded
+      placeholder: 0.2.0, or the commit you loaded
     validations:
       required: true
 

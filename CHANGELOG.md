@@ -6,6 +6,8 @@ Notable changes to Oblitero. The format follows
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-08
+
 ### Added
 
 - **Draw** rectangles, arrows and highlights on a page, written into its content.
@@ -19,6 +21,15 @@ Notable changes to Oblitero. The format follows
 - **Letterhead**: the first page of a PDF under or over every page, or a range, with an opacity.
 - **Flatten** the form fields and comments into the pages, an option of Properties.
 - **Bookmarks** of the files are kept in the result, under the name of each file when there are several (never with a redaction).
+
+### Changed
+
+- A file that the two PDF readers count differently is rebuilt from the pages both can read, instead of being refused.
+
+### Fixed
+
+- A horizontal swipe on a touchpad no longer leaves the page, and the work with it.
+- The large view no longer closes by itself when it is drawn again.
 
 ## [0.1.0] - 2026-11-06
 
