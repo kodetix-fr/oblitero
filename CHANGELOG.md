@@ -6,6 +6,22 @@ Notable changes to Oblitero. The format follows
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-09
+
+### Changed
+
+- **Password dialog**: the file named, a button to show the password, and a wrong password said in red.
+- **Find and redact** ticks phone numbers by default.
+- **Properties** sums up what the file carries and hides the empty rows; **Keep nothing** clears it all at once.
+- The keyboard help of Redact, Crop, Draw and Place is folded; the download actions stay in view at the bottom of the
+  result panel, and below 900 px wide the panel goes under the pages.
+- A file opened without its password says so, in a red band, instead of being called unreadable.
+
+### Fixed
+
+- **Draw** showed a blank sheet instead of the page.
+- The Redact button of Find and redact was in English in every language.
+
 ## [0.2.0] - 2026-11-08
 
 ### Added
