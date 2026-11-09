@@ -1,4 +1,4 @@
-// Writes the visuals of the store to dist/store/: five screenshots at 1280x800 (selection, cuts, find and redact, sign, draw) and the small tile, on made-up documents.
+// Writes the visuals of the store to dist/store/: five screenshots at 1280x800 (selection, cuts, find and redact, sign, draw) the small tile and the marquee, on made-up documents.
 // Usage: node scripts/make-store-images.mjs   (needs: npx playwright-core install chromium)
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -119,6 +119,17 @@ try {
     <div style="text-align:center"><div style="width:112px;height:112px;margin:auto">${logo.replace('width="128" height="128"', 'width="112" height="112"')}</div>
     <div style="font-size:34px;font-weight:700;margin-top:10px">Oblitero</div><div style="font-size:16px;margin-top:6px;color:#44506a">PDF tools that stay on your computer</div></div></body>`);
   await tile.screenshot({ path: join(OUT, 'tile-440x280.png') });
+
+  const shotData = readFileSync(join(OUT, 'screenshot-3.png')).toString('base64');
+  await tile.setViewportSize({ width: 1400, height: 560 });
+  await tile.setContent(`<!doctype html><body style="margin:0;width:1400px;height:560px;overflow:hidden;position:relative;background:linear-gradient(135deg,#f4f6fb 0%,#e3eaf8 100%);font-family:Helvetica,Arial,sans-serif;color:#0e1522">
+    <div style="position:absolute;left:84px;top:0;bottom:0;width:500px;display:flex;flex-direction:column;justify-content:center">
+      <div style="display:flex;align-items:center;gap:22px"><div style="width:96px;height:96px">${logo.replace('width="128" height="128"', 'width="96" height="96"')}</div><div style="font-size:64px;font-weight:700;letter-spacing:-1px">Oblitero</div></div>
+      <div style="font-size:30px;line-height:1.3;margin-top:28px;font-weight:600">Merge, redact and sign PDF files.<br>They never leave your computer.</div>
+      <div style="display:flex;gap:8px;margin-top:30px;font-size:17px;white-space:nowrap;color:#1a4bbf;font-weight:600">${['No account', 'No server', 'No permission', 'Free'].map((w) => `<span style="padding:7px 13px;border:2px solid #b9c9ee;border-radius:999px;background:#fff">${w}</span>`).join('')}</div>
+    </div>
+    <img src="data:image/png;base64,${shotData}" style="position:absolute;left:650px;top:64px;width:800px;border-radius:14px;box-shadow:0 24px 60px rgba(14,21,34,.22),0 0 0 1px rgba(14,21,34,.08)"></body>`);
+  await tile.screenshot({ path: join(OUT, 'marquee-1400x560.png') });
 } finally {
   await app.close();
 }

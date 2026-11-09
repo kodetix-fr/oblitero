@@ -116,6 +116,7 @@ The Chrome FAQ asks for a disclosure even when data is only processed locally. T
 | Store icon | 128x128 PNG | `icons/icon128.png` |
 | Screenshots | 5 at 1280x800 | `node scripts/make-store-images.mjs` writes them to `dist/store/`, on made-up documents |
 | Small tile | 440x280 | same script |
+| Marquee promo tile | 1400x560 | same script: the name, the promise and the Find and redact screen |
 
 ## 8. Submission
 
