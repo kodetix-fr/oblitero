@@ -8,8 +8,16 @@ Notable changes to Oblitero. The format follows
 
 ## [0.2.1] - 2026-11-09
 
+### Added
+
+- **About**, in the title bar: the version, the news of the 0.2 line, and links to write a review, report a problem,
+  support Oblitero and find Obturo. A dot on it says there is news to read after an update from 0.1.
+- **One request for a review**: after five downloads, one row in the title bar; a click opens the reviews and ends it,
+  the cross ends it, an ignored request comes back once. The count is kept on this computer and never sent.
+
 ### Changed
 
+- The support link moved from the title bar into About.
 - **Password dialog**: the file named, a button to show the password, and a wrong password said in red.
 - **Find and redact** ticks phone numbers by default.
 - **Properties** sums up what the file carries and hides the empty rows; **Keep nothing** clears it all at once.

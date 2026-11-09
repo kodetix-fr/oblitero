@@ -1,6 +1,7 @@
 import { applyDom, byId, setI18n } from './dom.js';
 import { LANGUAGES, loadLanguage, resolveLanguage, setLanguage, t } from './i18n.js';
 import { initPages } from './pages-view.js';
+import { initAbout } from './about-view.js';
 
 const STORAGE_KEY = 'oblitero-language';
 
@@ -27,6 +28,7 @@ const useLanguage = async (setting) => setLanguage(await loadLanguage(resolveLan
 await useLanguage(savedSetting());
 applyDom();
 const pages = initPages();
+initAbout();
 
 const picker = byId('language');
 picker.replaceChildren(

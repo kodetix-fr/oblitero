@@ -244,6 +244,11 @@ long dash, and that the code only asks for keys that exist.
 
 Oblitero is free and will stay free. To support it: https://kodetix.fr/oblitero/soutenir
 
+The About button of the title bar gives the version, the news of the release line, and links to write a review, report a
+problem or support Oblitero. After five downloads, one row in the title bar asks for a review: a click opens the reviews
+and ends it, the cross ends it, and an ignored request comes back once, five downloads later. Nothing is offered in
+return, and the count stays on this computer.
+
 ## Licence
 
 MIT, see `LICENSE`.

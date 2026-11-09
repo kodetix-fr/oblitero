@@ -269,16 +269,3 @@ test('the size of the thumbnails lasts for the session only', async () => {
     await page.close();
   }
 });
-
-test('the support link opens the page of Oblitero in a new tab and sends nothing', async () => {
-  page = await app.openApp();
-  try {
-    const link = page.locator('.support-link');
-    assert.equal(await link.getAttribute('href'), 'https://kodetix.fr/oblitero/soutenir');
-    assert.equal(await link.getAttribute('target'), '_blank');
-    assert.equal(await link.getAttribute('rel'), 'noopener noreferrer');
-    assert.equal(await link.innerText(), 'Support Oblitero');
-  } finally {
-    await page.close();
-  }
-});
