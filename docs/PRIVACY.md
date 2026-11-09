@@ -1,6 +1,6 @@
 # Oblitero - Privacy policy
 
-Last updated: 2026-11-05
+Last updated: 2026-11-09
 
 This policy is in English, then in French (below). Both say the same thing.
 
@@ -39,7 +39,7 @@ None. The `permissions` list of `manifest.json` is empty, and the extension has 
 - **The policy.** `manifest.json` carries a content security policy: scripts, styles, connections and images come from the extension itself, images may also be a `data:` or a `blob:` address, and frames and form targets are forbidden.
 - **The proof.** `test/e2e/privacy.e2e.mjs` tries each channel (fetch, XHR, WebSocket, EventSource, beacon, image, stylesheet, font, media, object, worker, frame, form and more) from the page and from the service worker against a local server, and fails if the server receives a request. The same attempts from an ordinary web page do reach it, so the test cannot pass by accident. `manifest.test.js` fails if the code gains a permission, a network API or a remote address.
 - **By hand.** Open the page, press F12 and watch the Network tab while you work: it should list only `chrome-extension://`, `data:` and `blob:` addresses.
-- **One link.** The top of the page has a *Support Oblitero* link. It is an ordinary link that opens https://kodetix.fr/oblitero/soutenir in a new tab when you click it: Oblitero sends nothing, and nothing is loaded before the click. A test allows this one address in the code, and no other.
+- **Links.** About, in the title bar, has four ordinary links that open in a new tab when you click them: the reviews of Oblitero and the page of Obturo on the Chrome Web Store, the issues on GitHub, and https://kodetix.fr/oblitero/soutenir. After five downloads, a row asks for a review with the same link to the store. Oblitero sends nothing, and nothing is loaded before the click. A test allows these addresses in the code, and no other.
 - **What a policy cannot stop.** For `<link rel="preconnect">` and for the navigation of a frame, the browser opens a bare connection to the host before it checks any policy, and no request follows. Oblitero's code has neither, and a test fails if it gains one.
 
 ## Changes
@@ -54,7 +54,7 @@ Questions about this policy: support@kodetix.fr.
 
 # Oblitero - Politique de confidentialité
 
-Dernière mise à jour : 2026-11-05
+Dernière mise à jour : 2026-11-09
 
 ## Résumé
 
@@ -91,7 +91,7 @@ Aucune. La liste `permissions` de `manifest.json` est vide, et l'extension n'a a
 - **La politique.** `manifest.json` porte une politique de sécurité du contenu : les scripts, les styles, les connexions et les images viennent de l'extension elle-même, les images peuvent aussi être une adresse `data:` ou `blob:`, et les cadres et les cibles de formulaire sont interdits.
 - **La preuve.** `test/e2e/privacy.e2e.mjs` essaie chaque canal (fetch, XHR, WebSocket, EventSource, beacon, image, feuille de style, police, média, objet, worker, cadre, formulaire et d'autres) depuis la page et depuis le service worker vers un serveur local, et échoue si le serveur reçoit une requête. Les mêmes essais depuis une page web ordinaire l'atteignent bien : le test ne peut pas réussir par accident. `manifest.test.js` échoue si le code gagne une permission, une API réseau ou une adresse distante.
 - **À la main.** Ouvre la page, appuie sur F12 et regarde l'onglet Réseau pendant que tu travailles : il ne doit lister que des adresses `chrome-extension://`, `data:` et `blob:`.
-- **Un lien.** Le haut de la page a un lien *Soutenir Oblitero*. C'est un simple lien qui ouvre https://kodetix.fr/oblitero/soutenir dans un nouvel onglet quand tu cliques : Oblitero n'envoie rien, et rien n'est chargé avant le clic. Un test autorise cette seule adresse dans le code, et aucune autre.
+- **Des liens.** À propos, dans la barre du haut, a quatre liens ordinaires qui s'ouvrent dans un nouvel onglet quand tu cliques : les avis d'Oblitero et la page d'Obturo sur le Chrome Web Store, les tickets sur GitHub, et https://kodetix.fr/oblitero/soutenir. Après cinq téléchargements, une ligne demande un avis avec le même lien vers le store. Oblitero n'envoie rien, et rien n'est chargé avant le clic. Un test autorise ces adresses dans le code, et aucune autre.
 - **Ce qu'une politique ne peut pas arrêter.** Pour `<link rel="preconnect">` et pour la navigation d'un cadre, le navigateur ouvre une connexion nue vers l'hôte avant de vérifier toute politique, et aucune requête ne suit. Le code d'Oblitero n'a ni l'un ni l'autre, et un test échoue s'il en gagne un.
 
 ## Modifications
