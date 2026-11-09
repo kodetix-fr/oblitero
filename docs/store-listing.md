@@ -17,6 +17,7 @@ ORGANISER
 - Fais pivoter, déplace, duplique, masque des pages, ajoute une page blanche. Chaque geste s'annule, et tout se fait aussi au clavier.
 - Coupe le document d'un clic, ou toutes les N pages, et récupère les parties dans un ZIP.
 - Masque les pages blanches d'un scan, avec un curseur qui montre ce qui serait retiré.
+- Inverse ou entrelace les pages (recto et verso d'un scan), rogne-les, tourne-les de n'importe quel angle ou en miroir.
 
 CAVIARDER POUR DE VRAI
 - Dessine des rectangles, au clavier si tu préfères, ou cherche les e-mails, IBAN, numéros de carte, téléphones et mots de ton choix dans tout le document.
@@ -26,19 +27,25 @@ CAVIARDER POUR DE VRAI
 SIGNER ET REMPLIR
 - Signe avec une signature dessinée, tapée ou importée, et ajoute un nom ou une date où tu veux. C'est l'image d'une signature, pas une signature numérique avec certificat.
 - Remplis les formulaires : champs, cases, listes.
-- Ajoute des numéros de page, un en-tête, un pied de page et un filigrane, en texte ou en image.
+- Ajoute des numéros de page, un en-tête, un pied de page et un filigrane, en texte ou en image, une numérotation Bates, un tampon ou un papier à en-tête.
+- Dessine des rectangles, des flèches et des surlignages sur une page.
+
+PROTÉGER ET RÉPARER
+- Ouvre les PDF protégés par mot de passe, et protège le résultat par un mot de passe (AES-256).
+- Répare un fichier abîmé à partir des pages encore lisibles.
 
 CONVERTIR ET ALLÉGER
 - Transforme des photos en PDF (taille de page, marge) et des pages en images PNG ou JPEG.
 - Extrais le texte dans l'ordre de lecture.
 - Compresse sur trois niveaux, et compare la page avant et après avant de télécharger.
 - Prévisualise le résultat, avec sa taille réelle.
+- Un PDF par fichier : les mêmes réglages sur plusieurs fichiers, dans un ZIP avec un rapport.
 
 Interface en neuf langues (français, anglais, allemand, espagnol, portugais du Brésil, indonésien, russe, japonais, chinois simplifié). Gratuit, sans limite d'usage, sans filigrane imposé, open source sous licence MIT.
 
 Confidentialité : aucun compte, aucun serveur, aucune télémétrie, aucune publicité, aucun code distant. L'extension ne demande aucune permission, et sa politique de sécurité interdit toute requête vers l'extérieur : tu peux le vérifier dans l'onglet Réseau.
 
-Limites : une page caviardée n'est plus sélectionnable, la compression ne touche que les photos JPEG, le texte ajouté se limite aux caractères latins, les PDF chiffrés sont refusés.
+Limites : une page caviardée n'est plus sélectionnable, la compression ne touche que les photos JPEG, le texte ajouté se limite aux caractères latins.
 
 ### English
 
@@ -49,6 +56,7 @@ ORGANIZE
 - Rotate, move, duplicate and hide pages, add a blank page. Every action can be undone, and everything works from the keyboard too.
 - Cut the document with one click, every N pages, at the chapters, after blank pages or under a size, and get the parts in a ZIP.
 - Hide the blank pages of a scan, with a slider that shows what would go.
+- Reverse or interleave the pages (the fronts and backs of a scan), crop them, turn them by any angle or mirror them.
 
 REDACT FOR REAL
 - Draw rectangles, with the keyboard if you prefer, or look for e-mail addresses, IBANs, card numbers, phone numbers and words of your choice across the document.
@@ -58,19 +66,25 @@ REDACT FOR REAL
 SIGN AND FILL
 - Sign with a drawn, typed or imported signature, and add a name or a date anywhere. It is a picture of a signature, not a digital signature with a certificate.
 - Fill in forms: fields, check boxes, lists.
-- Add page numbers, a header, a footer and a watermark, as text or as an image.
+- Add page numbers, a header, a footer and a watermark, as text or as an image, Bates numbers, a stamp or a letterhead.
+- Draw rectangles, arrows and highlights on a page.
+
+PROTECT AND REPAIR
+- Open password-protected PDF files, and protect the result with a password (AES-256).
+- Repair a damaged file from the pages that can still be read.
 
 CONVERT AND SHRINK
 - Turn photos into a PDF (page size, margin) and pages into PNG or JPEG images.
 - Extract the text in reading order.
 - Compress at three levels, and compare the page before and after you download.
 - Preview the result, with its real size.
+- One PDF per file: the same settings on many files, in a ZIP with a report.
 
 The interface comes in nine languages (English, French, German, Spanish, Brazilian Portuguese, Indonesian, Russian, Japanese and simplified Chinese). Free, no usage limit, no forced watermark, open source under the MIT license.
 
 Privacy: no account, no server, no telemetry, no ads, no remote code. The extension asks for no permission, and its security policy forbids any request to the outside: you can check it in the Network tab.
 
-Limits: a redacted page can no longer be selected, compression only touches JPEG photos, added text is limited to Latin characters, encrypted PDF files are refused.
+Limits: a redacted page can no longer be selected, compression only touches JPEG photos, added text is limited to Latin characters.
 
 ## 3. Category
 
@@ -112,4 +126,4 @@ The Chrome FAQ asks for a disclosure even when data is only processed locally. T
 5. Distribution: free of charge, all countries, public.
 6. Test instructions (below), then "Submit for review", with deferred publication to choose the moment.
 
-Test instructions to enter (the field takes 500 characters): "No account needed. Click the Oblitero icon: a tab opens. Drop a PDF on it. Select a page, then use Rotate or Hide. Use Redact to draw a rectangle, then Download PDF: the area is black and the text under it is gone. The extension has no permission and sends nothing to any server: the DevTools Network tab shows only chrome-extension, data and blob addresses. The only external address is the \"Support Oblitero\" link, which opens kodetix.fr in a new tab when clicked."
+Test instructions to enter (the field takes 500 characters): "No account needed. Click the Oblitero icon: a tab opens. Drop a PDF on it. Select a page, then use Rotate or Hide. Use Redact to draw a rectangle, then Download PDF: the area is black and the text under it is gone. The extension has no permission and sends nothing to any server: the DevTools Network tab shows only chrome-extension, data and blob addresses. The only external addresses are the links of About (store, GitHub, kodetix.fr), opened in a new tab on click."

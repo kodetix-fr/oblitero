@@ -1,4 +1,4 @@
-// Writes the visuals of the store to dist/store/: five screenshots at 1280x800 and the small tile, on made-up documents.
+// Writes the visuals of the store to dist/store/: five screenshots at 1280x800 (selection, cuts, find and redact, sign, draw) and the small tile, on made-up documents.
 // Usage: node scripts/make-store-images.mjs   (needs: npx playwright-core install chromium)
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -89,11 +89,27 @@ try {
   await page.locator('#place-go').click();
   await page.locator('#place-dialog').waitFor({ state: 'hidden' });
 
-  await page.locator('#preview-open').click();
-  await page.locator('#preview-dialog').waitFor({ state: 'visible' });
-  await page.locator('#preview-dialog canvas').first().waitFor();
+  await card(1).click();
+  await page.locator('#draw').click();
+  await page.locator('#draw-dialog').waitFor({ state: 'visible' });
   await page.waitForTimeout(500);
+  const box = await page.locator('#draw-layer').boundingBox();
+  const at = (fx, fy) => [box.x + fx * box.width, box.y + fy * box.height];
+  const drag = async (tool, color, from, to) => {
+    await page.locator(`input[name="draw-tool"][value="${tool}"]`).check();
+    await page.locator('#draw-color').selectOption(color);
+    await page.mouse.move(...at(...from));
+    await page.mouse.down();
+    await page.mouse.move(...at(...to), { steps: 6 });
+    await page.mouse.up();
+  };
+  await drag('highlight', 'red', [0.09, 0.227], [0.78, 0.25]);
+  await drag('rect', 'red', [0.07, 0.512], [0.925, 0.622]);
+  await drag('arrow', 'blue', [0.82, 0.76], [0.7, 0.635]);
+  await page.locator('#draw-layer').evaluate((layer) => layer.blur());
+  await page.waitForTimeout(300);
   await shot(page, 'screenshot-5.png');
+  await page.locator('#draw-done').click();
   await page.close();
 
   const logo = readFileSync(join(REPO, 'docs', 'logo.svg'), 'utf8');
