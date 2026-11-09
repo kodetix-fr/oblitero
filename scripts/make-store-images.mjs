@@ -112,24 +112,21 @@ try {
   await page.locator('#draw-done').click();
   await page.close();
 
-  const logo = readFileSync(join(REPO, 'docs', 'logo.svg'), 'utf8');
+  // The small tile and the marquee share Obturo's design: dark ground, logo, name and three verbs; the marquee is the tile at twice the scale.
+  const logo = `data:image/svg+xml;base64,${readFileSync(join(REPO, 'docs', 'logo.svg')).toString('base64')}`;
   const tile = await app.context.newPage();
-  await tile.setViewportSize({ width: 440, height: 280 });
-  await tile.setContent(`<!doctype html><body style="margin:0;width:440px;height:280px;display:grid;place-items:center;background:#f4f6fb;font-family:Helvetica,Arial,sans-serif;color:#0e1522">
-    <div style="text-align:center"><div style="width:112px;height:112px;margin:auto">${logo.replace('width="128" height="128"', 'width="112" height="112"')}</div>
-    <div style="font-size:34px;font-weight:700;margin-top:10px">Oblitero</div><div style="font-size:16px;margin-top:6px;color:#44506a">PDF tools that stay on your computer</div></div></body>`);
-  await tile.screenshot({ path: join(OUT, 'tile-440x280.png') });
-
-  const shotData = readFileSync(join(OUT, 'screenshot-3.png')).toString('base64');
-  await tile.setViewportSize({ width: 1400, height: 560 });
-  await tile.setContent(`<!doctype html><body style="margin:0;width:1400px;height:560px;overflow:hidden;position:relative;background:linear-gradient(135deg,#f4f6fb 0%,#e3eaf8 100%);font-family:Helvetica,Arial,sans-serif;color:#0e1522">
-    <div style="position:absolute;left:84px;top:0;bottom:0;width:500px;display:flex;flex-direction:column;justify-content:center">
-      <div style="display:flex;align-items:center;gap:22px"><div style="width:96px;height:96px">${logo.replace('width="128" height="128"', 'width="96" height="96"')}</div><div style="font-size:64px;font-weight:700;letter-spacing:-1px">Oblitero</div></div>
-      <div style="font-size:30px;line-height:1.3;margin-top:28px;font-weight:600">Merge, redact and sign PDF files.<br>They never leave your computer.</div>
-      <div style="display:flex;gap:8px;margin-top:30px;font-size:17px;white-space:nowrap;color:#1a4bbf;font-weight:600">${['No account', 'No server', 'No permission', 'Free'].map((w) => `<span style="padding:7px 13px;border:2px solid #b9c9ee;border-radius:999px;background:#fff">${w}</span>`).join('')}</div>
-    </div>
-    <img src="data:image/png;base64,${shotData}" style="position:absolute;left:650px;top:64px;width:800px;border-radius:14px;box-shadow:0 24px 60px rgba(14,21,34,.22),0 0 0 1px rgba(14,21,34,.08)"></body>`);
-  await tile.screenshot({ path: join(OUT, 'marquee-1400x560.png') });
+  for (const [name, w, h, k] of [['tile-440x280', 440, 280, 1], ['marquee-1400x560', 1400, 560, 2]]) {
+    await tile.setViewportSize({ width: w, height: h });
+    await tile.setContent(`<!doctype html><meta charset="utf-8"><style>
+      html,body{margin:0;width:${w}px;height:${h}px;background:#0d1117;overflow:hidden}
+      body{display:flex;align-items:center;justify-content:center;gap:${28 * k}px;font-family:-apple-system,"Segoe UI",Inter,Helvetica,Arial,sans-serif}
+      img{width:${112 * k}px;height:${112 * k}px}
+      h1{margin:0;color:#f4f6fa;font-size:${52 * k}px;line-height:1;font-weight:700;letter-spacing:-0.02em}
+      p{margin:${12 * k}px 0 0;color:#8b95a7;font-size:${19 * k}px;line-height:1.2}
+      </style><img src="${logo}"><div><h1>Oblitero</h1><p>Merge, redact, sign.</p></div>`);
+    await tile.waitForFunction(() => document.querySelector('img').complete);
+    await tile.screenshot({ path: join(OUT, `${name}.png`) });
+  }
 } finally {
   await app.close();
 }
