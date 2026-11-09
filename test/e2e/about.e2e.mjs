@@ -57,6 +57,13 @@ test('after an update from an older line, a dot says there is news, until About 
   await page.locator('#about-open').click();
   assert.equal(await page.locator('#about-dot').isHidden(), true);
   await page.keyboard.press('Escape');
+  await page.waitForFunction(() => new Promise((resolve) => {
+    const request = indexedDB.open('oblitero', 1);
+    request.onsuccess = () => {
+      const get = request.result.transaction('kv').objectStore('kv').get('about');
+      get.onsuccess = () => resolve(get.result.seen !== '0.1.4');
+    };
+  }));
   await page.reload();
   await page.locator('#about-open').waitFor();
   await page.waitForTimeout(300);
