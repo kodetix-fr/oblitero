@@ -62,6 +62,8 @@
     <symbol id="i-blank-off" viewBox="0 0 24 24"><rect x="6" y="3.5" width="12" height="17" rx="1.6" stroke-dasharray="3 2.4"/><path d="M3.5 3.5l17 17"/></symbol>
     <symbol id="i-find" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5l5 5"/><path d="M8 10.5h5" stroke-width="3.5"/></symbol>
     <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.4 3.7 5.2 3.7 8.5s-1.2 6.1-3.7 8.5c-2.5-2.4-3.7-5.2-3.7-8.5s1.2-6.1 3.7-8.5z"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.6l2.5 5.2 5.7.8-4.1 4 1 5.7L12 16.7 6.9 19.3l1-5.7-4.1-4 5.7-.8z"/></symbol>
+    <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4.5h5.5V10M19.5 4.5L11 13M17 14v4.5a1 1 0 0 1-1 1H5.5a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1H10"/></symbol>
     <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17.2v.1"/></symbol>
   </svg>
 
@@ -72,7 +74,12 @@
     </div>
     <p class="tagline" data-i18n="app.pdf-tools-that-never">PDF tools that never leave your computer</p>
     <span class="sep"></span>
-    <a class="support-link" href="https://kodetix.fr/oblitero/soutenir" target="_blank" rel="noopener noreferrer" data-i18n="app.support">Support Oblitero</a>
+    <div id="ask" class="ask" role="group" aria-label="Review request" data-i18n-aria="ask.label" hidden>
+      <a id="ask-review" class="ask-review" href="https://chromewebstore.google.com/detail/oblitero-pdf-merge-redact/ofnapekaofoabpfodbffomjkpljmbdfd/reviews" target="_blank" rel="noopener noreferrer"><svg class="ic" aria-hidden="true"><use href="#i-star"/></svg><span data-i18n="ask.row">Like Oblitero? Write a review</span></a>
+      <button type="button" class="btn ghost icon" id="ask-never" aria-label="No thanks" title="No thanks" data-i18n-aria="ask.never" data-i18n-title="ask.never"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <button type="button" class="btn ghost about-open" id="about-open"><svg class="ic" aria-hidden="true"><use href="#i-info"/></svg><span data-i18n="about.open">About</span><span class="dot" id="about-dot" hidden></span></button>
+    <span id="about-new" class="vh" data-i18n="about.new">New</span>
     <span class="lang"><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg><select id="language" aria-label="Language" data-i18n-aria="app.language-aria"></select></span>
   </header>
 
@@ -630,6 +637,32 @@
       <span class="sep"></span>
       <button type="button" class="btn" id="props-cancel" data-i18n="props.props-cancel">Cancel</button>
       <button type="button" class="btn primary" id="props-apply"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="props.props-apply">Apply</span></button>
+    </div>
+  </dialog>
+
+  <dialog id="about-dialog" aria-labelledby="about-title">
+    <div class="dlg-head">
+      <svg class="ic" aria-hidden="true"><use href="#i-info"/></svg>
+      <h2 id="about-title" data-i18n="about.title">About Oblitero</h2>
+      <span class="sep"></span>
+      <span id="about-version" class="summary"></span>
+    </div>
+    <div class="dlg-body">
+      <section id="about-news" hidden>
+        <h3 class="section-title" data-i18n="about.news-title">New in this version</h3>
+        <p class="hint" data-i18n="about.news"></p>
+      </section>
+      <p data-i18n="about.note"></p>
+      <div class="about-links">
+        <a class="btn sm" id="about-review" href="https://chromewebstore.google.com/detail/oblitero-pdf-merge-redact/ofnapekaofoabpfodbffomjkpljmbdfd/reviews" target="_blank" rel="noopener noreferrer"><span data-i18n="about.review">Write a review</span><svg class="ic ext" aria-hidden="true"><use href="#i-external"/></svg></a>
+        <a class="btn sm" id="about-problem" href="https://github.com/kodetix-fr/oblitero/issues" target="_blank" rel="noopener noreferrer"><span data-i18n="about.problem">Report a problem</span><svg class="ic ext" aria-hidden="true"><use href="#i-external"/></svg></a>
+        <a class="btn sm" id="about-support" href="https://kodetix.fr/oblitero/soutenir" target="_blank" rel="noopener noreferrer"><span data-i18n="app.support">Support Oblitero</span><svg class="ic ext" aria-hidden="true"><use href="#i-external"/></svg></a>
+      </div>
+      <p class="hint"><span data-i18n="about.publisher">Same publisher:</span> <a id="about-obturo" href="https://chromewebstore.google.com/detail/obturo/kaafiicmlbdchfalaljmbeoblihjbnih" target="_blank" rel="noopener noreferrer">Obturo</a><svg class="ic ext" aria-hidden="true"><use href="#i-external"/></svg> <span data-i18n="about.obturo"></span></p>
+    </div>
+    <div class="dlg-foot">
+      <span class="sep"></span>
+      <button type="button" class="btn primary" id="about-close"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="compare.compare-close">Close</span></button>
     </div>
   </dialog>
 

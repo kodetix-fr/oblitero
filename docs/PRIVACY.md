@@ -16,6 +16,7 @@ When you click its icon, Oblitero opens a page of its own. You give it PDF files
 
 - **The files you open** (PDF, JPEG, PNG, WebP), which may hold personal or confidential information, and what you add to them: redactions, signatures, text, form values, properties. They are read and changed inside the open tab, in memory. They are never written anywhere by Oblitero, and they are gone when you close or reload the tab, signatures included.
 - **Your language**, only if you choose one in the picker: kept in the extension's `localStorage`, on your computer.
+- **About Oblitero itself**: the last version whose news you saw, and a count of the results you downloaded, so that a review is asked for at most twice. Kept in the extension's IndexedDB, on your computer; nothing about your files, and never sent.
 
 Oblitero does not read your tabs, your pages, your browsing history or your clipboard. It sets no cookie and has no identifier of you or of your device.
 
@@ -67,6 +68,7 @@ Quand tu cliques sur son icône, Oblitero ouvre une page qui lui est propre. Tu 
 
 - **Les fichiers que tu ouvres** (PDF, JPEG, PNG, WebP), qui peuvent contenir des informations personnelles ou confidentielles, et ce que tu y ajoutes : caviardages, signatures, texte, valeurs de formulaire, propriétés. Ils sont lus et modifiés dans l'onglet ouvert, en mémoire. Oblitero ne les écrit nulle part, et ils disparaissent quand tu fermes ou recharges l'onglet, signatures comprises.
 - **Ta langue**, seulement si tu en choisis une dans le sélecteur : gardée dans le `localStorage` de l'extension, sur ton ordinateur.
+- **Sur Oblitero lui-même** : la dernière version dont tu as vu les nouveautés, et le nombre de résultats téléchargés, pour qu'un avis ne soit demandé que deux fois au plus. Gardés dans l'IndexedDB de l'extension, sur ton ordinateur ; rien sur tes fichiers, et jamais envoyés.
 
 Oblitero ne lit ni tes onglets, ni tes pages, ni ton historique, ni ton presse-papiers. L'extension ne pose aucun cookie et n'a aucun identifiant de toi ou de ton appareil.
 

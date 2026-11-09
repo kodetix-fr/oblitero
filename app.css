@@ -84,8 +84,23 @@ input[type="number"] {
 .logo { width: 30px; height: 30px; }
 h1 { font-size: 16px; font-weight: 650; letter-spacing: -.01em; }
 .tagline { color: var(--muted); font-size: 12px; }
-.support-link { color: var(--muted); font-size: 12px; margin-right: 12px; }
-.support-link:hover { color: var(--fg); }
+.about-open { position: relative; color: var(--muted); font-size: 12px; }
+.about-open:hover { color: var(--fg); }
+.dot { position: absolute; top: 4px; right: 2px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--surface); }
+.dot[hidden], .ask[hidden] { display: none; }
+.ask { display: inline-flex; align-items: center; gap: 2px; min-width: 0; padding-left: 10px; border: 1px solid var(--line); border-radius: 999px; }
+.ask-review { display: inline-flex; align-items: center; gap: 6px; min-width: 0; color: var(--accent-ink); font-size: 12px; font-weight: 600; text-decoration: none; }
+.ask-review span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ask-review:hover span { text-decoration: underline; }
+.ask .btn.icon { width: 26px; height: 26px; }
+.about-links { display: flex; flex-wrap: wrap; gap: 8px; }
+.about-links .btn { text-decoration: none; }
+.ext { width: 12px; height: 12px; margin-left: 2px; vertical-align: -1px; }
+#about-dialog { width: min(520px, calc(100vw - 32px)); }
+#about-dialog[open] { grid-template-rows: auto minmax(0, 1fr) auto; }
+#about-dialog .dlg-body p { margin: 0; }
+#about-obturo { color: var(--accent-ink); }
+@media (max-width: 899px) { .tagline { display: none; } }
 .lang { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); }
 
 /* ---------- panel: tool bar, stage, status bar ---------- */
