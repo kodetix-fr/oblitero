@@ -266,6 +266,7 @@ export default {
   'status.cannot-read': 'Nicht lesbar: {names}. Kein PDF und kein Bild, oder verschlüsselt oder beschädigt.',
   'password.title': 'Passwort',
   'password.label': 'Passwort',
+  'password.show': 'Passwort anzeigen',
   'password.hint': 'Die Datei wird hier im Speicher geöffnet; das Passwort wird nicht behalten.',
   'password.open': 'Öffnen',
   'password.file': '{name} ist durch ein Passwort geschützt.',

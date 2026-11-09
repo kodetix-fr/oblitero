@@ -6,9 +6,19 @@ import { t } from './i18n.js';
 export function askPassword(name, wrong) {
   const dialog = byId('password-dialog');
   const input = /** @type {HTMLInputElement} */ (byId('password-input'));
+  const show = byId('password-show');
+  const box = /** @type {HTMLElement} */ (input.parentElement);
   byId('password-file').textContent = t('password.file', { name });
   byId('password-error').textContent = wrong ? t('password.wrong') : '';
   input.value = '';
+  const reveal = (on) => {
+    input.type = on ? 'text' : 'password';
+    show.setAttribute('aria-pressed', String(on));
+    show.querySelector('use')?.setAttribute('href', on ? '#i-eye-off' : '#i-eye');
+  };
+  reveal(false);
+  box.classList.remove('shake');
+  if (wrong) requestAnimationFrame(() => box.classList.add('shake'));
   return askDialog(dialog, 'password-cancel', (finish, signal) => {
     byId('password-form').addEventListener(
       'submit',
@@ -18,6 +28,7 @@ export function askPassword(name, wrong) {
       },
       { signal },
     );
+    show.addEventListener('click', () => reveal(input.type === 'password'), { signal });
     queueMicrotask(() => input.focus());
   });
 }

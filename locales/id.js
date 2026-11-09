@@ -266,6 +266,7 @@ export default {
   'status.cannot-read': 'Tidak dapat membaca {names}: bukan PDF atau gambar, atau terenkripsi atau rusak.',
   'password.title': 'Kata sandi',
   'password.label': 'Kata sandi',
+  'password.show': 'Tampilkan kata sandi',
   'password.hint': 'File dibuka di sini, di memori; kata sandi tidak disimpan.',
   'password.open': 'Buka',
   'password.file': '{name} dilindungi kata sandi.',

@@ -270,6 +270,7 @@ export default {
   'status.cannot-read': 'Não foi possível ler {names}: não é um PDF nem uma foto, ou o arquivo está criptografado ou danificado.',
   'password.title': 'Senha',
   'password.label': 'Senha',
+  'password.show': 'Mostrar a senha',
   'password.hint': 'O arquivo é aberto aqui, na memória; a senha não é guardada.',
   'password.open': 'Abrir',
   'password.file': '{name} está protegido por senha.',

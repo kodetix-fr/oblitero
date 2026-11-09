@@ -266,6 +266,7 @@ export default {
   'status.cannot-read': '无法读取 {names}：不是 PDF 或图片，或已加密或已损坏。',
   'password.title': '密码',
   'password.label': '密码',
+  'password.show': '显示密码',
   'password.hint': '文件在此处的内存中打开；密码不会被保存。',
   'password.open': '打开',
   'password.file': '{name} 受密码保护。',

@@ -266,6 +266,7 @@ export default {
   'status.cannot-read': 'Lecture impossible de {names} : ce n\'est ni un PDF ni une image, ou le fichier est chiffré ou endommagé.',
   'password.title': 'Mot de passe',
   'password.label': 'Mot de passe',
+  'password.show': 'Afficher le mot de passe',
   'password.hint': 'Le fichier est ouvert ici, en mémoire ; le mot de passe n\'est pas gardé.',
   'password.open': 'Ouvrir',
   'password.file': '{name} est protégé par un mot de passe.',

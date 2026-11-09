@@ -292,6 +292,7 @@ export default {
   'status.cannot-read': 'Cannot read {names}: not a PDF or a picture, or encrypted or damaged.',
   'password.title': 'Password',
   'password.label': 'Password',
+  'password.show': 'Show the password',
   'password.hint': 'The file is opened here, in memory; the password is not kept.',
   'password.open': 'Open',
   'password.file': '{name} is protected by a password.',
