@@ -124,7 +124,7 @@ try {
       h1{margin:0;color:#f4f6fa;font-size:${52 * k}px;line-height:1;font-weight:700;letter-spacing:-0.02em}
       p{margin:${12 * k}px 0 0;color:#8b95a7;font-size:${19 * k}px;line-height:1.2}
       </style><img src="${logo}"><div><h1>Oblitero</h1><p>Merge, redact, sign.</p></div>`);
-    await tile.waitForFunction(() => document.querySelector('img').complete);
+    await tile.locator('img').evaluate((img) => img.decode());
     await tile.screenshot({ path: join(OUT, `${name}.png`) });
   }
 } finally {
