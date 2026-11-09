@@ -6,6 +6,8 @@ Notable changes to Oblitero. The format follows
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-09
+
 ### Added
 
 - **About**, in the title bar: the version, the news of the 0.2 line, and links to write a review, report a problem,
@@ -16,11 +18,6 @@ Notable changes to Oblitero. The format follows
 ### Changed
 
 - The support link moved from the title bar into About.
-
-## [0.2.1] - 2026-11-09
-
-### Changed
-
 - **Password dialog**: the file named, a button to show the password, and a wrong password said in red.
 - **Find and redact** ticks phone numbers by default.
 - **Properties** sums up what the file carries and hides the empty rows; **Keep nothing** clears it all at once.
