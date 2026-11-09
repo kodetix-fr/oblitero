@@ -38,6 +38,7 @@ import { download } from './download.js';
 const A4 = { width: 595.28, height: 841.89 };
 // The smaller of the two meanings of a megabyte, so that a part fits under either.
 const MEGABYTE = 1_000_000;
+const NO_PASSWORD = new Error('no password');
 
 export function initPages() {
   const panel = byId('panel-pages');
@@ -163,8 +164,10 @@ export function initPages() {
     status.textContent = text;
     note.textContent = text;
   };
-  const setStatus = (text) => {
+  const setStatus = (text, warn = false) => {
     statusText = typeof text === 'function' ? text : () => text;
+    status.toggleAttribute('data-warn', warn);
+    note.toggleAttribute('data-warn', warn);
     showStatus();
   };
   const say = (key, vars) => setStatus(() => t(key, vars));
@@ -420,7 +423,7 @@ export function initPages() {
           if (!(error instanceof WrongPassword)) throw error;
         }
       }
-      throw new Error(t('password.cancelled'));
+      throw NO_PASSWORD;
     }
     const { bytes: rebuilt, pages, declared } = await rebuildPdf(bytes);
     return { ...(await opened(rebuilt)), repaired: { pages, declared } };
@@ -441,6 +444,7 @@ export function initPages() {
   async function insert(files, targetId = null, after = true) {
     const added = [];
     const unreadable = [];
+    const locked = [];
     const repaired = [];
     for (const file of files) {
       try {
@@ -454,12 +458,13 @@ export function initPages() {
         documents.push(document);
         added.push(...createPages(document.count, { file: documents.length - 1, firstId: nextId }));
         nextId += document.count;
-      } catch {
-        unreadable.push(file.name);
+      } catch (error) {
+        (error === NO_PASSWORD ? locked : unreadable).push(file.name);
       }
     }
+    if (locked.length) repaired.push(() => t('password.cancelled', { names: locked.join(', ') }));
     if (unreadable.length) repaired.push(() => t('status.cannot-read', { names: unreadable.join(', ') }));
-    setStatus(() => repaired.map((note) => note()).join(' '));
+    setStatus(() => repaired.map((note) => note()).join(' '), locked.length + unreadable.length > 0);
     if (added.length === 0) return;
     const first = pages.length === 0;
     selected = first ? new Set() : new Set(added.map((page) => page.id));

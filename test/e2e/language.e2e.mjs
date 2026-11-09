@@ -69,12 +69,12 @@ test('the picker changes the language of everything at once, a status included, 
   await page.locator('#language').selectOption('fr');
   await page.locator('#fill-form').click();
   assert.equal(await page.locator('#form-title').innerText(), fr['form.title']);
-  assert.equal(await page.locator('#form-fields .form-note').innerText(), `envoyer: ${fr['form.unsupported']}`);
+  assert.equal(await page.locator('#form-fields .form-note').innerText(), fr['form.unsupported'].replace('{name}', 'envoyer'));
   await page.keyboard.press('Escape');
   await page.locator('#language').selectOption('en');
   await page.locator('#language').selectOption('ja');
   await page.reload();
-  assert.equal(await page.locator('html').getAttribute('lang'), 'ja');
+  await page.waitForFunction(() => document.documentElement.lang === 'ja');
   assert.equal(await page.locator('#language').inputValue(), 'ja');
   assert.equal(await page.locator('#choose-pages').innerText(), texts.ja['app.choose-pages']);
   await page.locator('#language').selectOption('auto');

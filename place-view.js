@@ -14,6 +14,7 @@ export async function placeMark({ doc, entry, draft, number, selectedCount }) {
   const layer = byId('place-layer');
   const error = byId('place-error');
   const isText = draft.kind === 'text';
+  byId('place-icon').setAttribute('href', isText ? '#i-text' : '#i-sign');
 
   // A mark is placed on the whole page, as its fractions say, whatever its crop.
   const whole = { ...entry, crop: null };

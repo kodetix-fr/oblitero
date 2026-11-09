@@ -100,7 +100,7 @@
       <div class="subbar page-only">
         <div class="group" data-tone="protect" role="group" aria-label="Protect" data-i18n-aria="app.group-protect">
           <span class="group-name" aria-hidden="true" data-i18n="app.group-protect">Protect</span>
-          <button type="button" class="btn sm ink" id="find" title="Find e-mail addresses, phone numbers, IBAN, card numbers or words in the text, and cover them" data-i18n-title="app.find.title"><svg class="ic" aria-hidden="true"><use href="#i-find"/></svg><span data-i18n="app.find">Find and redact</span></button>
+          <button type="button" class="btn sm" id="find" title="Find e-mail addresses, phone numbers, IBAN, card numbers or words in the text, and cover them" data-i18n-title="app.find.title"><svg class="ic" aria-hidden="true"><use href="#i-find"/></svg><span data-i18n="app.find">Find and redact</span></button>
           <button type="button" class="btn sm" id="hide-blank" title="Hide the pages that hold no ink, such as the blank backs of a scan" data-i18n-title="app.hide-blank.title"><svg class="ic" aria-hidden="true"><use href="#i-blank-off"/></svg><span data-i18n="app.hide-blank">Hide blank pages</span></button>
           <button type="button" class="btn sm" id="properties" title="See what the files carry, and write the properties of the file you download" data-i18n-title="app.properties.title"><svg class="ic" aria-hidden="true"><use href="#i-info"/></svg><span data-i18n="app.properties">Properties</span></button>
         </div>
@@ -155,7 +155,7 @@
             <ul class="state-tools">
               <li><svg class="ic" aria-hidden="true"><use href="#i-pages"/></svg><span data-i18n="app.tool-merge">Merge</span></li>
               <li><svg class="ic" aria-hidden="true"><use href="#i-grip"/></svg><span data-i18n="app.tool-reorder">Reorder pages</span></li>
-              <li data-ink><svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg><span data-i18n="app.tool-redact">Redact</span></li>
+              <li><svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg><span data-i18n="app.tool-redact">Redact</span></li>
               <li><svg class="ic" aria-hidden="true"><use href="#i-sign"/></svg><span data-i18n="app.tool-sign">Sign</span></li>
               <li><svg class="ic" aria-hidden="true"><use href="#i-compress"/></svg><span data-i18n="app.tool-compress">Compress</span></li>
               <li><svg class="ic" aria-hidden="true"><use href="#i-hash"/></svg><span data-i18n="app.tool-number">Number pages</span></li>
@@ -244,7 +244,7 @@
       <span class="sep"></span>
       <span id="redact-count" class="summary"></span>
     </div>
-    <p class="hint" id="redact-hint" data-i18n="redact.drag-on-the-page">Drag on the page to cover what must disappear. With the keyboard, focus the page: arrows move the crosshair (Shift for bigger steps), Enter starts a rectangle and Enter again places it; Tab goes through the rectangles, which move with the arrows, resize with Shift and the arrows, and go with Delete. In the downloaded PDF the whole page becomes a picture, so the covered content no longer exists.</p>
+    <div><p class="hint" id="redact-hint" data-i18n="redact.drag-on-the-page">Drag on the page to cover what must disappear. With the keyboard, focus the page: arrows move the crosshair (Shift for bigger steps), Enter starts a rectangle and Enter again places it; Tab goes through the rectangles, which move with the arrows, resize with Shift and the arrows, and go with Delete. In the downloaded PDF the whole page becomes a picture, so the covered content no longer exists.</p><details class="kbd-help"><summary data-i18n="app.keyboard">Keyboard</summary><p data-i18n="redact.keyboard"></p></details><label class="field" id="crop-remove-field" hidden><input type="checkbox" id="crop-remove"> <span data-i18n="crop.remove">Remove what is outside (the page becomes a picture)</span></label></div>
     <span id="redact-live" class="vh" role="status"></span>
     <div class="dlg-stage">
       <div id="redact-stage" class="sheet-stage">
@@ -255,7 +255,6 @@
     <div class="dlg-foot">
       <button type="button" class="btn" id="redact-undo"><svg class="ic" aria-hidden="true"><use href="#i-undo"/></svg><span data-i18n="redact.redact-undo">Undo</span></button>
       <button type="button" class="btn ghost" id="redact-clear"><svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg><span data-i18n="redact.redact-clear">Clear</span></button>
-      <label class="field" id="crop-remove-field" hidden><input type="checkbox" id="crop-remove"> <span data-i18n="crop.remove">Remove what is outside (the page becomes a picture)</span></label>
       <span class="sep"></span>
       <button type="button" class="btn" id="redact-cancel" data-i18n="redact.redact-cancel">Cancel</button>
       <button type="button" class="btn primary" id="redact-done"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="redact.redact-done">Done</span></button>
@@ -380,7 +379,7 @@
       <button type="button" class="btn ghost" id="find-toggle" data-i18n="find.find-toggle">Select none</button>
       <span class="sep"></span>
       <button type="button" class="btn" id="find-cancel" data-i18n="find.find-cancel">Cancel</button>
-      <button type="button" class="btn primary" id="find-apply" disabled><svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg><span id="find-apply-label">Redact</span></button>
+      <button type="button" class="btn primary" id="find-apply" disabled><svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg><span id="find-apply-label" data-i18n="find.redact">Redact</span></button>
     </div>
   </dialog>
 
@@ -397,7 +396,7 @@
       </div>
       <div id="sign-draw" class="sign-pane">
         <canvas id="sign-pad" width="640" height="220" aria-label="Signature pad: draw with the pointer" data-i18n-aria="sign.sign-pad.aria"></canvas>
-        <div class="sign-row"><button type="button" class="btn sm ghost" id="sign-reset" data-i18n="sign.sign-reset">Clear</button><span class="hint" data-i18n="sign.sign-draw-no-pointer-use-type">No pointer? Use Type or Image.</span></div>
+        <div class="sign-row"><button type="button" class="btn sm" id="sign-reset" data-i18n="sign.sign-reset">Clear</button><span class="hint" data-i18n="sign.sign-draw-no-pointer-use-type">No pointer? Use Type or Image.</span></div>
       </div>
       <div id="sign-type" class="sign-pane" hidden>
         <label class="field wide"><span data-i18n="sign.sign-type-name">Name</span> <input type="text" id="sign-text" maxlength="40" spellcheck="false"></label>
@@ -423,7 +422,7 @@
       <svg class="ic" aria-hidden="true"><use href="#i-shapes"/></svg>
       <h2 id="draw-title" data-i18n="draw.title">Draw on the page</h2>
     </div>
-    <p class="hint" data-i18n="draw.hint">Choose a tool and drag on the page: a rectangle, an arrow that points where you let go, or a highlight. With the keyboard, focus the page: arrows move the crosshair (Shift for bigger steps), Enter starts a shape and Enter again places it. The shapes are drawn into the page.</p>
+    <div><p class="hint" data-i18n="draw.hint">Choose a tool and drag on the page: a rectangle, an arrow that points where you let go, or a highlight. With the keyboard, focus the page: arrows move the crosshair (Shift for bigger steps), Enter starts a shape and Enter again places it. The shapes are drawn into the page.</p><details class="kbd-help"><summary data-i18n="app.keyboard">Keyboard</summary><p data-i18n="draw.keyboard"></p></details></div>
     <span id="draw-live" class="vh" role="status"></span>
     <div class="draw-tools">
       <div class="seg" role="radiogroup" aria-label="Tool" data-i18n-aria="draw.tool">
@@ -450,7 +449,7 @@
   </dialog>
   <dialog id="place-dialog" aria-labelledby="place-title">
     <div class="dlg-head">
-      <svg class="ic" aria-hidden="true"><use href="#i-sign"/></svg>
+      <svg class="ic" aria-hidden="true"><use id="place-icon" href="#i-sign"/></svg>
       <h2 id="place-title" data-i18n="place.place-title">Place it on the page</h2>
       <span class="sep"></span>
       <span id="place-where" class="summary"></span>
@@ -462,7 +461,7 @@
       <label class="field" id="place-size-field" hidden><span data-i18n="place.place-size-field">Size</span> <input type="range" id="place-size" min="12" max="70" value="25" aria-label="Size of the text" data-i18n-aria="place.place-size.aria"></label>
       <span id="place-error" role="alert" class="hint"></span>
     </div>
-    <p class="hint" data-i18n="place.drag-it-where-it">Drag it where it belongs. With the keyboard, focus it: arrows move it, Shift and the arrows make it larger or smaller, Enter places it.</p>
+    <div><p class="hint" data-i18n="place.drag-it-where-it">Drag it where it belongs. With the keyboard, focus it: arrows move it, Shift and the arrows make it larger or smaller, Enter places it.</p><details class="kbd-help"><summary data-i18n="app.keyboard">Keyboard</summary><p data-i18n="place.keyboard"></p></details></div>
     <div class="dlg-stage">
       <div id="place-stage" class="sheet-stage">
         <canvas id="place-canvas"></canvas>
@@ -484,6 +483,7 @@
   <dialog id="password-dialog" aria-labelledby="password-title">
     <form method="dialog" id="password-form">
       <div class="dlg-head">
+        <svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg>
         <h2 id="password-title" data-i18n="password.title">Password</h2>
       </div>
       <div class="dlg-body pw-body">
@@ -609,6 +609,7 @@
     <div class="dlg-body">
       <section>
         <h3 class="section-title" data-i18n="props.what-your-files-carry">What your files carry</h3>
+        <div class="props-found"><p id="props-summary" role="status"></p><button type="button" class="btn sm" id="props-clean"><svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg><span data-i18n="props.clean">Keep nothing</span></button></div>
         <div id="props-report" class="report"></div>
         <p class="hint" data-i18n="props.the-file-you-download">The file you download is a new document: the properties, embedded files, scripts, bookmarks and layers of your files are not copied into it. The links and comments stay on the pages that are copied, unless you remove them below.</p>
       </section>

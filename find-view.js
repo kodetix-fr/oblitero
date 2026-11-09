@@ -16,7 +16,7 @@ export function initFind() {
     const wrapper = document.createElement('label');
     const label = document.createElement('span');
     setI18n(label, `preset.${id}`);
-    wrapper.append(Object.assign(document.createElement('input'), { type: 'checkbox', name: 'preset', value: id, checked: id !== 'phone' }), label);
+    wrapper.append(Object.assign(document.createElement('input'), { type: 'checkbox', name: 'preset', value: id, checked: true }), label);
     presets.append(wrapper);
   }
 
