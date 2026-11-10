@@ -86,7 +86,7 @@ export function nearestEntry(container, entry, idOf, event, axis, blocked = new 
   return { element: best.element, id: idOf(best.element), after };
 }
 
-const LONG_PRESS_MS = 400;
+export const LONG_PRESS_MS = 400;
 const PRESS_SLOP = 8;
 const GHOST_GRIP = 30;
 

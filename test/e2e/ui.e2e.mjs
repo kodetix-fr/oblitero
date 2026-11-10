@@ -126,9 +126,14 @@ test('the preview follows the selection and turns pages with the mouse wheel', a
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.mouse.wheel(0, 120);
     await page.getByText('Page 2 of 2').waitFor();
-    await page.waitForTimeout(250);
+    // Another turn waits for the pause of the wheel; the listener of the test runs after the one of the preview.
+    const { pause, flipped } = await page.evaluate(async () => ({ pause: (await import('/preview-view.js')).WHEEL_PAUSE_MS, flipped: performance.now() }));
+    await page.waitForFunction(({ pause, flipped }) => performance.now() - flipped > pause, { pause, flipped });
+    await page.evaluate(() => {
+      window.wheelHandled = new Promise((resolve) => document.getElementById('preview-dialog').addEventListener('wheel', () => resolve(), { once: true }));
+    });
     await page.mouse.wheel(0, 120);
-    await page.waitForTimeout(100);
+    await page.evaluate(() => window.wheelHandled);
     assert.equal(await page.locator('#preview-count').innerText(), 'Page 2 of 2');
     await page.locator('#preview-close').click();
 

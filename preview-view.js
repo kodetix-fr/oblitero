@@ -5,7 +5,7 @@ import { closeRender, openRender, pageSize, renderPage } from './render.js';
 
 const PREVIEW_WIDTH = 860;
 const WHEEL_STEP = 80;
-const WHEEL_PAUSE_MS = 200;
+export const WHEEL_PAUSE_MS = 200;
 const KEY_STEPS = { ArrowLeft: -1, ArrowRight: 1, PageUp: -1, PageDown: 1 };
 
 export function initPreview() {

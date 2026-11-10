@@ -8,6 +8,8 @@ import { LANGUAGES } from '../../languages.js';
 
 const CODES = Object.keys(LANGUAGES);
 const texts = Object.fromEntries(await Promise.all(CODES.map(async (code) => [code, (await import(`../../locales/${code}.js`)).default])));
+// What a dialog writes after it has opened, when it reads the files or draws a preview.
+const READY = { '#stamp-dialog': '#stamp-preview-page:not(:empty)', '#props-dialog': '#props-report .report-card' };
 const fill = (text, vars) => text.replace(/\{(\w+)\}/g, (_, name) => String(vars[name]));
 
 let app;
@@ -104,7 +106,7 @@ test('every language draws the screens, the dialogs and the files view without a
     for (const [button, dialog] of [['#stamps', '#stamp-dialog'], ['#find', '#find-dialog'], ['#sign', '#sign-dialog'], ['#properties', '#props-dialog'], ['#fill-form', '#form-dialog'], ['#hide-blank', '#blank-dialog'], ['#export-images', '#export-dialog'], ['#redact', '#redact-dialog'], ['#compare-open', '#compare-dialog']]) {
       await page.locator(button).click();
       await page.locator(dialog).waitFor({ state: 'visible' });
-      await page.waitForTimeout(150);
+      if (READY[dialog]) await page.locator(READY[dialog]).first().waitFor();
       await visible(dialog);
       await page.keyboard.press('Escape');
       await page.locator(dialog).waitFor({ state: 'hidden' });
