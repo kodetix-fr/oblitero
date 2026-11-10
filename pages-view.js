@@ -484,12 +484,14 @@ export function initPages() {
     commit({ pages: insertEntries(pages, added, targetId, after) });
   }
 
-  // Photos are laid out again when the settings change; their redactions and marks would no longer fit the new page.
+  // Photos are laid out again when the settings change; their redactions and marks would no longer fit the new page, so a history
+  // that holds some is cleared.
+  const marked = (page) => documents[page.file]?.photo && (page.redactions.length || page.marks.length);
   const layoutPhotos = () =>
     run('status.laying-out', async () => {
       const photos = documents.filter((document) => document.photo);
       if (photos.length === 0) return '';
-      if (pages.some((page) => documents[page.file]?.photo && (page.redactions.length || page.marks.length))) {
+      if (pages.some(marked)) {
         sizeSelect.value = applied.size;
         marginSelect.value = applied.margin;
         return () => t('status.photos-locked');
@@ -502,10 +504,11 @@ export function initPages() {
         closeRender(old);
       }
       thumbnails.reset();
-      history.clear();
+      const stale = history.states.some((state) => state.pages.some(marked));
+      if (stale) history.clear();
       render();
       release();
-      return '';
+      return stale ? () => t('status.history-cleared') : '';
     });
 
   const lastSelected = () => pages.findLast((page) => selected.has(page.id));

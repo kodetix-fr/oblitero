@@ -37,6 +37,15 @@ export const burnKey = (entry) =>
     value instanceof Uint8Array ? imageId(value) : value,
   );
 
+// The outline of a file, read once; a read that fails is made again by the next export.
+export function outlineOf(document, read = outlineTree) {
+  document.outline ??= read(document.doc).catch((error) => {
+    document.outline = null;
+    throw error;
+  });
+  return document.outline;
+}
+
 // Turns pages into PDF files, with what the document has set. `settings()` gives { stamps, properties, compression, paper,
 // protection }; `protect(bytes, password, permissions)` encrypts a download.
 export function createOutput(documents, settings, say, protect) {
@@ -62,8 +71,7 @@ export function createOutput(documents, settings, say, protect) {
     const trees = [];
     if (bookmarked) {
       for (const file of new Set(entries.map((entry) => entry.file).filter((file) => file !== null))) {
-        documents[file].outline ??= outlineTree(documents[file].doc);
-        trees[file] = await documents[file].outline;
+        trees[file] = await outlineOf(documents[file]);
       }
     }
     return buildPdf(documents.map((document) => document.bytes), entries, burn, async (output) => {

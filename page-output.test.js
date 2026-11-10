@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { burnKey, eachFile } from './page-output.js';
+import { burnKey, eachFile, outlineOf } from './page-output.js';
 
 test('one result per file, one after the other: a file that fails is reported and the others still come out', async () => {
   const groups = ['a', 'b', 'bad', 'c', 'd'].map((name) => ({ name: `${name}.pdf`, entries: [name] }));
@@ -36,4 +36,18 @@ test('burnKey: a picture mark is told by identity, not by its bytes', () => {
   const png = new Uint8Array([1, 2, 3]);
   assert.equal(burnKey({ ...entry, marks: [image(png)] }), burnKey({ ...entry, marks: [image(png)] }));
   assert.notEqual(burnKey({ ...entry, marks: [image(png)] }), burnKey({ ...entry, marks: [image(new Uint8Array([1, 2, 3]))] }));
+});
+
+test('outlineOf: the outline is read once, and a read that failed is made again', async () => {
+  const document = { doc: {}, outline: null };
+  let reads = 0;
+  const read = async () => {
+    if (++reads === 1) throw new Error('unreadable');
+    return [{ title: 'One', page: 0, items: [] }];
+  };
+  await assert.rejects(outlineOf(document, read), /unreadable/);
+  assert.equal(document.outline, null);
+  assert.equal((await outlineOf(document, read))[0].title, 'One');
+  await outlineOf(document, read);
+  assert.equal(reads, 2);
 });
