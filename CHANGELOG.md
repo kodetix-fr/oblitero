@@ -6,6 +6,8 @@ Notable changes to Oblitero. The format follows
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-11-10
+
 ### Fixed
 
 - Files dropped together could lose their pages when something else changed the document while a large file, or one
@@ -24,6 +26,7 @@ Notable changes to Oblitero. The format follows
 - Crop says that what is outside the frame is hidden, not removed, unless the box is ticked.
 - The password panel says that readers may ignore the print and copy restrictions, and that only the password protects
   the content.
+- The third-party notices name qpdf, the libraries built into it and the bundled fonts, with their licences.
 
 ## [0.2.1] - 2026-11-09
 
@@ -92,7 +95,8 @@ First release. One screen, in nine languages, with no account, no permission and
 - **Photos to PDF** and **pages to images**, **extract text** in reading order, **hide blank pages**.
 - **Compression** in three levels and a report of the **properties** a file carries.
 
-[Unreleased]: https://github.com/kodetix-fr/oblitero/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/kodetix-fr/oblitero/compare/v0.2.2...HEAD
+[0.2.2]: https://github.com/kodetix-fr/oblitero/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/kodetix-fr/oblitero/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/kodetix-fr/oblitero/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/kodetix-fr/oblitero/releases/tag/v0.1.0
