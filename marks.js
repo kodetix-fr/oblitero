@@ -13,7 +13,6 @@ export const textMark = (text, x, y, size) => ({ kind: 'text', text, x, y, size,
 
 // A shape is drawn from (x1, y1) to (x2, y2): a rectangle, an arrow that points to the second point, or a highlight, which is
 // always yellow and lets the page show through.
-export const SHAPES = ['rect', 'arrow', 'highlight'];
 export const SHAPE_COLORS = { red: [0.83, 0.16, 0.16], blue: [0.1, 0.38, 0.85], black: [0.06, 0.06, 0.1] };
 const HIGHLIGHT = [1, 0.85, 0.1];
 export const HIGHLIGHT_OPACITY = 0.4;

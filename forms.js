@@ -50,6 +50,11 @@ export function readFields(document) {
   });
 }
 
+// The values of `values` (field name to value) that differ from what the fields hold in the file.
+export function changedValues(fields, values) {
+  return Object.fromEntries(fields.filter((field) => Object.hasOwn(values, field.name) && values[field.name] !== field.value).map((field) => [field.name, values[field.name]]));
+}
+
 /**
  * The document with `values` (field name to text, true or false, or the chosen option) written into its fields and the whole
  * form flattened: the values become the content of the pages and no field is left.

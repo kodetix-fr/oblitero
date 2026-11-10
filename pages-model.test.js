@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { blankPage, createPages, cutBefore, cutEvery, cutToFit, duplicate, insertEntries, interleavePages, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, removePages, reversePages, rotateMark, setCrop, rotatePages, runsOf, rotateRect, showAll, toggleCuts, toggleHidden, visible } from './pages-model.js';
+import { addMarks, addRedactions, blankPage, chapterPages, clearMarks, createPages, cutBefore, cutEvery, cutToFit, duplicate, flipVertical, insertEntries, interleavePages, moveRuns, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, removePages, reversePages, rotateMark, setCrop, setRedactions, setShapes, stepRun, rotatePages, runsOf, rotateRect, showAll, toggleCuts, toggleHidden, visible } from './pages-model.js';
 
 const ids = (pages) => pages.map((page) => page.id);
 const close = (actual, expected) => {
@@ -250,4 +250,56 @@ test('a crop turns with its page and goes on the selected pages that are not bla
   assert.deepEqual(cropped.map((page) => page.crop), [crop, null, null]);
   assert.deepEqual(rotatePages(cropped, new Set([0]), 90)[0].crop, { ...rotateRect(crop, 90), remove: true });
   assert.equal(setCrop(cropped, new Set([0]), null)[0].crop, null);
+});
+
+const textMark = { kind: 'text', text: 'A', x: 0.1, y: 0.1, size: 0.02, turn: 0 };
+const shape = { kind: 'shape', shape: 'rect', x1: 0, y1: 0, x2: 0.5, y2: 0.5, color: 'red', turn: 0 };
+
+test('addMarks, setShapes and clearMarks change the pages they are asked to, and no other', () => {
+  const pages = createPages(3);
+  const marked = addMarks(pages, new Set([0, 2]), textMark);
+  assert.deepEqual(marked.map((page) => page.marks.length), [1, 0, 1]);
+  assert.equal(marked[1], pages[1]);
+  const drawn = setShapes(addMarks(marked, new Set([0]), shape), 0, [{ ...shape, color: 'blue' }]);
+  assert.deepEqual(drawn[0].marks.map((mark) => mark.kind === 'shape' ? mark.color : mark.kind), ['text', 'blue']);
+  assert.deepEqual(setShapes(drawn, 0, [])[0].marks, [textMark]);
+  const cleared = clearMarks(drawn, new Set([0, 1]));
+  assert.deepEqual(cleared.map((page) => page.marks.length), [0, 0, 1]);
+  assert.equal(cleared[2], drawn[2]);
+});
+
+test('addRedactions adds to the rectangles of a page, setRedactions replaces them', () => {
+  const rect = { x: 0, y: 0, w: 0.1, h: 0.1 };
+  const other = { x: 0.5, y: 0.5, w: 0.1, h: 0.1 };
+  const pages = createPages(2).map((page) => ({ ...page, redactions: [rect] }));
+  const added = addRedactions(pages, new Map([[1, [other]]]));
+  assert.deepEqual(added.map((page) => page.redactions.length), [1, 2]);
+  assert.equal(added[0], pages[0]);
+  assert.deepEqual(setRedactions(added, 1, []).map((page) => page.redactions.length), [1, 0]);
+});
+
+test('flipVertical mirrors and half-turns the pages that can be adjusted, not the ones with a rectangle or the blank ones', () => {
+  const pages = createPages(3).map((page, index) => (index === 1 ? { ...page, redactions: [{ x: 0, y: 0, w: 0.1, h: 0.1 }] } : page));
+  const flipped = flipVertical(pages, new Set([0, 1, 2]));
+  assert.deepEqual(flipped.map((page) => [page.flip, page.rotation]), [[true, 180], [false, 0], [true, 180]]);
+  assert.deepEqual(flipVertical(flipped, new Set([0])).map((page) => [page.flip, page.rotation]), [[false, 0], [false, 0], [true, 180]]);
+});
+
+test('moveRuns and stepRun move whole runs of pages, named by their first page', () => {
+  const pages = [...createPages(2, { file: 0, firstId: 0 }), ...createPages(1, { file: 1, firstId: 10 }), ...createPages(2, { file: 2, firstId: 20 })];
+  assert.deepEqual(ids(moveRuns(pages, new Set([0]), 20, true)), [10, 20, 21, 0, 1]);
+  assert.deepEqual(ids(moveRuns(pages, new Set([20, 10]), 0, false)), [10, 20, 21, 0, 1]);
+  assert.equal(moveRuns(pages, new Set([0]), 99, true), pages);
+  assert.deepEqual(ids(stepRun(pages, 10, -1)), [10, 0, 1, 20, 21]);
+  assert.deepEqual(ids(stepRun(pages, 10, 1)), [0, 1, 20, 21, 10]);
+  assert.equal(stepRun(pages, 0, -1), pages);
+  assert.equal(stepRun(pages, 20, 1), pages);
+  assert.equal(stepRun(pages, 99, 1), pages);
+});
+
+test('chapterPages gives the pages where an outline begins a chapter, in the files that have one', () => {
+  const pages = [...createPages(3, { file: 0, firstId: 0 }), blankPage(5, 100, 100), ...createPages(2, { file: 1, firstId: 10 })];
+  const starts = new Map([[0, new Set([0, 2])]]);
+  assert.deepEqual([...chapterPages(pages, starts)], [0, 2]);
+  assert.deepEqual([...chapterPages(pages, new Map())], []);
 });

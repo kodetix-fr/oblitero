@@ -115,6 +115,29 @@ export function drawSheet(page, sheet, under, opacity) {
   else page.pushOperators(...operators);
 }
 
+// The page the preview of `settings` shows, among `count` shown pages: the first one the settings reach, but not the first page when
+// the numbers skip it.
+export function previewIndex(settings, count) {
+  const reached = settings.range ? (parseRange(settings.range, count) ?? []) : Array.from({ length: count }, (_, index) => index);
+  return reached.find((position) => !(settings.numbers?.skipFirst && position === 0)) ?? reached[0] ?? 0;
+}
+
+// The key of the text that says what is missing or wrong in `settings`, or null when they can be applied. `needsSheet`: the
+// letterhead is on and no sheet was chosen.
+export function stampProblem(settings, needsSheet) {
+  return (
+    (settings.watermark?.kind === 'text' && !settings.watermark.text && 'stamp.error.text') ||
+    (settings.watermark?.kind === 'image' && !settings.watermark.image && 'sign.error-image') ||
+    (settings.header && !settings.header.text && 'stamp.error-header') ||
+    (settings.footer && !settings.footer.text && 'stamp.error-footer') ||
+    (needsSheet && 'stamp.error-letterhead') ||
+    (settings.stamp?.kind === 'text' && !settings.stamp.text && 'stamp.error-mark') ||
+    (settings.stamp?.kind === 'image' && !settings.stamp.image && 'sign.error-image') ||
+    (settings.range && parseRange(settings.range, 1e6) === null && 'stamp.error-range') ||
+    null
+  );
+}
+
 // Throws when the standard font cannot draw a character of `text`.
 export async function checkText(text) {
   const document = await PDFDocument.create();

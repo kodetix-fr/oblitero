@@ -1,5 +1,4 @@
-import { FORMATS, NO_STAMPS, POSITIONS, checkText } from './stamps.js';
-import { parseRange } from './pages-model.js';
+import { FORMATS, NO_STAMPS, POSITIONS, checkText, stampProblem } from './stamps.js';
 import { askDialog, byId, setI18n } from './dom.js';
 import { clamp } from './math.js';
 import { readPhoto } from './photo.js';
@@ -230,15 +229,7 @@ export function initStamps() {
         'click',
         async () => {
           const settings = read();
-          const problem =
-            (settings.watermark?.kind === 'text' && !settings.watermark.text && 'stamp.error.text') ||
-            (settings.watermark?.kind === 'image' && !settings.watermark.image && 'sign.error-image') ||
-            (settings.header && !settings.header.text && 'stamp.error-header') ||
-            (settings.footer && !settings.footer.text && 'stamp.error-footer') ||
-            (field('letterhead-on').checked && !sheet && 'stamp.error-letterhead') ||
-            (settings.stamp?.kind === 'text' && !settings.stamp.text && 'stamp.error-mark') ||
-            (settings.stamp?.kind === 'image' && !settings.stamp.image && 'sign.error-image') ||
-            (settings.range && parseRange(settings.range, 1e6) === null && 'stamp.error-range');
+          const problem = stampProblem(settings, field('letterhead-on').checked && !sheet);
           if (problem) {
             field('stamp-error').textContent = t(problem);
             return;

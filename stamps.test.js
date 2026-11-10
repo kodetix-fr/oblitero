@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { PDFArray, PDFDict, PDFDocument, PDFName, PDFRawStream, decodePDFRawStream, degrees } from './vendor/pdf-lib.esm.min.js';
-import { NO_STAMPS, anchor, applyStamps, bandText, batesText, checkText, cornerOf, drawSheet, label, tileCenters, toPage } from './stamps.js';
+import { NO_STAMPS, anchor, applyStamps, bandText, batesText, checkText, cornerOf, drawSheet, label, previewIndex, stampProblem, tileCenters, toPage } from './stamps.js';
 
 test('label writes a number in the three formats', () => {
   assert.deepEqual([label('number', 3, 12), label('of', 3, 12), label('page', 3, 12)], ['3', '3 / 12', 'Page 3']);
@@ -182,4 +182,26 @@ test('a text stamp is written in the content of the pages of the range, in a fra
   for (let i = 0; i < 3; i++) document.addPage([300, 400]);
   await applyStamps(document, { ...NO_STAMPS, range: '2', stamp: { kind: 'text', text: 'RECEIVED', size: 18, scale: 20, position: 'top-right', image: null } });
   assert.deepEqual(await textsOf(document), [[], ['RECEIVED'], []]);
+});
+
+test('previewIndex shows the first page the settings reach, and not the first page when the numbers skip it', () => {
+  assert.equal(previewIndex({ range: '' }, 5), 0);
+  assert.equal(previewIndex({ range: '3-4' }, 5), 2);
+  assert.equal(previewIndex({ range: '', numbers: { skipFirst: true } }, 5), 1);
+  assert.equal(previewIndex({ range: '1', numbers: { skipFirst: true } }, 5), 0);
+  assert.equal(previewIndex({ range: '9' }, 5), 0);
+  assert.equal(previewIndex({ range: 'x' }, 5), 0);
+});
+
+test('stampProblem names the first thing that stops the settings from being applied', () => {
+  assert.equal(stampProblem({ ...NO_STAMPS }, false), null);
+  assert.equal(stampProblem({ ...NO_STAMPS, watermark: { kind: 'text', text: '' } }, false), 'stamp.error.text');
+  assert.equal(stampProblem({ ...NO_STAMPS, watermark: { kind: 'image', image: null } }, false), 'sign.error-image');
+  assert.equal(stampProblem({ ...NO_STAMPS, header: { text: '' } }, false), 'stamp.error-header');
+  assert.equal(stampProblem({ ...NO_STAMPS, footer: { text: '' } }, false), 'stamp.error-footer');
+  assert.equal(stampProblem({ ...NO_STAMPS }, true), 'stamp.error-letterhead');
+  assert.equal(stampProblem({ ...NO_STAMPS, stamp: { kind: 'text', text: '' } }, false), 'stamp.error-mark');
+  assert.equal(stampProblem({ ...NO_STAMPS, range: '2-' }, false), null);
+  assert.equal(stampProblem({ ...NO_STAMPS, range: 'a-b' }, false), 'stamp.error-range');
+  assert.equal(stampProblem({ ...NO_STAMPS, header: { text: '' }, range: 'a-b' }, false), 'stamp.error-header');
 });

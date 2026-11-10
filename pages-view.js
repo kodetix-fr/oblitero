@@ -11,7 +11,7 @@ import { initPreview } from './preview-view.js';
 import { initFiles } from './files-view.js';
 import { buildZip } from './zip.js';
 import { closeRender, entryImage, entrySize, inkOf, openRender, outlineStarts, pageRuns, pageSize, paintEntry, renderPage, textOf } from './render.js';
-import { blankPage, createPages, cutBefore, cutEvery, canAdjust, cutToFit, duplicate, insertEntries, interleavePages, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, removePages, reversePages, rotatePages, setAngle, setCrop, runsOf, showAll, toggleCuts, toggleFlip, toggleHidden, visible } from './pages-model.js';
+import { addMarks, addRedactions, blankPage, chapterPages, clearMarks, createPages, cutBefore, cutEvery, canAdjust, cutToFit, duplicate, flipVertical, insertEntries, interleavePages, parseRange, exportParts, keepCuts, movePages, moveRuns, partsOf, place, rangeIds, removePages, reversePages, rotatePages, runKey, runsOf, setAngle, setCrop, setRedactions, setShapes, showAll, stepRun, toggleCuts, toggleFlip, toggleHidden, visible } from './pages-model.js';
 import { createHistory } from './history.js';
 import { failureText, pagesOf, plural, t } from './i18n.js';
 import { clamp } from './math.js';
@@ -20,24 +20,26 @@ import { openDrawing } from './draw-view.js';
 import { askPassword } from './password-view.js';
 import { WrongPassword, decryptPdf, protectPdf } from './qpdf-run.js';
 import { rebuildPdf } from './repair.js';
-import { NO_STAMPS } from './stamps.js';
+import { NO_STAMPS, previewIndex } from './stamps.js';
 import { initFind } from './find-view.js';
 import { initSign } from './sign-view.js';
 import { initProperties } from './properties-view.js';
 import { initForm } from './form-view.js';
 import { initBlank } from './blank-view.js';
-import { fillForm } from './forms.js';
+import { changedValues, fillForm } from './forms.js';
 import { DEFAULT_PROPERTIES } from './properties.js';
 import { placeMark } from './place-view.js';
 import { imageMark, textMark } from './marks.js';
 import { initStamps } from './stamp-view.js';
 import { byId, copyCanvas, nearestEntry, setI18n, sortable } from './dom.js';
 import { download } from './download.js';
+import { noteDownload } from './about-view.js';
 
 const A4 = { width: 595.28, height: 841.89 };
 // The smaller of the two meanings of a megabyte, so that a part fits under either.
 const MEGABYTE = 1_000_000;
 const NO_PASSWORD = new Error('no password');
+const save = (blob, filename) => download(blob, filename, noteDownload);
 
 export function initPages() {
   const panel = byId('panel-pages');
@@ -579,8 +581,8 @@ export function initPages() {
         const blob = await entryImage(docOf(page), page, dpi, type);
         files.push({ name: `${stem()}-page-${String(pages.indexOf(page) + 1).padStart(3, '0')}.${extension}`, blob });
       }
-      if (files.length === 1) download(files[0].blob, files[0].name);
-      else download(await buildZip(files), `${stem()}-images.zip`);
+      if (files.length === 1) save(files[0].blob, files[0].name);
+      else save(await buildZip(files), `${stem()}-images.zip`);
     });
   }
 
@@ -595,7 +597,7 @@ export function initPages() {
         else if (!page.blank) text = (await textOf(documents[page.file].doc, page.source)) || t('text.none');
         parts.push(`${t('text.page', { n: number })}\n${text}`);
       }
-      download(new Blob([`${parts.join('\n\n')}\n`], { type: 'text/plain;charset=utf-8' }), `${stem()}.txt`);
+      save(new Blob([`${parts.join('\n\n')}\n`], { type: 'text/plain;charset=utf-8' }), `${stem()}.txt`);
     });
   }
 
@@ -796,13 +798,13 @@ export function initPages() {
     const reach = placed.scope === 'all' ? new Set(visible(pages).map((page) => page.id)) : placed.scope === 'selection' ? new Set(selected) : new Set([target.id]);
     const { mark } = placed;
     const made = mark.kind === 'image' ? imageMark(mark.png, mark.x, mark.y, mark.w, mark.h) : textMark(mark.text.trim(), mark.x, mark.y, mark.size);
-    commit({ pages: pages.map((page) => (reach.has(page.id) ? { ...page, marks: [...page.marks, made] } : page)) });
+    commit({ pages: addMarks(pages, reach, made) });
     setStatus(() => t(noticeKey, { pages: pagesOf(reach.size) }));
   }
   controls.draw.addEventListener('click', guarded(async () => {
     const target = lastSelected() ?? visible(pages)[0];
     const shapes = await openDrawing(docOf(target), target);
-    if (shapes) commit({ pages: pages.map((page) => (page.id === target.id ? { ...page, marks: [...page.marks.filter((mark) => mark.kind !== 'shape'), ...shapes] } : page)) });
+    if (shapes) commit({ pages: setShapes(pages, target.id, shapes) });
   }));
   controls.properties.addEventListener('click', guarded(async () => {
     const result = await propertiesDialog.open(used().map((document) => ({ name: document.name, bytes: document.original ?? document.bytes })), properties);
@@ -814,7 +816,7 @@ export function initPages() {
       let changedAny = false;
       for (const [index, values] of result) {
         const document = documents[index];
-        const changed = Object.fromEntries(document.fields.filter((field) => Object.hasOwn(values, field.name) && values[field.name] !== field.value).map((field) => [field.name, values[field.name]]));
+        const changed = changedValues(document.fields, values);
         if (JSON.stringify(changed) === JSON.stringify(document.values)) continue;
         document.values = changed;
         document.original ??= document.bytes;
@@ -845,21 +847,20 @@ export function initPages() {
   controls.addText.addEventListener('click', guarded(() => putMark({ kind: 'text', text: t('place.default-text'), size: 0.025 }, 'status.text-placed')));
   controls.clearMarks.addEventListener('click', () => {
     const reach = selected.size ? selected : new Set(pages.map((page) => page.id));
-    commit({ pages: pages.map((page) => (reach.has(page.id) && page.marks.length ? { ...page, marks: [] } : page)) });
+    commit({ pages: clearMarks(pages, reach) });
   });
   controls.find.addEventListener('click', guarded(async () => {
     const candidates = visible(pages).filter((page) => !page.blank).map((page) => ({ page, number: pages.indexOf(page) + 1 }));
     const added = await finder.open(candidates, (page) => pageRuns(documents[page.file].doc, page));
     if (!added) return;
     const count = [...added.values()].reduce((sum, boxes) => sum + boxes.length, 0);
-    commit({ pages: pages.map((page) => (added.has(page.id) ? { ...page, redactions: [...page.redactions, ...added.get(page.id)] } : page)) });
+    commit({ pages: addRedactions(pages, added) });
     setStatus(() => t('status.found-added', { rectangles: plural(count, 'count.rectangle.one', 'count.rectangle.other'), pages: pagesOf(added.size) }));
   }));
   // The page the settings reach first, built the way the download is, so the preview cannot disagree with it.
   async function previewStamps(settings) {
     const shownPages = visible(pages);
-    const reached = settings.range ? (parseRange(settings.range, shownPages.length) ?? []) : shownPages.map((_, index) => index);
-    const index = reached.find((position) => !(settings.numbers?.skipFirst && position === 0)) ?? reached[0] ?? 0;
+    const index = previewIndex(settings, shownPages.length);
     const marked = settings.watermark?.kind === 'image' && !settings.watermark.image ? { ...settings, watermark: null } : settings;
     const bytes = await build([shownPages[index]], new Map(), 0, { stamps: { ...marked, range: '' }, place: { index, total: shownPages.length } });
     const doc = await openRender(bytes);
@@ -905,11 +906,7 @@ export function initPages() {
     commit({ pages: setAngle(pages, selected, angle) });
   });
   controls.flipH.addEventListener('click', () => commit({ pages: toggleFlip(pages, selected) }));
-  // Top to bottom is left to right and a half turn.
-  controls.flipV.addEventListener('click', () => {
-    const ids = new Set(pages.filter((page) => selected.has(page.id) && canAdjust(page)).map((page) => page.id));
-    commit({ pages: rotatePages(toggleFlip(pages, ids), ids, 180) });
-  });
+  controls.flipV.addEventListener('click', () => commit({ pages: flipVertical(pages, selected) }));
   controls.earlier.addEventListener('click', () => moveSelected(-1));
   controls.later.addEventListener('click', () => moveSelected(1));
   controls.hide.addEventListener('click', hideSelected);
@@ -918,13 +915,10 @@ export function initPages() {
   controls.cutEvery.addEventListener('click', () => commit({ cuts: cutEvery(pages, Math.max(1, Math.floor(Number(splitSize.value)) || 1)) }));
   controls.cutChapters.addEventListener('click', guarded(async () => {
     const outlines = new Map();
-    const starts = new Set();
-    for (const page of pages) {
-      if (page.file === null) continue;
-      if (!outlines.has(page.file)) outlines.set(page.file, await outlineStarts(documents[page.file].doc));
-      if (outlines.get(page.file).has(page.source)) starts.add(page.id);
+    for (const file of new Set(pages.map((page) => page.file))) {
+      if (file !== null) outlines.set(file, await outlineStarts(documents[file].doc));
     }
-    const next = cutBefore(pages, starts);
+    const next = cutBefore(pages, chapterPages(pages, outlines));
     if (next.size === 0) return say('status.no-chapters');
     setStatus('');
     commit({ cuts: next });
@@ -948,7 +942,7 @@ export function initPages() {
     try {
       const page = pages.find((entry) => entry.id === id);
       const rectangles = await openRedactor(documents[page.file].doc, page);
-      if (rectangles) commit({ pages: pages.map((page) => (page.id === id ? { ...page, redactions: rectangles } : page)) });
+      if (rectangles) commit({ pages: setRedactions(pages, id, rectangles) });
     } catch (error) {
       say('status.cannot-open-page', { message: failureText(error) });
     }
@@ -973,13 +967,13 @@ export function initPages() {
   );
   controls.downloadAll.addEventListener('click', () =>
     run('status.preparing', async () => {
-      download(await asPdf(visible(pages)), `${stem()}-edited.pdf`);
+      save(await asPdf(visible(pages)), `${stem()}-edited.pdf`);
       return savedText();
     }),
   );
   controls.downloadSelected.addEventListener('click', () =>
     run('status.preparing', async () => {
-      download(await asPdf(shownSelected()), `${stem()}-pages.pdf`);
+      save(await asPdf(shownSelected()), `${stem()}-pages.pdf`);
       return savedText();
     }),
   );
@@ -993,7 +987,7 @@ export function initPages() {
         files.push({ name: `${stem()}-${String(files.length + 1).padStart(3, '0')}.pdf`, blob: await asPdf(part, { offset }) });
         offset += part.length;
       }
-      download(await buildZip(files), `${stem()}-split.zip`);
+      save(await buildZip(files), `${stem()}-split.zip`);
       return savedText();
     }),
   );
@@ -1009,7 +1003,7 @@ export function initPages() {
         return asPdf(entries);
       });
       const report = new Blob([`${result.report.join('\n')}\n`], { type: 'text/plain' });
-      download(await buildZip([...result.files, { name: t('batch.report-name'), blob: report }]), `${stem()}-each.zip`);
+      save(await buildZip([...result.files, { name: t('batch.report-name'), blob: report }]), `${stem()}-each.zip`);
       return result.failed ? () => t('status.batch-failed', { n: result.failed, total: groups.length }) : savedText();
     }),
   );
@@ -1040,7 +1034,6 @@ export function initPages() {
 
   // ---------- files: one row for each run of pages that come from the same file ----------
 
-  const runKey = (run) => run.pages[0].id;
   const runInfo = (run) => {
     const hiddenCount = run.pages.filter((page) => page.hidden).length;
     return {
@@ -1055,17 +1048,8 @@ export function initPages() {
   const idsOf = (key) => new Set((runsOf(pages).find((run) => runKey(run) === key)?.pages ?? []).map((page) => page.id));
 
   const files = initFiles({
-    onMove: (keys, targetKey, after) => {
-      const runs = runsOf(pages);
-      const moving = new Set(runs.filter((run) => keys.has(runKey(run))).flatMap((run) => run.pages.map((page) => page.id)));
-      const target = runs.find((run) => runKey(run) === targetKey);
-      if (target) commit({ pages: place(pages, moving, (after ? target.pages.at(-1) : target.pages[0]).id, after) });
-    },
-    onStep: (key, step) => {
-      const runs = runsOf(pages);
-      const neighbor = runs[runs.findIndex((run) => runKey(run) === key) + step];
-      if (neighbor) commit({ pages: place(pages, idsOf(key), (step < 0 ? neighbor.pages[0] : neighbor.pages.at(-1)).id, step > 0) });
-    },
+    onMove: (keys, targetKey, after) => commit({ pages: moveRuns(pages, keys, targetKey, after) }),
+    onStep: (key, step) => commit({ pages: stepRun(pages, key, step) }),
     onToggle: (key) => commit({ pages: toggleHidden(pages, idsOf(key)) }),
     onRemove: (key) => commit({ pages: removePages(pages, idsOf(key)) }),
     onOpen: (key) => {
