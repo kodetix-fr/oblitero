@@ -6,6 +6,22 @@ Notable changes to Oblitero. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- Files dropped together could lose their pages when something else changed the document while a large file, or one
+  asking for a password, was still loading.
+- Two copies of a cropped page that differ only by their signatures or texts could get the same picture.
+- The preview of the stamps follows the paper size, as the download does.
+- Find goes on when a page cannot be read, and says which pages were not.
+- Memory: the thumbnails that no page or undo can show again are freed.
+- A PDF with no page is reported instead of ignored.
+- Errors from the libraries are told in the language of the interface, with the detail in the console.
+
+### Changed
+
+- Changing the photo layout says when it clears the undo history, and the form dialog says that Undo does not revert the
+  values.
+
 ## [0.2.1] - 2026-11-09
 
 ### Added
@@ -72,3 +88,8 @@ First release. One screen, in nine languages, with no account, no permission and
 - **Sign and add text**, **fill a form**, **numbers, header, footer and watermark** (text or image).
 - **Photos to PDF** and **pages to images**, **extract text** in reading order, **hide blank pages**.
 - **Compression** in three levels and a report of the **properties** a file carries.
+
+[Unreleased]: https://github.com/kodetix-fr/oblitero/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/kodetix-fr/oblitero/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/kodetix-fr/oblitero/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/kodetix-fr/oblitero/releases/tag/v0.1.0
