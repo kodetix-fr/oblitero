@@ -89,7 +89,9 @@ test('the downloads are protected by the password typed in the result panel, and
   const view = await app.openApp();
   await view.setInputFiles('#pages-file', await writePdf(app.dir, 'plain.pdf', [{ size: 200, text: 'x' }, { size: 210, text: 'y' }]));
   await view.locator('#grid li').nth(1).waitFor();
+  assert.equal(await view.locator('#protect-options .hint').isVisible(), false);
   await view.locator('#protect-password').fill('open sesame');
+  assert.match(await view.locator('#protect-options .hint').innerText(), /Only the password protects the content/);
   await view.locator('#protect-copy').uncheck();
   const [file] = await Promise.all([view.waitForEvent('download'), view.locator('#download-all').click()]);
   const bytes = readFileSync(await file.path());
