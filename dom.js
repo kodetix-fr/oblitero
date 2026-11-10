@@ -7,6 +7,17 @@ export const ARROWS = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1]
 export const byId = (id) => /** @type {any} */ (document.getElementById(id));
 export const query = (selector) => /** @type {any} */ (document.querySelector(selector));
 
+// Fills `select` with an option for each of `ids`, written with the text `prefix` and the id name.
+export function fillOptions(select, prefix, ids) {
+  select.replaceChildren(
+    ...ids.map((value) => {
+      const option = Object.assign(document.createElement('option'), { value });
+      setI18n(option, `${prefix}${value}`);
+      return option;
+    }),
+  );
+}
+
 // A canvas of this page always has a 2D context.
 export const context2d = (/** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2DSettings} */ options = {}) => /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d', options));
 

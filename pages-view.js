@@ -31,7 +31,7 @@ import { DEFAULT_PROPERTIES } from './properties.js';
 import { placeMark } from './place-view.js';
 import { imageMark, textMark } from './marks.js';
 import { initStamps } from './stamp-view.js';
-import { byId, copyCanvas, nearestEntry, setI18n, sortable } from './dom.js';
+import { byId, copyCanvas, fillOptions, nearestEntry, setI18n, sortable } from './dom.js';
 import { download } from './download.js';
 import { noteDownload } from './about-view.js';
 
@@ -39,6 +39,7 @@ const A4 = { width: 595.28, height: 841.89 };
 // The smaller of the two meanings of a megabyte, so that a part fits under either.
 const MEGABYTE = 1_000_000;
 const NO_PASSWORD = new Error('no password');
+const withoutExtension = (name) => name.replace(/\.[^.]+$/, '');
 const save = (blob, filename) => download(blob, filename, noteDownload);
 
 export function initPages() {
@@ -125,18 +126,10 @@ export function initPages() {
   const paperMargin = /** @type {HTMLSelectElement} */ (byId('paper-margin'));
   const comparer = initCompare();
   const previewer = initPreview();
-  const choices = (select, prefix, ids) =>
-    select.replaceChildren(
-      ...ids.map((value) => {
-        const option = Object.assign(document.createElement('option'), { value });
-        setI18n(option, `${prefix}${value}`);
-        return option;
-      }),
-    );
-  choices(sizeSelect, 'photo.size.', PAGE_SIZES);
-  choices(marginSelect, 'photo.margin.', MARGINS.map(([id]) => id));
+  fillOptions(sizeSelect, 'photo.size.', PAGE_SIZES);
+  fillOptions(marginSelect, 'photo.margin.', MARGINS.map(([id]) => id));
   marginSelect.value = 'none';
-  choices(paperMargin, 'photo.margin.', MARGINS.map(([id]) => id));
+  fillOptions(paperMargin, 'photo.margin.', MARGINS.map(([id]) => id));
   paperMargin.value = 'small';
   const stampDialog = initStamps();
   const finder = initFind();
@@ -486,6 +479,14 @@ export function initPages() {
     commit({ pages: insertEntries(pages, added, targetId, after) });
   }
 
+  // The document reads its pages from `bytes` from now on.
+  async function reopen(document, bytes) {
+    const old = document.doc;
+    document.bytes = bytes;
+    document.doc = await openRender(bytes);
+    closeRender(old);
+  }
+
   // Photos are laid out again when the settings change; their redactions and marks would no longer fit the new page, so a history
   // that holds some is cleared.
   const marked = (page) => documents[page.file]?.photo && (page.redactions.length || page.marks.length);
@@ -499,12 +500,7 @@ export function initPages() {
         return () => t('status.photos-locked');
       }
       applied = { size: sizeSelect.value, margin: marginSelect.value };
-      for (const document of photos) {
-        const old = document.doc;
-        document.bytes = await imagesToPdf([document.photo], photoLayout());
-        document.doc = await openRender(document.bytes);
-        closeRender(old);
-      }
+      for (const document of photos) await reopen(document, await imagesToPdf([document.photo], photoLayout()));
       thumbnails.reset();
       const stale = history.states.some((state) => state.pages.some(marked));
       if (stale) history.clear();
@@ -722,7 +718,7 @@ export function initPages() {
 
   const stem = () => {
     const lead = pages.find((page) => page.file !== null && !page.hidden) ?? pages.find((page) => page.file !== null);
-    return (lead ? documents[lead.file].name : 'document').replace(/\.[^.]+$/, '');
+    return withoutExtension(lead ? documents[lead.file].name : 'document');
   };
   const paper = () => (paperSize.value === 'as-is' ? null : { size: SIZES[paperSize.value], margin: marginPoints(paperMargin.value) });
   paperSize.addEventListener('change', () => {
@@ -820,11 +816,7 @@ export function initPages() {
         if (JSON.stringify(changed) === JSON.stringify(document.values)) continue;
         document.values = changed;
         document.original ??= document.bytes;
-        const bytes = Object.keys(changed).length ? await fillForm(document.original, changed) : document.original;
-        const old = document.doc;
-        document.bytes = bytes;
-        document.doc = await openRender(bytes);
-        closeRender(old);
+        await reopen(document, Object.keys(changed).length ? await fillForm(document.original, changed) : document.original);
         changedAny = true;
       }
       if (changedAny) {
@@ -996,7 +988,7 @@ export function initPages() {
     run('status.batch', async () => {
       const shown = visible(pages);
       const files = [...new Set(shown.map((page) => page.file).filter((file) => file !== null))];
-      const groups = files.map((file) => ({ name: `${documents[file].name.replace(/\.[^.]+$/, '')}.pdf`, entries: shown.filter((page) => page.file === file) }));
+      const groups = files.map((file) => ({ name: `${withoutExtension(documents[file].name)}.pdf`, entries: shown.filter((page) => page.file === file) }));
       let done = 0;
       const result = await eachFile(groups, (entries) => {
         say('status.batch-at', { n: ++done, total: groups.length });

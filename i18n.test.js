@@ -118,7 +118,7 @@ const sources = () =>
     .concat(readFileSync('app.html', 'utf8'))
     .join('\n');
 // Keys the code builds from a prefix: the prefix and where it is written.
-const DYNAMIC = [['position.', '`position.'], ['preset.', '`preset.'], ['level.', '`level.'], ['photo.size.', "'photo.size.'"], ['photo.margin.', "'photo.margin.'"], ['sign.error-', '`sign.error-']];
+const DYNAMIC = [['position.', "'position.'"], ['preset.', '`preset.'], ['level.', '`level.'], ['photo.size.', "'photo.size.'"], ['photo.margin.', "'photo.margin.'"], ['sign.error-', '`sign.error-']];
 
 test('the code only asks for keys that exist, and every key is used', () => {
   const code = sources();

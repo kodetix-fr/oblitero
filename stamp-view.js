@@ -1,5 +1,5 @@
 import { FORMATS, NO_STAMPS, POSITIONS, checkText, stampProblem } from './stamps.js';
-import { askDialog, byId, setI18n } from './dom.js';
+import { askDialog, byId, fillOptions } from './dom.js';
 import { clamp } from './math.js';
 import { readPhoto } from './photo.js';
 import { PDFDocument } from './vendor/pdf-lib.esm.min.js';
@@ -18,13 +18,7 @@ export function initStamps() {
   const dialog = byId('stamp-dialog');
   const field = (id) => byId(id);
   for (const id of ['numbers-position', 'bates-position', 'mark-position']) {
-    field(id).replaceChildren(
-      ...POSITIONS.map((value) => {
-        const option = Object.assign(document.createElement('option'), { value });
-        setI18n(option, `position.${value}`);
-        return option;
-      }),
-    );
+    fillOptions(field(id), 'position.', POSITIONS);
   }
   field('numbers-format').replaceChildren(...FORMATS.map(([value, text]) => Object.assign(document.createElement('option'), { value, textContent: text })));
 
