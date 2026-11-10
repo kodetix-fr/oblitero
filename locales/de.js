@@ -398,6 +398,7 @@ export default {
   'error.font': 'Die Standardschrift kann eines dieser Zeichen nicht darstellen. Verwende Buchstaben, Ziffern und gängige Satzzeichen.',
   'error.image-large': 'Das Bild ist zu groß zum Umwandeln.',
   'error.page-large': 'Die Seite ist zu groß zum Zeichnen.',
+  'error.unknown': 'unerwarteter Fehler, Details stehen in der Browserkonsole',
   // form filling
   'app.fill-form': 'Formular ausfüllen',
   'app.fill-form.title': 'Die Felder eines Formulars ausfüllen: Text, Kontrollkästchen und Listen. Die Werte werden auf die Seite geschrieben.',

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { burnKey, eachFile, outlineOf } from './page-output.js';
+import { Failure } from './i18n.js';
 
 test('one result per file, one after the other: a file that fails is reported and the others still come out', async () => {
   const groups = ['a', 'b', 'bad', 'c', 'd'].map((name) => ({ name: `${name}.pdf`, entries: [name] }));
@@ -9,13 +10,13 @@ test('one result per file, one after the other: a file that fails is reported an
     assert.equal(++running, 1, 'two files at once');
     await new Promise((resolve) => setTimeout(resolve, 1));
     running--;
-    if (name === 'bad') throw new Error('broken');
+    if (name === 'bad') throw new Failure('error.page-large');
     return new Blob([name]);
   });
   assert.deepEqual(result.files.map((file) => file.name), ['a.pdf', 'b.pdf', 'c.pdf', 'd.pdf']);
   assert.equal(result.failed, 1);
   assert.equal(result.report.length, 5);
-  assert.match(result.report[2], /bad\.pdf.*broken/);
+  assert.match(result.report[2], /bad\.pdf.*too large/);
 });
 
 const base = { file: 0, source: 0, rotation: 0, angle: 0, flip: false, redactions: [{ x: 0, y: 0, w: 0.5, h: 0.5 }] };

@@ -52,6 +52,21 @@ export function t(key, vars) {
   return vars ? text.replace(/\{(\w+)\}/g, (m, k) => (Object.hasOwn(vars, k) ? String(vars[k]) : m)) : text;
 }
 
+/** An error whose text is ready for the user, in the language of the moment: any other error comes from a library, in English. */
+export class Failure extends Error {
+  /** @param {string} key @param {Record<string, string | number>} [vars] */
+  constructor(key, vars) {
+    super(t(key, vars));
+  }
+}
+
+/** What to tell the user about an error: its own text for a Failure, a sentence for any other, which goes to the console. */
+export function failureText(error) {
+  if (error instanceof Failure) return error.message;
+  console.error('Oblitero:', error);
+  return t('error.unknown');
+}
+
 /** @type {Map<string, Intl.NumberFormat>} */
 const numberFormats = new Map();
 

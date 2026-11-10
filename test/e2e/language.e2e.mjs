@@ -117,3 +117,26 @@ test('every language draws the screens, the dialogs and the files view without a
   await page.evaluate(() => localStorage.removeItem('oblitero-language'));
   await page.close();
 });
+
+test('an error of a library is told in the language of the interface, and its detail goes to the console', async () => {
+  const path = await formPdf('echec.pdf');
+  const page = await app.openApp();
+  await page.setInputFiles('#pages-file', path);
+  await page.locator('#grid li').nth(1).waitFor();
+  await page.locator('#language').selectOption('fr');
+  await page.waitForFunction(() => document.documentElement.lang === 'fr');
+  await page.evaluate(() => {
+    URL.createObjectURL = () => {
+      throw new TypeError('Failed to execute createObjectURL');
+    };
+  });
+  const logged = app.errors.length;
+  await page.locator('#download-all').click();
+  await page.waitForFunction(() => document.getElementById('pages-status').textContent.startsWith('Échec'));
+  assert.equal(await page.locator('#pages-status').innerText(), fill(texts.fr['status.failed'], { message: texts.fr['error.unknown'] }));
+  const errors = app.errors.splice(logged);
+  assert.equal(errors.length, 1);
+  assert.match(errors[0], /Oblitero:/);
+  await page.evaluate(() => localStorage.removeItem('oblitero-language'));
+  await page.close();
+});

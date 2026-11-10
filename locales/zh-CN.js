@@ -313,7 +313,7 @@ export default {
   'status.batch-failed': '未能生成的文件：{n} / {total}。原因见 ZIP 中的报告。',
   'batch.line-done': '{name}：完成',
   'batch.line-failed': '{name}：未生成（{message}）',
-  'batch.report-name': 'report.txt',
+  'batch.report-name': 'baogao.txt',
   'status.preview': '正在准备预览…',
   'text.page': '--- 第 {n} 页 ---',
   'text.redacted': '[已涂黑的页面]',
@@ -398,6 +398,7 @@ export default {
   'error.font': '标准字体无法绘制其中某个字符。请使用字母、数字和常见标点。',
   'error.image-large': '图片太大，无法转换。',
   'error.page-large': '页面太大，无法绘制。',
+  'error.unknown': '意外错误，详情见浏览器控制台',
   // form filling
   'app.fill-form': '填写表单',
   'app.fill-form.title': '填写表单的字段：文本、复选框和列表。填写的值会写入页面。',

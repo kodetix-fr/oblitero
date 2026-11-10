@@ -2,7 +2,7 @@ import { checkText } from './stamps.js';
 import { entrySize, paintEntry } from './render.js';
 import { ARROWS, askDialog, byId, fitScale, query } from './dom.js';
 import { clamp } from './math.js';
-import { t } from './i18n.js';
+import { failureText, t } from './i18n.js';
 
 const STEP = 0.01;
 
@@ -158,7 +158,7 @@ export async function placeMark({ doc, entry, draft, number, selectedCount }) {
           try {
             await checkText(mark.text);
           } catch (problem) {
-            error.textContent = problem.message;
+            error.textContent = failureText(problem);
             return;
           }
         }

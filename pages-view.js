@@ -13,7 +13,7 @@ import { buildZip } from './zip.js';
 import { closeRender, entryImage, entrySize, inkOf, openRender, outlineStarts, pageRuns, pageSize, paintEntry, renderPage, textOf } from './render.js';
 import { blankPage, createPages, cutBefore, cutEvery, canAdjust, cutToFit, duplicate, insertEntries, interleavePages, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, removePages, reversePages, rotatePages, setAngle, setCrop, runsOf, showAll, toggleCuts, toggleFlip, toggleHidden, visible } from './pages-model.js';
 import { createHistory } from './history.js';
-import { pagesOf, plural, t } from './i18n.js';
+import { failureText, pagesOf, plural, t } from './i18n.js';
 import { clamp } from './math.js';
 import { openRedactor } from './redact-view.js';
 import { openDrawing } from './draw-view.js';
@@ -745,7 +745,7 @@ export function initPages() {
     try {
       setStatus((await work()) ?? '');
     } catch (error) {
-      say('status.failed', { message: error.message });
+      say('status.failed', { message: failureText(error) });
     } finally {
       busy = false;
       panel.toggleAttribute('data-busy', false);
@@ -757,7 +757,7 @@ export function initPages() {
     try {
       await work(...args);
     } catch (error) {
-      say('status.failed', { message: error.message });
+      say('status.failed', { message: failureText(error) });
     }
   };
 
@@ -950,7 +950,7 @@ export function initPages() {
       const rectangles = await openRedactor(documents[page.file].doc, page);
       if (rectangles) commit({ pages: pages.map((page) => (page.id === id ? { ...page, redactions: rectangles } : page)) });
     } catch (error) {
-      say('status.cannot-open-page', { message: error.message });
+      say('status.cannot-open-page', { message: failureText(error) });
     }
   });
   controls.crop.addEventListener('click', async () => {
@@ -959,7 +959,7 @@ export function initPages() {
       const result = await openRedactor(documents[page.file].doc, page, { crop: true });
       if (result) commit({ pages: setCrop(pages, selected, result.rect && { ...result.rect, remove: result.remove }) });
     } catch (error) {
-      say('status.cannot-open-page', { message: error.message });
+      say('status.cannot-open-page', { message: failureText(error) });
     }
   });
   controls.preview.addEventListener('click', () =>

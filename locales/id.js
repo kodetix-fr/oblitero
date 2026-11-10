@@ -398,6 +398,7 @@ export default {
   'error.font': 'Huruf standar tidak dapat menggambar salah satu karakter ini. Gunakan huruf, angka, dan tanda baca umum.',
   'error.image-large': 'Gambar terlalu besar untuk dikonversi.',
   'error.page-large': 'Halaman terlalu besar untuk dirender.',
+  'error.unknown': 'kesalahan tak terduga, rinciannya ada di konsol browser',
   // form filling
   'app.fill-form': 'Isi formulir',
   'app.fill-form.title': 'Isi kolom formulir: teks, kotak centang, dan daftar. Nilainya ditulis di halaman.',

@@ -5,7 +5,7 @@ import { applyProperties } from './properties.js';
 import { burnPage, outlineTree } from './render.js';
 import { outlineFor, writeOutline } from './outline.js';
 import { applyStamps } from './stamps.js';
-import { t } from './i18n.js';
+import { failureText, t } from './i18n.js';
 
 // Makes one result for each group of pages ({ name, entries }), one after the other so that a single result is in memory at a
 // time; a group that fails is reported and the others still come out. Resolves with the files and one line of report per group.
@@ -17,7 +17,7 @@ export async function eachFile(groups, make) {
       files.push({ name, blob: await make(entries) });
       report.push(t('batch.line-done', { name }));
     } catch (error) {
-      report.push(t('batch.line-failed', { name, message: error.message }));
+      report.push(t('batch.line-failed', { name, message: failureText(error) }));
     }
   }
   return { files, report, failed: groups.length - files.length };

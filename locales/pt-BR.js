@@ -403,6 +403,7 @@ export default {
   'error.font': 'A fonte padrão não consegue desenhar um destes caracteres. Use letras, números e pontuação comum.',
   'error.image-large': 'A imagem é grande demais para ser convertida.',
   'error.page-large': 'A página é grande demais para ser desenhada.',
+  'error.unknown': 'erro inesperado, os detalhes estão no console do navegador',
   // form filling
   'app.fill-form': 'Preencher formulário',
   'app.fill-form.title': 'Preencher os campos de um formulário: texto, caixas de seleção e listas. Os valores são escritos na página.',

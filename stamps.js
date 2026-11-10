@@ -1,5 +1,5 @@
 import { PDFDocument, StandardFonts, concatTransformationMatrix, degrees, drawObject, popGraphicsState, pushGraphicsState, rgb, setGraphicsState } from './vendor/pdf-lib.esm.min.js';
-import { t } from './i18n.js';
+import { Failure } from './i18n.js';
 import { parseRange } from './pages-model.js';
 
 export const POSITIONS = ['top-left', 'top-center', 'top-right', 'bottom-left', 'bottom-center', 'bottom-right'];
@@ -122,7 +122,7 @@ export async function checkText(text) {
   try {
     font.encodeText(text);
   } catch {
-    throw new Error(t('error.font'));
+    throw new Failure('error.font');
   }
 }
 

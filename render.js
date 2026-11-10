@@ -4,7 +4,7 @@ import { readingText } from './reading-order.js';
 import { HIGHLIGHT_OPACITY, TEXT_RISE, shapeParts } from './marks.js';
 import { textSizeOn } from './pages-model.js';
 import { adjustMatrix } from './page-adjust.js';
-import { t } from './i18n.js';
+import { Failure } from './i18n.js';
 
 const resource = (path) => new URL(`vendor/pdfjs/${path}`, import.meta.url).href;
 const MAX_SIDE = 8000;
@@ -181,7 +181,7 @@ export async function paintEntry(doc, entry, scale, withMarks = false) {
 
 const toBlob = async (canvas, type, quality) => {
   const blob = await new Promise((resolve) => canvas.toBlob(resolve, type, quality));
-  if (!blob) throw new Error(t('error.page-large'));
+  if (!blob) throw new Failure('error.page-large');
   return blob;
 };
 

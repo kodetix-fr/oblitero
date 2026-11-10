@@ -4,7 +4,7 @@ import { askDialog, byId, setI18n } from './dom.js';
 import { clamp } from './math.js';
 import { readPhoto } from './photo.js';
 import { PDFDocument } from './vendor/pdf-lib.esm.min.js';
-import { t } from './i18n.js';
+import { failureText, t } from './i18n.js';
 
 const DEFAULTS = {
   numbers: { position: 'bottom-center', format: 'of', first: 1, size: 10, skipFirst: false },
@@ -245,7 +245,7 @@ export function initStamps() {
             texts.push(settings.bates?.prefix, settings.bates?.suffix, settings.stamp?.kind === 'text' ? settings.stamp.text : '');
             for (const text of texts) if (text) await checkText(text);
           } catch (error) {
-            field('stamp-error').textContent = error.message;
+            field('stamp-error').textContent = failureText(error);
             return;
           }
           finish(settings);

@@ -430,6 +430,7 @@ export default {
   'error.font': 'The standard font cannot draw one of these characters. Use letters, digits and common punctuation.',
   'error.image-large': 'The image is too large to convert.',
   'error.page-large': 'The page is too large to draw.',
+  'error.unknown': 'unexpected error, the details are in the browser console',
   // form filling
   'app.fill-form': 'Fill form',
   'app.fill-form.title': 'Fill the fields of a form: text, check boxes and lists. The values are written on the page.',

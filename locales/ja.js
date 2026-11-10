@@ -317,7 +317,7 @@ export default {
   'status.batch-failed': '作成できなかったファイル: {n} / {total}。理由はZIP内のレポートにあります。',
   'batch.line-done': '{name}: 完了',
   'batch.line-failed': '{name}: 作成できませんでした（{message}）',
-  'batch.report-name': 'report.txt',
+  'batch.report-name': 'houkoku.txt',
   'status.preview': 'プレビューを準備しています…',
   'text.page': '--- {n}ページ ---',
   'text.redacted': '[墨消しされたページ]',
@@ -403,6 +403,7 @@ export default {
   'error.font': '標準フォントでは、これらの文字のうち 1つを描画できません。英字、数字、一般的な句読点を使ってください。',
   'error.image-large': '画像が大きすぎて変換できません。',
   'error.page-large': 'ページが大きすぎて描画できません。',
+  'error.unknown': '予期しないエラーです。詳細はブラウザーのコンソールに出ています',
   // form filling
   'app.fill-form': 'フォーム入力',
   'app.fill-form.title': 'フォームのフィールド（テキスト、チェックボックス、リスト）に入力します。入力した値はページに書き込まれます。',

@@ -398,6 +398,7 @@ export default {
   'error.font': 'La fuente estándar no puede dibujar alguno de estos caracteres. Usa letras, cifras y signos de puntuación comunes.',
   'error.image-large': 'La imagen es demasiado grande para convertirla.',
   'error.page-large': 'La página es demasiado grande para dibujarla.',
+  'error.unknown': 'error inesperado, los detalles están en la consola del navegador',
   // form filling
   'app.fill-form': 'Rellenar formulario',
   'app.fill-form.title': 'Rellenar los campos de un formulario: texto, casillas y listas. Los valores se escriben en la página.',

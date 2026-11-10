@@ -398,6 +398,7 @@ export default {
   'error.font': 'La police standard ne peut pas dessiner l\'un de ces caractères. Utilise des lettres, des chiffres et la ponctuation courante.',
   'error.image-large': 'L\'image est trop grande pour être convertie.',
   'error.page-large': 'La page est trop grande pour être dessinée.',
+  'error.unknown': 'erreur inattendue, les détails sont dans la console du navigateur',
   // form filling
   'app.fill-form': 'Remplir le formulaire',
   'app.fill-form.title': 'Remplir les champs d\'un formulaire : texte, cases à cocher et listes. Les valeurs sont écrites sur la page.',
