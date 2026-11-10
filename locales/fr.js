@@ -339,6 +339,7 @@ export default {
   'find.found': '{matches} sur {pages}.',
   'find.none': 'Rien trouvé.',
   'find.no-text': 'Recherche impossible dans {pages} sans couche de texte (scans).',
+  'find.unread': 'Lecture impossible de {pages} ({numbers}) : à vérifier à l\'œil.',
   'find.covers': 'Chaque occurrence recouvre toute la ligne de texte où elle se trouve.',
   'redact.box-aria': 'Rectangle {n} sur {total}. Les flèches le déplacent, Maj et les flèches le redimensionnent, Suppr le retire.',
   'redact.say-started': 'Rectangle commencé. Va au coin opposé, puis appuie sur Entrée.',

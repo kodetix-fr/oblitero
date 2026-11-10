@@ -339,6 +339,7 @@ export default {
   'find.found': '{matches} auf {pages}.',
   'find.none': 'Nichts gefunden.',
   'find.no-text': 'Nicht durchsucht (ohne Textebene, Scans): {pages}.',
+  'find.unread': 'Nicht lesbar: {pages} ({numbers}). Bitte von Hand prüfen.',
   'find.covers': 'Jeder Treffer deckt die ganze Textzeile ab, in der er steht.',
   'redact.box-aria': 'Rechteck {n} von {total}. Die Pfeiltasten verschieben es, Umschalt und die Pfeiltasten ändern die Größe, Entf entfernt es.',
   'redact.say-started': 'Rechteck begonnen. Gehe zur gegenüberliegenden Ecke und drücke dann die Eingabetaste.',

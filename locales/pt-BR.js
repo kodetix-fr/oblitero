@@ -344,6 +344,7 @@ export default {
   'find.found': '{matches} em {pages}.',
   'find.none': 'Nada encontrado.',
   'find.no-text': 'Não foi possível pesquisar as páginas sem camada de texto (scans): {pages}.',
+  'find.unread': 'Não foi possível ler {pages} ({numbers}): confira manualmente.',
   'find.covers': 'Cada ocorrência cobre a linha de texto inteira em que está.',
   'redact.box-aria': 'Retângulo {n} de {total}. As setas o movem, Shift e as setas o redimensionam, Delete o remove.',
   'redact.say-started': 'Retângulo iniciado. Vá até o canto oposto e pressione Enter.',

@@ -370,6 +370,7 @@ export default {
   'find.found': '{matches} on {pages}.',
   'find.none': 'Nothing found.',
   'find.no-text': '{pages} without a text layer (scans) could not be searched.',
+  'find.unread': '{pages} could not be read ({numbers}): check them by eye.',
   'find.covers': 'Each match covers the whole line of text it is in.',
   'redact.box-aria': 'Rectangle {n} of {total}. Arrow keys move it, Shift and arrow keys resize it, Delete removes it.',
   'redact.say-started': 'Rectangle started. Move to the opposite corner, then press Enter.',

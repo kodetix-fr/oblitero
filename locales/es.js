@@ -339,6 +339,7 @@ export default {
   'find.found': '{matches} en {pages}.',
   'find.none': 'No se encontró nada.',
   'find.no-text': 'No se pudo buscar en {pages} sin capa de texto (escaneos).',
+  'find.unread': 'No se pudo leer {pages} ({numbers}): revísalas a simple vista.',
   'find.covers': 'Cada coincidencia cubre toda la línea de texto en la que está.',
   'redact.box-aria': 'Rectángulo {n} de {total}. Las flechas lo mueven, Mayús y las flechas lo redimensionan, Supr lo elimina.',
   'redact.say-started': 'Rectángulo iniciado. Muévete a la esquina opuesta y pulsa Intro.',

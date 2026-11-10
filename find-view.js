@@ -49,10 +49,16 @@ export function initFind() {
       found = [];
       refresh();
       let withoutText = 0;
+      const unread = [];
       for (const [index, { page, number }] of pages.entries()) {
         note.textContent = t('find.reading', { n: index + 1, total: pages.length });
-        const { text, runs } = await read(page);
+        const content = await read(page).catch(() => null);
         if (mine !== searching) return;
+        if (!content) {
+          unread.push(number);
+          continue;
+        }
+        const { text, runs } = content;
         if (!text.trim()) withoutText++;
         for (const match of findMatches(text, { presets: kinds, words })) {
           const boxes = runs.filter((run) => run.box && run.start < match.end && run.end > match.start).map((run) => run.box);
@@ -75,6 +81,7 @@ export function initFind() {
       note.textContent = [
         found.length ? t('find.found', { matches: matches(found.length), pages: pagesOf(pagesWith) }) : t('find.none'),
         withoutText ? t('find.no-text', { pages: pagesOf(withoutText) }) : '',
+        unread.length ? t('find.unread', { pages: pagesOf(unread.length), numbers: unread.join(t('list-gap')) }) : '',
         t('find.covers'),
       ]
         .filter(Boolean)

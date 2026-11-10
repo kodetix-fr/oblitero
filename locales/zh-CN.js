@@ -339,6 +339,7 @@ export default {
   'find.found': '在 {pages}中找到 {matches}。',
   'find.none': '没有找到任何内容。',
   'find.no-text': '{pages}没有文字层（扫描件），无法搜索。',
+  'find.unread': '无法读取{pages}（{numbers}），请人工检查。',
   'find.covers': '每个匹配项会遮盖它所在的整行文字。',
   'redact.box-aria': '第 {n} 个矩形，共 {total} 个。方向键移动它，Shift 加方向键调整大小，Delete 键删除。',
   'redact.say-started': '已开始绘制矩形。移动到对角，然后按 Enter。',

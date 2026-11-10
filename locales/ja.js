@@ -344,6 +344,7 @@ export default {
   'find.found': '{pages}で{matches}が見つかりました。',
   'find.none': '見つかりませんでした。',
   'find.no-text': '{pages}はテキストレイヤーがない（スキャンの）ため、検索できませんでした。',
+  'find.unread': '{pages}を読み取れませんでした（{numbers}）。目視で確認してください。',
   'find.covers': '一致した箇所は、それを含むテキスト行全体が覆われます。',
   'redact.box-aria': '{total}個中{n}個目の長方形。矢印キーで移動、Shift と矢印キーでサイズ変更、Delete で削除します。',
   'redact.say-started': '長方形を開始しました。反対側の角まで動かして、Enter を押してください。',

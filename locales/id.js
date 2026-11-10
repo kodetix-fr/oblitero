@@ -339,6 +339,7 @@ export default {
   'find.found': '{matches} pada {pages}.',
   'find.none': 'Tidak ada yang ditemukan.',
   'find.no-text': '{pages} tanpa lapisan teks (hasil pindai) tidak dapat dicari.',
+  'find.unread': '{pages} tidak dapat dibaca ({numbers}): periksa secara manual.',
   'find.covers': 'Setiap kecocokan menutupi seluruh baris teks tempatnya berada.',
   'redact.box-aria': 'Persegi panjang {n} dari {total}. Tombol panah menggesernya, Shift dan tombol panah mengubah ukurannya, Delete menghapusnya.',
   'redact.say-started': 'Persegi panjang dimulai. Pindah ke sudut seberang, lalu tekan Enter.',
