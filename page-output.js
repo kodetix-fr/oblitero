@@ -23,6 +23,20 @@ export async function eachFile(groups, make) {
   return { files, report, failed: groups.length - files.length };
 }
 
+const imageIds = new WeakMap();
+let imageCount = 0;
+const imageId = (png) => {
+  if (!imageIds.has(png)) imageIds.set(png, ++imageCount);
+  return imageIds.get(png);
+};
+
+// What a burned picture depends on. The marks count only when a crop that removes what is outside draws them into it, and a
+// picture of a mark is named by identity, not by its bytes.
+export const burnKey = (entry) =>
+  JSON.stringify([entry.file, entry.source, entry.rotation, entry.angle, entry.flip, entry.crop, entry.redactions, entry.crop?.remove ? entry.marks : null], (_, value) =>
+    value instanceof Uint8Array ? imageId(value) : value,
+  );
+
 // Turns pages into PDF files, with what the document has set. `settings()` gives { stamps, properties, compression, paper,
 // protection }; `protect(bytes, password, permissions)` encrypts a download.
 export function createOutput(documents, settings, say, protect) {
@@ -34,7 +48,7 @@ export function createOutput(documents, settings, say, protect) {
     const redacted = entries.filter((entry) => entry.redactions.length > 0).length;
     let drawn = 0;
     const burn = (entry) => {
-      const key = JSON.stringify([entry.file, entry.source, entry.rotation, entry.angle, entry.flip, entry.crop, entry.redactions]);
+      const key = burnKey(entry);
       if (!burned.has(key)) {
         say('status.redacting', { n: ++drawn, total: redacted });
         burned.set(key, burnPage(documents[entry.file].doc, entry));
