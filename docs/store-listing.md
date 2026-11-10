@@ -99,7 +99,7 @@ Tools, or Productivity like Obturo: pick it in the dashboard menu.
 ## 5. Permissions and remote code
 
 - Permissions: **none**, so nothing to justify (`manifest.test.js` pins the empty list). If the form asks anyway: "The extension requests no permission. The icon opens a page of the extension, and the user chooses the files."
-- Remote code: **No.** All the code is in the package, the vendored pdf-lib and PDF.js included. `'wasm-unsafe-eval'` in the content security policy is for the WebAssembly image decoders of PDF.js, which are files of the package.
+- Remote code: **No.** All the code is in the package, the vendored pdf-lib, PDF.js and qpdf included. `'wasm-unsafe-eval'` in the content security policy is for the WebAssembly modules, which are files of the package: the image decoders of PDF.js, and qpdf, which opens protected files, repairs damaged ones and protects the downloads.
 
 ## 6. Data disclosure and privacy policy
 
