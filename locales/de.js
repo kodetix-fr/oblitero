@@ -267,6 +267,7 @@ export default {
   'compare.page-of': 'Seite {n} von {total}',
   'compare.first-part': 'Erster Teil, {level}',
   'status.cannot-read': 'Nicht lesbar: {names}. Kein PDF und kein Bild, oder verschlüsselt oder beschädigt.',
+  'status.no-pages': '{names}: Die Datei enthält keine Seite.',
   'password.title': 'Passwort',
   'password.label': 'Passwort',
   'password.show': 'Passwort anzeigen',

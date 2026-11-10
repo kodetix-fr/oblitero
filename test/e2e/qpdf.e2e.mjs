@@ -122,3 +122,20 @@ test('a file cut short opens with the pages that are whole, and the status says 
   assert.equal(await view.locator('#pages-status').innerText(), `damaged.pdf was damaged and has been repaired: ${count} pages recovered out of 40 pages.`);
   await view.close();
 });
+
+test('a change committed while a drop waits for a password leaves every file of the drop usable', async () => {
+  const view = await app.openApp();
+  const first = await writePdf(app.dir, 'pending-a.pdf', [{ size: 100, text: 'A' }, { size: 110, text: 'B' }]);
+  const other = await writePdf(app.dir, 'pending-b.pdf', [{ size: 120, text: 'C' }]);
+  await view.setInputFiles('#pages-file', [first, await encrypted('pending-locked.pdf', 'secret', 3)]);
+  await view.locator('#password-dialog').waitFor({ state: 'visible' });
+  await view.setInputFiles('#pages-file', other);
+  await view.waitForFunction(() => document.querySelectorAll('#grid li').length === 1);
+  await view.locator('#password-input').fill('secret');
+  await view.locator('#password-input').press('Enter');
+  await view.waitForFunction(() => document.querySelectorAll('#grid li').length === 6);
+  const [download] = await Promise.all([view.waitForEvent('download'), view.locator('#download-all').click()]);
+  const output = await PDFDocument.load(readFileSync(await download.path()));
+  assert.deepEqual(output.getPages().map((page) => page.getWidth()), [120, 100, 110, 200, 201, 202]);
+  await view.close();
+});

@@ -267,6 +267,7 @@ export default {
   'compare.page-of': 'Halaman {n} dari {total}',
   'compare.first-part': 'Bagian pertama, {level}',
   'status.cannot-read': 'Tidak dapat membaca {names}: bukan PDF atau gambar, atau terenkripsi atau rusak.',
+  'status.no-pages': '{names}: berkas tidak memiliki halaman.',
   'password.title': 'Kata sandi',
   'password.label': 'Kata sandi',
   'password.show': 'Tampilkan kata sandi',

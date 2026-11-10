@@ -293,6 +293,7 @@ export default {
   'compare.first-part': 'First part, {level}',
   // status line
   'status.cannot-read': 'Cannot read {names}: not a PDF or a picture, or encrypted or damaged.',
+  'status.no-pages': '{names}: the file has no page.',
   'password.title': 'Password',
   'password.label': 'Password',
   'password.show': 'Show the password',

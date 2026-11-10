@@ -267,6 +267,7 @@ export default {
   'compare.page-of': '第 {n} 页，共 {total} 页',
   'compare.first-part': '第一段，{level}',
   'status.cannot-read': '无法读取 {names}：不是 PDF 或图片，或已加密或已损坏。',
+  'status.no-pages': '{names}：文件没有页面。',
   'password.title': '密码',
   'password.label': '密码',
   'password.show': '显示密码',

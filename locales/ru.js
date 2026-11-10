@@ -267,6 +267,7 @@ export default {
   'compare.page-of': 'Страница {n} из {total}',
   'compare.first-part': 'Первая часть: {level}',
   'status.cannot-read': 'Не удалось прочитать {names}: это не PDF и не картинка, либо файл зашифрован или повреждён.',
+  'status.no-pages': '{names}: в файле нет страниц.',
   'password.title': 'Пароль',
   'password.label': 'Пароль',
   'password.show': 'Показать пароль',

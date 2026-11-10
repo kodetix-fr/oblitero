@@ -271,6 +271,7 @@ export default {
   'compare.first-part': '最初のパート（{level}）',
   // status line
   'status.cannot-read': '{names}を読み取れません。PDF や画像ではないか、暗号化または破損しています。',
+  'status.no-pages': '{names}：ファイルにページがありません。',
   'password.title': 'パスワード',
   'password.label': 'パスワード',
   'password.show': 'パスワードを表示',

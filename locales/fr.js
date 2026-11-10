@@ -267,6 +267,7 @@ export default {
   'compare.page-of': 'Page {n} sur {total}',
   'compare.first-part': 'Première partie, {level}',
   'status.cannot-read': 'Lecture impossible de {names} : ce n\'est ni un PDF ni une image, ou le fichier est chiffré ou endommagé.',
+  'status.no-pages': '{names} : le fichier n\'a aucune page.',
   'password.title': 'Mot de passe',
   'password.label': 'Mot de passe',
   'password.show': 'Afficher le mot de passe',

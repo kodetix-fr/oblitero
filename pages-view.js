@@ -442,29 +442,41 @@ export function initPages() {
 
   // The pages of PDF files and photos go into the document, before or after the page `targetId` (at the end without one).
   async function insert(files, targetId = null, after = true) {
-    const added = [];
+    const loaded = [];
     const unreadable = [];
     const locked = [];
+    const empty = [];
     const repaired = [];
     for (const file of files) {
       try {
         const document = await load(file);
+        if (document.count === 0) {
+          closeRender(document.doc);
+          empty.push(file.name);
+          continue;
+        }
         const lost = document.repaired;
         if (lost) {
           repaired.push(() =>
             lost.declared ? t('repair.done', { name: file.name, kept: pagesOf(lost.pages), total: pagesOf(lost.declared) }) : t('repair.done-unknown', { name: file.name, kept: pagesOf(lost.pages) }),
           );
         }
-        documents.push(document);
-        added.push(...createPages(document.count, { file: documents.length - 1, firstId: nextId }));
-        nextId += document.count;
+        loaded.push(document);
       } catch (error) {
         (error === NO_PASSWORD ? locked : unreadable).push(file.name);
       }
     }
+    // Nothing holds a loaded file until its pages are committed, so they all go in without an await in between.
+    const added = [];
+    for (const document of loaded) {
+      documents.push(document);
+      added.push(...createPages(document.count, { file: documents.length - 1, firstId: nextId }));
+      nextId += document.count;
+    }
     if (locked.length) repaired.push(() => t('password.cancelled', { names: locked.join(', ') }));
     if (unreadable.length) repaired.push(() => t('status.cannot-read', { names: unreadable.join(', ') }));
-    setStatus(() => repaired.map((note) => note()).join(' '), locked.length + unreadable.length > 0);
+    if (empty.length) repaired.push(() => t('status.no-pages', { names: empty.join(', ') }));
+    setStatus(() => repaired.map((note) => note()).join(' '), locked.length + unreadable.length + empty.length > 0);
     if (added.length === 0) return;
     const first = pages.length === 0;
     selected = first ? new Set() : new Set(added.map((page) => page.id));

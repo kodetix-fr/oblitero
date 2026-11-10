@@ -271,6 +271,7 @@ export default {
   'compare.first-part': 'Primeira parte, {level}',
   // status line
   'status.cannot-read': 'Não foi possível ler {names}: não é um PDF nem uma foto, ou o arquivo está criptografado ou danificado.',
+  'status.no-pages': '{names}: o arquivo não tem nenhuma página.',
   'password.title': 'Senha',
   'password.label': 'Senha',
   'password.show': 'Mostrar a senha',

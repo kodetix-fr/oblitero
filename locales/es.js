@@ -267,6 +267,7 @@ export default {
   'compare.page-of': 'Página {n} de {total}',
   'compare.first-part': 'Primera parte, {level}',
   'status.cannot-read': 'No se puede leer {names}: formato no admitido, cifrado o dañado.',
+  'status.no-pages': '{names}: el archivo no tiene ninguna página.',
   'password.title': 'Contraseña',
   'password.label': 'Contraseña',
   'password.show': 'Mostrar la contraseña',

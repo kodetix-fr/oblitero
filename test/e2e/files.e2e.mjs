@@ -125,3 +125,15 @@ test('files: the pages of two files taken apart stay two files, and the tags nam
   assert.deepEqual(await page.locator('#file-list .name').allInnerTexts(), ['right.pdf', 'left.pdf']);
   await page.close();
 });
+
+test('files: a PDF with no page is refused in a sentence, and the others of the drop still come in', async () => {
+  const empty = join(app.dir, 'empty.pdf');
+  writeFileSync(empty, await (await PDFDocument.create()).save({ addDefaultPage: false }));
+  const one = await writePdf(app.dir, 'filled.pdf', [{ size: 100, text: 'A' }]);
+  const page = await app.openApp();
+  await page.setInputFiles('#pages-file', [empty, one]);
+  await page.locator('#grid li').first().waitFor();
+  assert.equal(await page.locator('#grid li').count(), 1);
+  assert.match(await page.locator('#pages-status').innerText(), /empty\.pdf/);
+  await page.close();
+});
