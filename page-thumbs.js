@@ -1,24 +1,26 @@
 import { entrySize, renderPage } from './render.js';
 
-const THUMB_WIDTH = 150;
-const THUMB_HEIGHT = 220;
+const GRID_BOX = { width: 150, height: 220 };
+export const ROW_BOX = { width: 40, height: 52 };
 const THUMB_QUALITY = 1.75;
 
-// The thumbnails of the pages, drawn one at a time when they come into view. `docOf(file)` gives the open PDF of a file.
+// The thumbnails of the pages, drawn one at a time when they come into view, each to fit a box. `docOf(file)` gives the open
+// PDF of a file.
 export function createThumbs(docOf) {
   const thumbs = new Map();
   let generation = 0;
   let renders = Promise.resolve();
-  const keyOf = (page) => `${generation}:${page.id}:${page.rotation}:${page.angle}:${page.flip}:${JSON.stringify(page.crop)}`;
+  const baseOf = (page) => `${generation}:${page.id}:${page.rotation}:${page.angle}:${page.flip}:${JSON.stringify(page.crop)}`;
+  const keyOf = (page, box) => `${baseOf(page)}:${box.width}`;
 
   async function draw(thumb, current) {
     if (current !== generation) return;
     try {
       const doc = thumb.file === null ? null : docOf(thumb.file);
       const size = await entrySize(doc, thumb);
-      const fit = Math.min(THUMB_WIDTH / size.width, THUMB_HEIGHT / size.height);
+      const fit = Math.min(thumb.box.width / size.width, thumb.box.height / size.height);
       for (const element of [thumb.canvas, thumb.canvas.parentElement]) {
-        element?.style.setProperty('--fit', String((size.width * fit) / THUMB_WIDTH));
+        element?.style.setProperty('--fit', String((size.width * fit) / thumb.box.width));
         element?.style.setProperty('--aspect', String(size.height / size.width));
       }
       if (thumb.blank) {
@@ -47,19 +49,28 @@ export function createThumbs(docOf) {
   });
 
   return {
-    canvasOf(page) {
-      const key = keyOf(page);
+    canvasOf(page, box = GRID_BOX) {
+      const key = keyOf(page, box);
       let thumb = thumbs.get(key);
       if (!thumb) {
         const canvas = document.createElement('canvas');
         canvas.dataset.key = key;
-        thumb = { canvas, file: page.file, source: page.source, blank: page.blank, rotation: page.rotation, angle: page.angle, flip: page.flip, crop: page.crop, state: 'idle' };
+        thumb = { canvas, box, base: baseOf(page), file: page.file, source: page.source, blank: page.blank, rotation: page.rotation, angle: page.angle, flip: page.flip, crop: page.crop, state: 'idle' };
         thumbs.set(key, thumb);
       }
       observer.observe(thumb.canvas);
       return thumb.canvas;
     },
-    canvasDrawn: (page) => thumbs.get(keyOf(page))?.canvas,
+    canvasDrawn: (page) => thumbs.get(keyOf(page, GRID_BOX))?.canvas,
+    // Forgets what none of `pages` can show again.
+    keep(pages) {
+      const wanted = new Set(pages.map(baseOf));
+      for (const [key, thumb] of thumbs) {
+        if (wanted.has(thumb.base)) continue;
+        observer.unobserve(thumb.canvas);
+        thumbs.delete(key);
+      }
+    },
     reset() {
       generation += 1;
       thumbs.clear();

@@ -112,3 +112,32 @@ test('adding a second PDF keeps the first and draws its thumbnails', async () =>
     }),
   );
 });
+
+test('thumbnails: the ones no page or undo can show again leave the cache', async () => {
+  page = await app.openApp();
+  const kept = await page.evaluate(async () => {
+    const { createThumbs } = await import('./page-thumbs.js');
+    const thumbs = createThumbs(() => null);
+    const shown = (rotation) => ({ id: 1, file: null, source: 0, blank: { width: 100, height: 100 }, rotation, angle: 0, flip: false, crop: null });
+    const turns = [0, 90, 180, 270];
+    for (const rotation of turns) thumbs.canvasOf(shown(rotation));
+    const before = turns.map((rotation) => !!thumbs.canvasDrawn(shown(rotation)));
+    thumbs.keep([shown(90), shown(180)]);
+    return { before, after: turns.map((rotation) => !!thumbs.canvasDrawn(shown(rotation))) };
+  });
+  assert.deepEqual(kept, { before: [true, true, true, true], after: [false, true, true, false] });
+  await page.close();
+});
+
+test('files view: the first page of each file is drawn through the thumbnail cache', async () => {
+  const path = await writePdf(app.dir, 'run.pdf', [{ size: 200, text: 'ONE' }, { size: 300, text: 'TWO' }]);
+  page = await app.openApp();
+  await page.setInputFiles('#pages-file', path);
+  await page.locator('#grid li').nth(1).waitFor();
+  await page.getByRole('radio', { name: 'Files' }).check();
+  await page.waitForFunction(() => {
+    const canvas = document.querySelector('#file-list .file-thumb canvas');
+    return canvas && canvas.width !== 300 && canvas.width > 0;
+  });
+  await page.close();
+});

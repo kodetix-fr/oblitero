@@ -3,7 +3,7 @@ import { buildPdf } from './export.js';
 import { LEVELS, formatSize } from './compress.js';
 import { createOutput, eachFile } from './page-output.js';
 import { pageCard } from './page-card.js';
-import { createThumbs } from './page-thumbs.js';
+import { ROW_BOX, createThumbs } from './page-thumbs.js';
 import { initMarquee } from './page-marquee.js';
 import { MARGINS, PAGE_SIZES, SIZES, imagesToPdf } from './images.js';
 import { readPhoto } from './photo.js';
@@ -358,7 +358,9 @@ export function initPages() {
 
   // A file nothing can bring back anymore, not even an undo, leaves the memory.
   function release() {
-    const held = new Set([pages, ...history.states.map((state) => state.pages)].flat().map((page) => page.file));
+    const reachable = [pages, ...history.states.map((state) => state.pages)].flat();
+    thumbnails.keep(reachable);
+    const held = new Set(reachable.map((page) => page.file));
     documents.forEach((document, file) => {
       if (!document.doc || held.has(file)) return;
       closeRender(document.doc);
@@ -1042,16 +1044,6 @@ export function initPages() {
   // ---------- files: one row for each run of pages that come from the same file ----------
 
   const runKey = (run) => run.pages[0].id;
-  function runThumb(page) {
-    const canvas = document.createElement('canvas');
-    if (page.blank) {
-      canvas.width = 40;
-      canvas.height = 52;
-    } else {
-      renderPage(documents[page.file].doc, page.source, page.rotation, canvas, 0.35 * devicePixelRatio, page).catch(() => {});
-    }
-    return canvas;
-  }
   const runInfo = (run) => {
     const hiddenCount = run.pages.filter((page) => page.hidden).length;
     return {
@@ -1059,7 +1051,7 @@ export function initPages() {
       name: run.file === null ? t('page.blank') : documents[run.file].name,
       detail: [pagesOf(run.pages.length), run.file !== null && documents[run.file].photo ? t('files.photo') : '', hiddenCount ? t('summary.hidden', { n: hiddenCount }) : ''].filter(Boolean).join(t('list-gap')),
       hidden: hiddenCount === run.pages.length,
-      thumb: () => runThumb(run.pages[0]),
+      thumb: () => thumbnails.canvasOf(run.pages[0], ROW_BOX),
       tone: toned && run.file !== null ? toneOf(run.file) : null,
     };
   };
