@@ -55,7 +55,7 @@ test('the package holds the code and the licenses, and no test, document or tool
 
 test('everything vendored is named in the third-party notices', () => {
   const notices = read('./THIRD_PARTY_NOTICES.md');
-  for (const name of readdirSync(new URL('./vendor/', import.meta.url)).filter((name) => name !== 'README.md' && !/\.d\.m?ts$/.test(name))) {
+  for (const name of readdirSync(new URL('./vendor/', import.meta.url)).filter((name) => !['README.md', 'SHA256SUMS'].includes(name) && !/\.d\.m?ts$/.test(name))) {
     assert.ok(notices.includes(`vendor/${name}`), `vendor/${name} is not in THIRD_PARTY_NOTICES.md`);
   }
 });
@@ -64,8 +64,11 @@ test('third-party code stays in vendor/', () => {
   assert.deepEqual(runtime.filter((file) => !file.startsWith('vendor/') && (/\.(mjs|wasm|map)$|\.min\./.test(file) || /@license|SPDX-License-Identifier|Copyright \d{4} /.test(/\.(js|html)$/.test(file) ? read(`./${file}`) : ''))), []);
 });
 
-test('the version of the manifest is the one of package.json, and a version Chrome accepts', () => {
+test('the version of the manifest is the one of package.json and of its lock file, and a version Chrome accepts', () => {
   assert.equal(manifest.version, JSON.parse(read('./package.json')).version);
+  const lock = JSON.parse(read('./package-lock.json'));
+  assert.equal(lock.version, manifest.version);
+  assert.equal(lock.packages[''].version, manifest.version);
   assert.match(manifest.version, /^\d+\.\d+\.\d+$/);
 });
 

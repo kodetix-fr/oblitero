@@ -2,6 +2,12 @@
 
 Third-party code copied as is, with no build step (the folder is the extension). No remote code is ever loaded.
 
+`SHA256SUMS` holds the sha256 of every file of this folder, the folders included. `vendor.test.js` recomputes them, so a vendored file that changes fails the unit tests, and `.gitattributes` keeps git from converting their line endings. After a deliberate update, write the list again and commit it with the new files:
+
+```
+(cd vendor && find . -type f ! -name README.md ! -name SHA256SUMS | sed 's|^\./||' | LC_ALL=C sort | xargs shasum -a 256 > SHA256SUMS)
+```
+
 ## pdf-lib.esm.min.js
 
 | | |

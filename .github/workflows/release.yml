@@ -1,13 +1,15 @@
 name: Release
 
-# A tag v* publishes the extension package, a zip and its SHA-256, as a GitHub Release. Uses the gh CLI shipped
-# with the runner rather than a third-party action. Tag the merge commit on main once CI is green.
+# An annotated tag v* publishes the extension package, a zip and its SHA-256, as a GitHub Release, with the section of
+# CHANGELOG.md for that version as its notes. Uses the gh CLI shipped with the runner rather than a third-party action.
+# Tag the merge commit on main once CI is green: a commit with no green CI run is not released.
 on:
   push:
     tags: ["v*"]
 
 permissions:
   contents: write
+  actions: read
 
 # Actions pinned to a commit; the comment carries the tag Dependabot tracks.
 jobs:
@@ -24,19 +26,52 @@ jobs:
         with:
           node-version: 24
 
-      # The tag names the release and the zip carries the version of manifest.json: they must agree.
-      - name: Check the tag against the manifest
+      # The tag names the release and the zip carries the version of manifest.json: they must agree, with package.json too.
+      - name: Check the tag
+        env:
+          TAG: ${{ github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for file in manifest.json package.json; do
+            version=$(node -p "require('./$file').version")
+            if [ "$TAG" != "v$version" ]; then
+              echo "Tag $TAG does not match the version $version of $file" >&2
+              exit 1
+            fi
+          done
+          kind=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq .object.type)
+          if [ "$kind" != "tag" ]; then
+            echo "Tag $TAG is not annotated: delete it and create it again with git tag -a" >&2
+            exit 1
+          fi
+
+      - name: CI is green on this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          green=$(gh run list --workflow ci.yml --commit "$GITHUB_SHA" --status success --json databaseId --jq length)
+          if [ "$green" = "0" ]; then
+            echo "No successful CI run for $GITHUB_SHA: wait for it, then re-run this job" >&2
+            exit 1
+          fi
+
+      # The notes of the release are the section of the changelog for this version, without the links of the footer.
+      - name: Release notes
         env:
           TAG: ${{ github.ref_name }}
         run: |
-          version=$(node -p "require('./manifest.json').version")
-          if [ "$TAG" != "v$version" ]; then
-            echo "Tag $TAG does not match the version $version of manifest.json" >&2
+          awk -v heading="## [${TAG#v}]" 'index($0, heading) == 1 { found = 1; next } found && /^## \[/ { exit } found && /^\[[^]]+\]: / { next } found' CHANGELOG.md > "$RUNNER_TEMP/notes.md"
+          if ! grep -q '[^[:space:]]' "$RUNNER_TEMP/notes.md"; then
+            echo "CHANGELOG.md has no section for ${TAG#v}" >&2
             exit 1
           fi
 
       - name: Install (no install scripts)
         run: npm ci --ignore-scripts
+
+      - name: Lint, types, unit tests
+        run: npm run check
 
       - name: Package
         run: npm run package
@@ -53,7 +88,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
-        run: gh release create "$TAG" --verify-tag --generate-notes
+        run: gh release create "$TAG" --verify-tag --title "$TAG" --notes-file "$RUNNER_TEMP/notes.md"
 
       - name: Publish the package
         env:
