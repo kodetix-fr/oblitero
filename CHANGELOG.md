@@ -21,6 +21,9 @@ Notable changes to Oblitero. The format follows
 
 - Changing the photo layout says when it clears the undo history, and the form dialog says that Undo does not revert the
   values.
+- Crop says that what is outside the frame is hidden, not removed, unless the box is ticked.
+- The password panel says that readers may ignore the print and copy restrictions, and that only the password protects
+  the content.
 
 ## [0.2.1] - 2026-11-09
 

@@ -41,6 +41,8 @@ test('a crop keeps the framed part of the selected pages, removes the rest on re
     await page.locator('#crop').click();
     await page.locator('#redact-dialog').waitFor({ state: 'visible' });
     assert.equal(await page.locator('#redact-dialog').getAttribute('data-mode'), 'crop');
+    assert.match(await page.locator('#redact-hint').innerText(), /hidden, not removed/);
+    assert.equal(await page.locator('#crop-remove').isChecked(), false);
     const bounds = await page.locator('#redact-layer').boundingBox();
     await page.mouse.move(bounds.x + 1, bounds.y + 1);
     await page.mouse.down();
