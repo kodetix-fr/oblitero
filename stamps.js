@@ -131,7 +131,7 @@ export async function checkText(text) {
 // bates: null | { prefix, suffix, first, digits, position, size }, stamp: null | { kind, text, image, position, size, scale }, range: '' for every page, or a list of pages such as 2-5, 8 }
 // place: { index, total } stamps a one-page output as that page of a longer document. `offset` is the number of pages that come
 // before this output in the set it belongs to (the parts of a cut document), where the Bates numbers go on.
-export async function applyStamps(output, settings, place = null, offset = 0) {
+export async function applyStamps(output, settings, /** @type {{ index: number, total: number } | null} */ place = null, offset = 0) {
   if (!settings.numbers && !settings.header && !settings.footer && !settings.watermark && !settings.letterhead && !settings.bates && !settings.stamp) return;
   const font = await output.embedFont(StandardFonts.Helvetica);
   const pages = output.getPages();

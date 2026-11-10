@@ -54,7 +54,7 @@ export function createOutput(documents, settings, say, protect) {
   // `burned` keeps the pictures of the redacted pages from one build to the next, when they are many builds of the same pages.
   // `offset` is the number of pages of the parts before this one, for the Bates numbers. `preview` ({ stamps, place }) stamps one
   // page with settings that are not applied yet, as the page `index` of `total` of `place`.
-  const build = async (entries, burned = new Map(), offset = 0, preview = null) => {
+  const build = async (entries, burned = new Map(), offset = 0, /** @type {{ stamps: any, place: { index: number, total: number } } | null} */ preview = null) => {
     const redacted = entries.filter((entry) => entry.redactions.length > 0).length;
     let drawn = 0;
     const burn = (entry) => {
@@ -68,6 +68,7 @@ export function createOutput(documents, settings, say, protect) {
     const { properties } = settings();
     // A bookmark can name what a rectangle hides, so a document with a redaction has none.
     const bookmarked = properties.bookmarks && redacted === 0 && !preview;
+    /** @type {any[]} */
     const trees = [];
     if (bookmarked) {
       for (const file of new Set(entries.map((entry) => entry.file).filter((file) => file !== null))) {

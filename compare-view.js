@@ -11,6 +11,7 @@ export function initCompare() {
   const dialog = byId('compare-dialog');
   const stage = byId('compare-stage');
   const handle = byId('compare-handle');
+  /** @type {Promise<[any, any]> | null} */
   let docs = null;
   let page = 0;
   let token = 0;
@@ -41,7 +42,7 @@ export function initCompare() {
   async function paint() {
     const mine = ++token;
     try {
-      const [before, after] = await docs;
+      const [before, after] = await /** @type {Promise<[any, any]>} */ (docs);
       if (mine !== token) return;
       page = Math.min(page, before.numPages - 1);
       byId('compare-page').textContent = t('compare.page-of', { n: page + 1, total: before.numPages });

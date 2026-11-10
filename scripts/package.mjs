@@ -257,7 +257,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   try {
     main();
   } catch (e) {
-    console.error(`Error: ${e.message}`);
+    console.error(`Error: ${e instanceof Error ? e.message : e}`);
     process.exitCode = 1;
   }
 }

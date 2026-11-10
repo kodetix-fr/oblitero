@@ -28,6 +28,7 @@ export function initFind() {
     byId('find-count').textContent = '';
     apply.disabled = true;
     toggle.disabled = true;
+    /** @type {{ page: any, boxes: any[], box: HTMLInputElement }[]} */
     let found = [];
     let searching = 0;
 

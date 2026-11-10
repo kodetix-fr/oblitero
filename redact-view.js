@@ -49,7 +49,9 @@ export async function openRedactor(doc, entry, { crop = false } = {}) {
   // The keyboard works on the same rectangles: a crosshair moves with the arrow keys, Enter starts a rectangle and Enter again
   // places it, then Tab goes through the rectangles, which move with the arrows, resize with Shift and the arrows, and go with Delete.
   let cursor = { x: 0.5, y: 0.5 };
+  /** @type {{ x: number, y: number } | null} */
   let anchor = null;
+  /** @type {number | null} */
   let focusIndex = null;
   const say = (text) => {
     live.textContent = text;

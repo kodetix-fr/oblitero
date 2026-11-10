@@ -29,8 +29,11 @@ export function initStamps() {
   }
   field('numbers-format').replaceChildren(...FORMATS.map(([value, text]) => Object.assign(document.createElement('option'), { value, textContent: text })));
 
+  /** @type {{ bytes: Uint8Array, name: string, kind?: string } | null} */
   let image = null;
+  /** @type {{ bytes: Uint8Array, name: string, kind?: string } | null} */
   let markImage = null;
+  /** @type {{ bytes: Uint8Array, name: string } | null} */
   let sheet = null;
   let schedulePreview = () => {};
   const syncKind = () => {

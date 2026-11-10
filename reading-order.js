@@ -66,6 +66,7 @@ function columnZone(runs, unit, width) {
   const rowTop = (row) => Math.min(...row.runs.map(top));
   const rowBottom = (row) => Math.max(...row.runs.map(bottom));
   const wideAfter = (i) => rowTop(rows[i + 1]) - rowBottom(rows[i]) >= WIDE_BAND * unit;
+  /** @type {{ score: number, above: any[], left: any[], right: any[], below: any[] } | null} */
   let best = null;
   for (const x of new Set(candidates.map((value) => Math.round(value / unit) * unit))) {
     const free = rows.map((row) => row.runs.every((run) => right(run) <= x - half || left(run) >= x + half));
@@ -138,6 +139,7 @@ export function readingText(runs) {
   const unit = median(drawn.map((run) => run.height)) || 10;
   const width = Math.max(...drawn.map(right)) - Math.min(...drawn.map(left));
   let text = '';
+  /** @type {number | null} */
   let last = null;
   for (const block of blocks(drawn, unit, width)) {
     for (const [index, line] of lines(block, unit).entries()) {

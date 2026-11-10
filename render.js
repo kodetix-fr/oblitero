@@ -4,6 +4,7 @@ import { readingText } from './reading-order.js';
 import { HIGHLIGHT_OPACITY, TEXT_RISE, shapeParts } from './marks.js';
 import { textSizeOn } from './pages-model.js';
 import { adjustMatrix } from './page-adjust.js';
+import { context2d } from './dom.js';
 import { Failure } from './i18n.js';
 
 const resource = (path) => new URL(`vendor/pdfjs/${path}`, import.meta.url).href;
@@ -46,7 +47,7 @@ export async function pageSize(doc, index, rotation) {
 }
 
 // `adjusted` is the page of the document, when its angle, its mirror and its crop are to be drawn too.
-export async function renderPage(doc, index, rotation, canvas, scale, adjusted = null) {
+export async function renderPage(doc, index, rotation, canvas, scale, /** @type {any} */ adjusted = null) {
   const page = await doc.getPage(index + 1);
   const viewport = viewportOf(page, scale, rotation);
   const crop = adjusted?.crop ?? { x: 0, y: 0, w: 1, h: 1 };
@@ -69,7 +70,7 @@ function cropCanvas(canvas, { x, y, w, h }) {
   const part = document.createElement('canvas');
   part.width = Math.max(1, Math.round(canvas.width * w));
   part.height = Math.max(1, Math.round(canvas.height * h));
-  part.getContext('2d').drawImage(canvas, -Math.round(canvas.width * x), -Math.round(canvas.height * y));
+  context2d(part).drawImage(canvas, -Math.round(canvas.width * x), -Math.round(canvas.height * y));
   return part;
 }
 
@@ -125,7 +126,7 @@ export function paintShape(context, mark, width, height) {
 
 // The pictures and the lines of text put on a page, drawn on its canvas as they will be in the PDF.
 async function paintMarks(canvas, marks) {
-  const context = canvas.getContext('2d');
+  const context = context2d(canvas);
   for (const mark of marks) {
     if (mark.kind === 'shape') {
       paintShape(context, mark, canvas.width, canvas.height);
@@ -162,13 +163,13 @@ export async function paintEntry(doc, entry, scale, withMarks = false) {
     const { width, height } = await entrySize(doc, entry);
     canvas.width = Math.ceil(width * scale);
     canvas.height = Math.ceil(height * scale);
-    const context = canvas.getContext('2d');
+    const context = context2d(canvas);
     context.fillStyle = '#ffffff';
     context.fillRect(0, 0, canvas.width, canvas.height);
   } else {
     await renderPage(doc, entry.source, entry.rotation, canvas, scale, { ...entry, crop: null });
   }
-  const context = canvas.getContext('2d');
+  const context = context2d(canvas);
   context.fillStyle = '#000000';
   for (const { x, y, w, h } of entry.redactions) {
     const left = Math.floor(x * canvas.width);
@@ -208,13 +209,13 @@ export async function entryImage(doc, entry, dpi, type) {
 export async function inkOf(doc, index, thumbWidth = 72) {
   const canvas = document.createElement('canvas');
   await renderPage(doc, index, 0, canvas, 0.3);
-  const { data } = canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height);
+  const { data } = context2d(canvas, { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height);
   let ink = 0;
   for (let i = 0; i < data.length; i += 4) if (data[i] + data[i + 1] + data[i + 2] < 600) ink++;
   const thumb = document.createElement('canvas');
   thumb.width = thumbWidth;
   thumb.height = Math.max(1, Math.round((canvas.height * thumbWidth) / canvas.width));
-  thumb.getContext('2d').drawImage(canvas, 0, 0, thumb.width, thumb.height);
+  context2d(thumb).drawImage(canvas, 0, 0, thumb.width, thumb.height);
   return { ink: ink / (canvas.width * canvas.height), thumb };
 }
 

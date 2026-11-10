@@ -8,9 +8,12 @@ const WHEEL_STEP = 80;
 export const WHEEL_PAUSE_MS = 200;
 const KEY_STEPS = { ArrowLeft: -1, ArrowRight: 1, PageUp: -1, PageDown: 1 };
 
+/** @typedef {{ count: number, start?: number, caption?: (page: number) => string, draw: (page: number, width: number) => Promise<HTMLElement>, close?: () => void }} PreviewSource */
+
 export function initPreview() {
   const dialog = byId('preview-dialog');
   const stage = byId('preview-page');
+  /** @type {PreviewSource | null} */
   let source = null;
   let page = 0;
   let token = 0;
@@ -19,12 +22,13 @@ export function initPreview() {
 
   async function paint() {
     const mine = ++token;
-    byId('preview-count').textContent = t('compare.page-of', { n: page + 1, total: source.count });
+    const shown = /** @type {PreviewSource} */ (source);
+    byId('preview-count').textContent = t('compare.page-of', { n: page + 1, total: shown.count });
     byId('preview-prev').disabled = page === 0;
-    byId('preview-next').disabled = page === source.count - 1;
-    if (source.caption) byId('preview-caption').textContent = source.caption(page);
+    byId('preview-next').disabled = page === shown.count - 1;
+    if (shown.caption) byId('preview-caption').textContent = shown.caption(page);
     try {
-      const canvas = await source.draw(page, PREVIEW_WIDTH * devicePixelRatio);
+      const canvas = await shown.draw(page, PREVIEW_WIDTH * devicePixelRatio);
       if (mine !== token) return;
       stage.replaceChildren(canvas);
     } catch {
@@ -33,7 +37,7 @@ export function initPreview() {
   }
 
   function flip(step) {
-    const next = clamp(page + step, 0, source.count - 1);
+    const next = clamp(page + step, 0, /** @type {PreviewSource} */ (source).count - 1);
     if (next === page) return;
     page = next;
     paint();

@@ -169,6 +169,7 @@ export function place(list, ids, targetId, after) {
 
 // A cut sits after the page whose id is in `cuts`: the pages between two cuts make one part.
 export function partsOf(pages, cuts) {
+  /** @type {any[][]} */
   const parts = [[]];
   pages.forEach((page, index) => {
     parts[parts.length - 1].push(page);

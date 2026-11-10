@@ -41,12 +41,12 @@ export function jpegImages(document) {
  * `encode({ bytes, width, height, maxSide, quality })` returns { bytes, width, height } or null, and runs in the browser.
  * @param {Uint8Array} bytes
  * @param {string} level
- * @param {(request: any) => Promise<{ bytes: Uint8Array, width: number, height: number } | null>} encode
+ * @param {(request: { bytes: Uint8Array, width: number, height: number, maxSide: number, quality: number }) => Promise<{ bytes: Uint8Array, width: number, height: number } | null>} encode
  * @param {(done: number, total: number) => void} [progress]
  */
 export async function compressPdf(bytes, level, encode, progress = () => {}) {
   const document = await PDFDocument.load(bytes, { updateMetadata: false });
-  const settings = /** @type {{ maxSide: number, quality: number } | null} */ (LEVELS.find(([id]) => id === level)[1]);
+  const settings = /** @type {{ maxSide: number, quality: number } | null} */ (/** @type {any[]} */ (LEVELS.find(([id]) => id === level))[1]);
   if (settings) {
     const images = jpegImages(document);
     for (const [index, image] of images.entries()) {

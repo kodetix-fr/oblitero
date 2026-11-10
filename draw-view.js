@@ -1,5 +1,5 @@
 import { entrySize, paintEntry, paintShape } from './render.js';
-import { ARROWS, askDialog, byId, fitScale } from './dom.js';
+import { ARROWS, askDialog, byId, context2d, fitScale } from './dom.js';
 import { clamp } from './math.js';
 import { shapeMark } from './marks.js';
 import { t } from './i18n.js';
@@ -32,9 +32,10 @@ export async function openDrawing(doc, entry) {
   const page = await paintEntry(doc, whole, scale * devicePixelRatio, true);
   canvas.width = overlay.width = page.width;
   canvas.height = overlay.height = page.height;
-  canvas.getContext('2d').drawImage(page, 0, 0);
+  context2d(canvas).drawImage(page, 0, 0);
 
   let shapes = entry.marks.filter((mark) => mark.kind === 'shape');
+  /** @type {ReturnType<typeof shapeMark> | null} */
   let draft = null;
   let cursor = { x: 0.5, y: 0.5 };
   const make = (from, to) => shapeMark(tool(), from.x, from.y, to.x, to.y, color.value);
@@ -43,7 +44,7 @@ export async function openDrawing(doc, entry) {
   };
 
   function draw() {
-    const context = overlay.getContext('2d');
+    const context = context2d(overlay);
     context.clearRect(0, 0, overlay.width, overlay.height);
     for (const shape of draft ? [...shapes, draft] : shapes) paintShape(context, shape, overlay.width, overlay.height);
     Object.assign(crosshair.style, { left: `${cursor.x * 100}%`, top: `${cursor.y * 100}%` });
@@ -60,6 +61,7 @@ export async function openDrawing(doc, entry) {
 
   const session = new AbortController();
   const { signal } = session;
+  /** @type {{ x: number, y: number } | null} */
   let anchor = null;
   layer.addEventListener(
     'keydown',

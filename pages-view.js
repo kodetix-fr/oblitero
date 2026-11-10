@@ -4,7 +4,7 @@ import { createOutput, eachFile } from './page-output.js';
 import { pageCard } from './page-card.js';
 import { ROW_BOX, createThumbs } from './page-thumbs.js';
 import { initMarquee } from './page-marquee.js';
-import { MARGINS, PAGE_SIZES, SIZES, imagesToPdf } from './images.js';
+import { MARGINS, PAGE_SIZES, SIZES, imagesToPdf, marginPoints } from './images.js';
 import { readPhoto } from './photo.js';
 import { initCompare } from './compare-view.js';
 import { initPreview } from './preview-view.js';
@@ -398,7 +398,7 @@ export function initPages() {
     refresh();
   }
 
-  const photoLayout = () => ({ size: sizeSelect.value, margin: MARGINS.find(([value]) => value === marginSelect.value)[1] });
+  const photoLayout = () => ({ size: sizeSelect.value, margin: marginPoints(marginSelect.value) });
   const isPdf = (bytes) => new TextDecoder('latin1').decode(bytes.subarray(0, 1024)).includes('%PDF-');
 
   // A PDF is a file of its own; a photo becomes a file of one page, laid out as the Photos settings say.
@@ -722,7 +722,7 @@ export function initPages() {
     const lead = pages.find((page) => page.file !== null && !page.hidden) ?? pages.find((page) => page.file !== null);
     return (lead ? documents[lead.file].name : 'document').replace(/\.[^.]+$/, '');
   };
-  const paper = () => (paperSize.value === 'as-is' ? null : { size: SIZES[paperSize.value], margin: MARGINS.find(([id]) => id === paperMargin.value)[1] });
+  const paper = () => (paperSize.value === 'as-is' ? null : { size: SIZES[paperSize.value], margin: marginPoints(paperMargin.value) });
   paperSize.addEventListener('change', () => {
     byId('paper-margin-field').hidden = paperSize.value === 'as-is';
   });

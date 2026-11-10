@@ -7,6 +7,9 @@ export const ARROWS = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1]
 export const byId = (id) => /** @type {any} */ (document.getElementById(id));
 export const query = (selector) => /** @type {any} */ (document.querySelector(selector));
 
+// A canvas of this page always has a 2D context.
+export const context2d = (/** @type {HTMLCanvasElement} */ canvas, /** @type {CanvasRenderingContext2DSettings} */ options = {}) => /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d', options));
+
 export function icon(name) {
   const svg = document.createElementNS(SVG, 'svg');
   svg.setAttribute('class', 'ic');
@@ -36,7 +39,7 @@ export const unreadablePage = () => Object.assign(document.createElement('p'), {
 
 // Opens a modal dialog and resolves with what `wire` passes to `finish`, or null when it is cancelled. The listeners `wire` adds
 // with `signal` go away when the dialog closes.
-/** @param {any} dialog @param {string} cancelId @param {(finish: (value: any) => void, signal: AbortSignal) => void} wire */
+/** @param {HTMLDialogElement} dialog @param {string} cancelId @param {(finish: (value: any) => void, signal: AbortSignal) => void} wire */
 export function askDialog(dialog, cancelId, wire) {
   return new Promise((resolve) => {
     const session = new AbortController();
@@ -63,13 +66,14 @@ export function copyCanvas(source) {
   const copy = document.createElement('canvas');
   copy.width = source.width;
   copy.height = source.height;
-  copy.getContext('2d').drawImage(source, 0, 0);
+  context2d(copy).drawImage(source, 0, 0);
   return copy;
 }
 
 // The entry of `container` nearest to the pointer and the side of it the pointer is on (`after`), or null. The entries of
 // `blocked` (ids) never count, and a pointer over one of them has no target at all.
 export function nearestEntry(container, entry, idOf, event, axis, blocked = new Set()) {
+  /** @type {{ element: HTMLElement, box: DOMRect, distance: number } | null} */
   let best = null;
   for (const element of container.querySelectorAll(entry)) {
     const box = element.getBoundingClientRect();
@@ -79,7 +83,7 @@ export function nearestEntry(container, entry, idOf, event, axis, blocked = new 
     if (isBlocked && dx === 0 && dy === 0) return null;
     if (isBlocked) continue;
     const distance = Math.hypot(dx, dy);
-    if (!best || distance < best.distance) best = { element, box, distance };
+    if (!best || distance < best.distance) best = { element: /** @type {HTMLElement} */ (element), box, distance };
   }
   if (!best) return null;
   const after = axis === 'y' ? event.clientY > best.box.top + best.box.height / 2 : event.clientX > best.box.left + best.box.width / 2;
@@ -113,12 +117,13 @@ export function sortable(container, { entry, idOf, axis, state, group = (id) => 
     if (!element || !container.contains(element)) return;
     state.source = idOf(element);
     state.group = group(state.source);
-    event.dataTransfer.effectAllowed = 'move';
-    event.dataTransfer.setData('text/plain', String(state.source));
+    const transfer = /** @type {DataTransfer} */ (event.dataTransfer);
+    transfer.effectAllowed = 'move';
+    transfer.setData('text/plain', String(state.source));
     const image = ghost?.(state.group);
     if (image) {
       document.body.append(image);
-      event.dataTransfer.setDragImage(image, GHOST_GRIP, GHOST_GRIP);
+      transfer.setDragImage(image, GHOST_GRIP, GHOST_GRIP);
       setTimeout(() => image.remove());
     }
     setTimeout(() => {
@@ -134,12 +139,13 @@ export function sortable(container, { entry, idOf, axis, state, group = (id) => 
     if (state.source === null) return;
     const hit = target(event);
     document.querySelectorAll('[data-drop]').forEach((element) => element.removeAttribute('data-drop'));
+    const transfer = /** @type {DataTransfer} */ (event.dataTransfer);
     if (!hit) {
-      event.dataTransfer.dropEffect = 'none';
+      transfer.dropEffect = 'none';
       return;
     }
     event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
+    transfer.dropEffect = 'move';
     hit.element.dataset.drop = hit.after ? 'after' : 'before';
   });
   container.addEventListener('dragleave', (event) => {
@@ -165,6 +171,7 @@ export function sortable(container, { entry, idOf, axis, state, group = (id) => 
     const gesture = new AbortController();
     const options = { signal: gesture.signal };
     const mine = (other) => other.pointerId === event.pointerId;
+    /** @type {HTMLElement | null} */
     let image = null;
     let dragging = false;
     const follow = (point) => image && Object.assign(image.style, { left: `${point.clientX - GHOST_GRIP}px`, top: `${point.clientY - GHOST_GRIP}px` });

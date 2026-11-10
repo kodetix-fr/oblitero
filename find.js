@@ -34,7 +34,7 @@ const ORDER = ['email', 'iban', 'card', 'phone'];
 
 // The places of `text` that the presets and the words recognize, in order, without overlap: when two kinds claim the same
 // characters, the one tried first keeps them (an IBAN is not also a phone number).
-export function findMatches(text, { presets = [], words = [] } = {}) {
+export function findMatches(text, /** @type {{ presets?: string[], words?: string[] }} */ { presets = [], words = [] } = {}) {
   const found = [];
   const taken = [];
   const free = (start, end) => !taken.some(([from, to]) => start < to && end > from);

@@ -1,4 +1,5 @@
 import { jpegOrientation, kindOf } from './images.js';
+import { context2d } from './dom.js';
 import { Failure } from './i18n.js';
 
 // Draws a decoded image on a white canvas (the browser applies the EXIF orientation while decoding).
@@ -6,7 +7,7 @@ async function redraw(bitmap, type, quality) {
   const canvas = document.createElement('canvas');
   canvas.width = bitmap.width;
   canvas.height = bitmap.height;
-  const context = canvas.getContext('2d');
+  const context = context2d(canvas);
   context.fillStyle = '#ffffff';
   context.fillRect(0, 0, canvas.width, canvas.height);
   context.drawImage(bitmap, 0, 0);
@@ -39,7 +40,7 @@ export async function recode({ bytes, maxSide, quality }) {
     const canvas = document.createElement('canvas');
     canvas.width = Math.max(1, Math.round(bitmap.width * scale));
     canvas.height = Math.max(1, Math.round(bitmap.height * scale));
-    const context = canvas.getContext('2d');
+    const context = context2d(canvas);
     context.fillStyle = '#ffffff';
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
