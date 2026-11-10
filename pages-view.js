@@ -1,5 +1,4 @@
 import { openInfo } from './pdf-info.js';
-import { buildPdf } from './export.js';
 import { LEVELS, formatSize } from './compress.js';
 import { createOutput, eachFile } from './page-output.js';
 import { pageCard } from './page-card.js';
@@ -11,7 +10,7 @@ import { initCompare } from './compare-view.js';
 import { initPreview } from './preview-view.js';
 import { initFiles } from './files-view.js';
 import { buildZip } from './zip.js';
-import { burnPage, closeRender, entryImage, entrySize, inkOf, openRender, outlineStarts, pageRuns, pageSize, paintEntry, renderPage, textOf } from './render.js';
+import { closeRender, entryImage, entrySize, inkOf, openRender, outlineStarts, pageRuns, pageSize, paintEntry, renderPage, textOf } from './render.js';
 import { blankPage, createPages, cutBefore, cutEvery, canAdjust, cutToFit, duplicate, insertEntries, interleavePages, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, removePages, reversePages, rotatePages, setAngle, setCrop, runsOf, showAll, toggleCuts, toggleFlip, toggleHidden, visible } from './pages-model.js';
 import { createHistory } from './history.js';
 import { pagesOf, plural, t } from './i18n.js';
@@ -21,7 +20,7 @@ import { openDrawing } from './draw-view.js';
 import { askPassword } from './password-view.js';
 import { WrongPassword, decryptPdf, protectPdf } from './qpdf-run.js';
 import { rebuildPdf } from './repair.js';
-import { NO_STAMPS, applyStamps } from './stamps.js';
+import { NO_STAMPS } from './stamps.js';
 import { initFind } from './find-view.js';
 import { initSign } from './sign-view.js';
 import { initProperties } from './properties-view.js';
@@ -853,18 +852,13 @@ export function initPages() {
     commit({ pages: pages.map((page) => (added.has(page.id) ? { ...page, redactions: [...page.redactions, ...added.get(page.id)] } : page)) });
     setStatus(() => t('status.found-added', { rectangles: plural(count, 'count.rectangle.one', 'count.rectangle.other'), pages: pagesOf(added.size) }));
   }));
-  // The page the settings reach first, built and stamped the way the download is, so the preview cannot disagree with it.
+  // The page the settings reach first, built the way the download is, so the preview cannot disagree with it.
   async function previewStamps(settings) {
     const shownPages = visible(pages);
     const reached = settings.range ? (parseRange(settings.range, shownPages.length) ?? []) : shownPages.map((_, index) => index);
     const index = reached.find((position) => !(settings.numbers?.skipFirst && position === 0)) ?? reached[0] ?? 0;
     const marked = settings.watermark?.kind === 'image' && !settings.watermark.image ? { ...settings, watermark: null } : settings;
-    const bytes = await buildPdf(
-      documents.map((document) => document.bytes),
-      [shownPages[index]],
-      (entry) => burnPage(documents[entry.file].doc, entry),
-      (output) => applyStamps(output, { ...marked, range: '' }, { index, total: shownPages.length }),
-    );
+    const bytes = await build([shownPages[index]], new Map(), 0, { stamps: { ...marked, range: '' }, place: { index, total: shownPages.length } });
     const doc = await openRender(bytes);
     try {
       const { width } = await pageSize(doc, 0, 0);

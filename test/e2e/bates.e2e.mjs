@@ -55,3 +55,49 @@ test('Bates numbers go on across the parts of the ZIP, and a stamp is drawn on t
   assert.ok(texts.every((text) => text.includes('RECEIVED')));
   await page.close();
 });
+
+test('the preview of the stamps puts them where the download does, on the paper size that is chosen', async () => {
+  const path = await writePdf(app.dir, 'letter.pdf', [{ size: 300, text: '' }]);
+  const page = await app.openApp();
+  await page.setInputFiles('#pages-file', path);
+  await page.locator('#grid li').first().waitFor();
+  await page.locator('#paper-size').selectOption('a4');
+  await page.locator('#stamps').click();
+  await page.locator('#stamp-dialog').waitFor({ state: 'visible' });
+  await page.locator('#numbers-on').check();
+  await page.locator('#numbers-position').selectOption('bottom-right');
+
+  // The share of the page, from its top left corner, that holds the ink.
+  await page.evaluate(() => {
+    window.inkOf = (canvas) => {
+      const { data, width, height } = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
+      let box = null;
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const at = (y * width + x) * 4;
+          if (data[at] + data[at + 1] + data[at + 2] > 300) continue;
+          box = box ? { left: Math.min(box.left, x), top: Math.min(box.top, y), right: Math.max(box.right, x + 1), bottom: Math.max(box.bottom, y + 1) } : { left: x, top: y, right: x + 1, bottom: y + 1 };
+        }
+      }
+      return box && { left: box.left / width, top: box.top / height, right: box.right / width, bottom: box.bottom / height };
+    };
+  });
+  await page.waitForFunction(() => {
+    const canvas = document.querySelector('#stamp-canvas canvas');
+    return !!canvas && !!window.inkOf(canvas);
+  });
+  const shown = await page.evaluate(() => window.inkOf(document.querySelector('#stamp-canvas canvas')));
+  await page.locator('#stamp-apply').click();
+  await page.locator('#stamp-dialog').waitFor({ state: 'hidden' });
+
+  const [download] = await Promise.all([page.waitForEvent('download'), page.locator('#download-all').click()]);
+  const bytes = [...readFileSync(await download.path())];
+  const saved = await page.evaluate(async (data) => {
+    const { openRender, renderPage } = await import('/render.js');
+    const canvas = document.createElement('canvas');
+    await renderPage(await openRender(new Uint8Array(data)), 0, 0, canvas, 1);
+    return window.inkOf(canvas);
+  }, bytes);
+  for (const edge of ['left', 'top', 'right', 'bottom']) assert.ok(Math.abs(shown[edge] - saved[edge]) < 0.01, `${edge}: ${shown[edge]} in the preview, ${saved[edge]} in the download`);
+  await page.close();
+});

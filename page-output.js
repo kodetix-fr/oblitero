@@ -43,21 +43,22 @@ export function createOutput(documents, settings, say, protect) {
   let saved = { before: 0, after: 0 };
 
   // `burned` keeps the pictures of the redacted pages from one build to the next, when they are many builds of the same pages.
-  // `offset` is the number of pages of the parts before this one, for the Bates numbers.
-  const build = async (entries, burned = new Map(), offset = 0) => {
+  // `offset` is the number of pages of the parts before this one, for the Bates numbers. `preview` ({ stamps, place }) stamps one
+  // page with settings that are not applied yet, as the page `index` of `total` of `place`.
+  const build = async (entries, burned = new Map(), offset = 0, preview = null) => {
     const redacted = entries.filter((entry) => entry.redactions.length > 0).length;
     let drawn = 0;
     const burn = (entry) => {
       const key = burnKey(entry);
       if (!burned.has(key)) {
-        say('status.redacting', { n: ++drawn, total: redacted });
+        if (!preview) say('status.redacting', { n: ++drawn, total: redacted });
         burned.set(key, burnPage(documents[entry.file].doc, entry));
       }
       return burned.get(key);
     };
     const { properties } = settings();
     // A bookmark can name what a rectangle hides, so a document with a redaction has none.
-    const bookmarked = properties.bookmarks && redacted === 0;
+    const bookmarked = properties.bookmarks && redacted === 0 && !preview;
     const trees = [];
     if (bookmarked) {
       for (const file of new Set(entries.map((entry) => entry.file).filter((file) => file !== null))) {
@@ -69,7 +70,7 @@ export function createOutput(documents, settings, say, protect) {
       const { stamps, paper } = settings();
       if (paper) await fitPaper(output, paper.size, paper.margin);
       if (bookmarked) writeOutline(output, outlineFor(entries, trees, documents.map((document) => document.name)));
-      await applyStamps(output, stamps, null, offset);
+      await applyStamps(output, preview?.stamps ?? stamps, preview?.place ?? null, offset);
       applyProperties(output, properties);
     });
   };
