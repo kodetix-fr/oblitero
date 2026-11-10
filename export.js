@@ -51,7 +51,7 @@ const POINT_KEYS = ['QuadPoints', 'L', 'Vertices', 'CL'];
 // of `size`, with their rectangle and their points in its coordinates.
 // shortcut: on a page that had quarter turns, the appearance of a comment is fitted to its new rectangle, not turned with it;
 // turn it through its /Matrix if turned comments come up.
-export function moveAnnotations(context, annotations, matrix, [width, height]) {
+function moveAnnotations(context, annotations, matrix, [width, height]) {
   const kept = [];
   const move = (array) => {
     const values = array.asArray().map((value) => value.asNumber());

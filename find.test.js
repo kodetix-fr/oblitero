@@ -44,10 +44,12 @@ test('an IBAN is not also taken for a phone number, and words are found without 
 test('multiply composes matrices, and runBox covers the ascent, the descent and the length of a run', () => {
   assert.deepEqual(multiply([1, 0, 0, -1, 0, 100], [10, 0, 0, 10, 5, 20]), [10, 0, 0, -10, 5, 80]);
   const upright = runBox([12, 0, 0, -12, 100, 200], 60, 600, 800, 0);
+  assert.ok(upright);
   assert.ok(Math.abs(upright.x - 100 / 600) < 1e-9 && Math.abs(upright.w - 60 / 600) < 1e-9);
   assert.ok(upright.y < 200 / 800 && upright.y + upright.h > 200 / 800, 'the baseline is inside the box');
   assert.ok(Math.abs(upright.y - (200 - 12.6) / 800) < 1e-9 && Math.abs(upright.y + upright.h - (200 + 3.6) / 800) < 1e-9);
   const turned = runBox([0, -12, -12, 0, 300, 400], 60, 600, 800, 0);
+  assert.ok(turned);
   assert.ok(turned.h > turned.w, 'a run read from the bottom up is a tall box');
   assert.equal(runBox([0, 0, 0, 0, 1, 1], 10, 600, 800), null);
 });

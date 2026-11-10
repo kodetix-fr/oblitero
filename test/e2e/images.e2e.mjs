@@ -127,8 +127,10 @@ test('the page of the photos stays as it is while a photo carries a text or a si
   await page.waitForFunction(() => document.getElementById('pages-status').textContent.includes('Remove the redactions'));
   assert.equal(await page.locator('#images-size').inputValue(), 'a4');
   await page.locator('#clear-marks').click();
+  assert.equal(await page.locator('#undo').isDisabled(), false);
   await page.locator('#images-size').selectOption('letter');
-  await page.waitForFunction(() => !document.getElementById('pages-status').textContent);
+  await page.waitForFunction(() => document.getElementById('pages-status').textContent.includes('Undo can no longer go back'));
+  assert.equal(await page.locator('#undo').isDisabled(), true);
   const letter = await PDFDocument.load((await downloaded(() => page.locator('#download-all').click())).bytes);
   assert.deepEqual([letter.getPage(0).getWidth(), letter.getPage(0).getHeight()], [612, 792]);
 });

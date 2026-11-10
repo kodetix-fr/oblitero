@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { PDFDocument, PDFRawStream, decodePDFRawStream } from './vendor/pdf-lib.esm.min.js';
-import { fillForm, readFields } from './forms.js';
+import { changedValues, fillForm, readFields } from './forms.js';
 
 async function makeForm() {
   const document = await PDFDocument.create();
@@ -99,4 +99,11 @@ test('fillForm with nothing to change keeps what the fields already hold, and an
 test('fillForm refuses a text that is too long, and one the standard font cannot draw', async () => {
   await assert.rejects(fillForm(await makeForm(), { remarques: 'x'.repeat(61) }));
   await assert.rejects(fillForm(await makeForm(), { nom: '日本語' }));
+});
+
+test('changedValues keeps the values that differ from the file, for the fields it has', () => {
+  const fields = [{ name: 'nom', value: 'Existing' }, { name: 'ok', value: false }, { name: 'ville', value: '' }];
+  assert.deepEqual(changedValues(fields, { nom: 'Existing', ok: true, ville: '', autre: 'x' }), { ok: true });
+  assert.deepEqual(changedValues(fields, {}), {});
+  assert.deepEqual(changedValues(fields, { nom: '', ville: 'Lyon' }), { nom: '', ville: 'Lyon' });
 });

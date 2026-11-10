@@ -19,13 +19,17 @@ jobs:
   semgrep:
     name: Semgrep (code, secrets, workflows)
     runs-on: ubuntu-latest
-    container: semgrep/semgrep
+    # Pinned by digest, the tag is the version it holds. Dependabot does not read this field: bump both by hand, the digest
+    # with `docker buildx imagetools inspect semgrep/semgrep:<version>`. The rules come from the registry at each run.
+    container: semgrep/semgrep:1.184.0@sha256:cc1b68266f267878b39739373ea9985b9a78e5d64497dd875c8de100b22695ed
     permissions:
       contents: read
       security-events: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      # No rule is excluded. vendor/ is left out: pdf-lib and PDF.js, third-party and minified, pinned and checked by
+        with:
+          persist-credentials: false
+      # No rule is excluded. vendor/ is left out: pdf-lib, PDF.js and qpdf, third-party and minified, pinned and checked by
       # hand (vendor/README.md), and no scanner rule can be fixed there.
       - name: Scan
         run: >
@@ -39,7 +43,7 @@ jobs:
           category: semgrep
 
   # Covers the development dependencies of package-lock.json. The extension has no runtime dependency, and
-  # vendor/ (pdf-lib, PDF.js) is outside npm: its version is pinned and checked by hand.
+  # vendor/ (pdf-lib, PDF.js, qpdf) is outside npm: its version is pinned and checked by hand.
   npm-audit:
     name: npm audit (advisories on the dependencies)
     runs-on: ubuntu-latest

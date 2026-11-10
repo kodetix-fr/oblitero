@@ -186,12 +186,13 @@ after the page, V shows it large, Ctrl/Cmd+Z and Shift+Ctrl/Cmd+Z undo and redo.
 - A password-protected PDF is opened with its password, decrypted in memory by
   qpdf (RC4 and AES); its result is a file without that password.
 - Needs Chrome 124 or newer. The tests run on Chrome 124 and on the Chromium that
-  ships with Playwright 1.57. Chrome 116 cannot open a PDF: it lacks
+  ships with Playwright. Chrome 116 cannot open a PDF: it lacks
   `Promise.withResolvers`, which PDF.js uses. Versions 117 to 123 are not tested.
 
 ## Planned
 
-The backlog is on the project board.
+The backlog is in the [open issues](https://github.com/kodetix-fr/oblitero/issues): `pdf-tool` marks a new
+operation on PDF files, and `decision needed` what waits for a choice.
 
 ## Performance
 

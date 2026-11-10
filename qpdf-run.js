@@ -1,12 +1,15 @@
 const vendored = (name) => new URL(`vendor/qpdf/${name}`, import.meta.url).href;
 
+/** @typedef {(options: { locateFile: () => string }) => Promise<{ FS: { writeFile: (path: string, data: Uint8Array) => void, readFile: (path: string) => Uint8Array }, callMain: (args: string[]) => number }>} QpdfFactory */
+
+/** @type {Promise<QpdfFactory> | null} */
 let loading = null;
 
 // qpdf.js is a classic script that defines the global Module: it is added to the page the first time qpdf is needed.
 function loadFactory() {
   loading ??= new Promise((resolve, reject) => {
     const script = Object.assign(document.createElement('script'), { src: vendored('qpdf.js') });
-    script.addEventListener('load', () => resolve(/** @type {any} */ (globalThis).Module));
+    script.addEventListener('load', () => resolve(/** @type {{ Module: QpdfFactory }} */ (/** @type {unknown} */ (globalThis)).Module));
     script.addEventListener('error', () => reject(new Error('qpdf could not be loaded')));
     document.head.append(script);
   });
@@ -34,7 +37,7 @@ export async function runQpdf(bytes, args, factory = null) {
   try {
     code = qpdf.callMain([...args, '/in.pdf', '/out.pdf']);
   } catch (error) {
-    code = error?.status ?? 2;
+    code = /** @type {{ status?: number } | null} */ (error)?.status ?? 2;
   }
   let output = null;
   if (code === 0 || code === 3) {

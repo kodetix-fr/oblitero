@@ -49,7 +49,8 @@ picker.addEventListener('change', async () => {
 
 // Files dragged in from outside: the page takes the drop (else the browser would open the file and leave the app), and a
 // box says so. Dragging a card inside the page carries no file, so it never gets here.
-const dragsFiles = (/** @type {DragEvent} */ event) => !!event.dataTransfer && [...event.dataTransfer.types].includes('Files');
+/** @param {DragEvent} event @returns {event is DragEvent & { dataTransfer: DataTransfer }} */
+const dragsFiles = (event) => !!event.dataTransfer && [...event.dataTransfer.types].includes('Files');
 const hint = byId('dropHint');
 const showHint = (on) => {
   hint.hidden = !on;

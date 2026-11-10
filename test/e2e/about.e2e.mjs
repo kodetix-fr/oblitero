@@ -24,6 +24,14 @@ const store = (page, value) => page.evaluate((value) => new Promise((resolve, re
   };
 }), value);
 
+// The page reads its notice when it starts, and a transaction of ours on the same store queues behind that one: when it is
+// done, the page has acted on what it read.
+const settled = (page) =>
+  page.evaluate(async () => {
+    const { newsPending } = await import('/about.js');
+    await newsPending();
+  });
+
 test('About: version, news of this line, and links that open in a new tab; a first install shows no dot', async () => {
   const page = await app.openApp();
   await page.waitForFunction(() => document.querySelector('#about-open'));
@@ -66,7 +74,7 @@ test('after an update from an older line, a dot says there is news, until About 
   }));
   await page.reload();
   await page.locator('#about-open').waitFor();
-  await page.waitForTimeout(300);
+  await settled(page);
   assert.equal(await page.locator('#about-dot').isHidden(), true);
   await page.close();
 });
@@ -85,7 +93,7 @@ test('the request for a review comes after five downloads, counts as shown at on
   assert.equal(await page.locator('#ask-review').innerText(), 'Like Oblitero? Write a review');
   await page.reload();
   await page.locator('#about-open').waitFor();
-  await page.waitForTimeout(300);
+  await settled(page);
   assert.equal(await page.locator('#ask').isHidden(), true, 'shown once, not at every opening');
 
   await store(page, { seen: null, downloads: 10, asked: 1, next: 10 });

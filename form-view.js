@@ -1,5 +1,5 @@
 import { askDialog, byId } from './dom.js';
-import { t } from './i18n.js';
+import { failureText, t } from './i18n.js';
 import { checkText } from './stamps.js';
 
 const pagesText = (pages) => (pages.length === 1 ? t('page.n', { n: pages[0] + 1 }) : pages.length ? t('form.pages', { list: pages.map((page) => page + 1).join(', ') }) : '');
@@ -88,7 +88,7 @@ export function initForm() {
             try {
               for (const line of value.split(/\r?\n/)) if (line) await checkText(line);
             } catch (problem) {
-              error.textContent = t('form.error-field', { label: made.field.label, message: problem.message });
+              error.textContent = t('form.error-field', { label: made.field.label, message: failureText(problem) });
               made.input.focus();
               return;
             }

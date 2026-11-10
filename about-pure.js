@@ -34,9 +34,9 @@ const count = (v) => (Number.isInteger(v) && v >= 0 && v <= 1e6 ? v : null);
  * @param {unknown} raw @returns {Notice}
  */
 export function cleanNotice(raw) {
-  const r = raw && typeof raw === 'object' ? /** @type {Record<string, any>} */ (raw) : {};
+  const r = raw && typeof raw === 'object' ? /** @type {Record<string, unknown>} */ (raw) : {};
   return {
-    seen: minorOf(r.seen) ? r.seen : null,
+    seen: typeof r.seen === 'string' && minorOf(r.seen) ? r.seen : null,
     downloads: count(r.downloads) ?? 0,
     asked: Math.min(count(r.asked) ?? 0, MAX_ASKS),
     next: r.next === null ? null : (count(r.next) ?? REVIEW_STEP),

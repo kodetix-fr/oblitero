@@ -78,6 +78,7 @@ test('the fields are listed in order, with a readable name, their page, and what
   assert.deepEqual(await page.locator('#form-fields .form-meta').allInnerTexts(), ['Page 1', 'Page 1', 'Page 1', 'Page 1', 'Page 2', 'Page 2', 'Page 2, read only']);
   assert.equal(await page.locator('#form-fields .form-note').innerText(), 'envoyer: cannot be filled here (button or signature)');
   assert.equal(await page.locator('#form-fields h3').innerText(), 'formulaire.pdf');
+  assert.match(await page.locator('#form-dialog .hint').first().innerText(), /Undo does not revert them: open this dialog again, press Reset, then Apply\./);
   assert.equal(await row('reference').locator('input').isDisabled(), true);
   assert.equal(await row('reference').locator('input').inputValue(), 'REF-LOCKED');
   assert.deepEqual(await row('civilite').locator('option').allInnerTexts(), ['(none)', 'M', 'Mme']);

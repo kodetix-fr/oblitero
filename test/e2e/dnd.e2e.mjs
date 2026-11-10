@@ -59,11 +59,16 @@ test('a card dragged inside the page does not raise the file box', async () => {
   await page.setInputFiles('#pages-file', [path, path]);
   await page.getByRole('radio', { name: 'Files' }).check();
   await page.locator('#file-list li').nth(1).waitFor();
-  const [box] = await Promise.all([
-    page.evaluate(() => new Promise((resolve) => setTimeout(() => resolve(!document.getElementById('dropHint').hidden), 600))),
-    page.locator('#file-list li').nth(0).dragTo(page.locator('#file-list li').nth(1)),
-  ]);
-  assert.equal(box, false);
+  // The hint was shown at some point of the drag when it is shown now, or when a change of its `hidden` found it shown before.
+  await page.evaluate(() => {
+    const hint = document.getElementById('dropHint');
+    window.hintShown = false;
+    new MutationObserver((records) => {
+      if (!hint.hidden || records.some((record) => record.oldValue === null)) window.hintShown = true;
+    }).observe(hint, { attributes: true, attributeFilter: ['hidden'], attributeOldValue: true });
+  });
+  await page.locator('#file-list li').nth(0).dragTo(page.locator('#file-list li').nth(1));
+  assert.equal(await page.evaluate(() => window.hintShown), false);
   await page.close();
 });
 

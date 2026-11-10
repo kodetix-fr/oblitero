@@ -1,5 +1,5 @@
 import { inkBounds, whiteToTransparent } from './signature.js';
-import { askDialog, byId, query } from './dom.js';
+import { askDialog, byId, context2d, query } from './dom.js';
 import { t } from './i18n.js';
 
 const INK = '#12121c';
@@ -7,7 +7,7 @@ const FONTS = '"Segoe Script", "Snell Roundhand", "Brush Script MT", "Lucida Han
 
 // The PNG of what is drawn on `canvas`, cropped to its ink; null when nothing is drawn.
 async function trimmed(canvas) {
-  const bounds = inkBounds(canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height));
+  const bounds = inkBounds(context2d(canvas).getImageData(0, 0, canvas.width, canvas.height));
   if (!bounds) return null;
   const pad = 6;
   const left = Math.max(0, bounds.left - pad);
@@ -15,7 +15,7 @@ async function trimmed(canvas) {
   const out = document.createElement('canvas');
   out.width = Math.min(canvas.width, bounds.right + pad) - left;
   out.height = Math.min(canvas.height, bounds.bottom + pad) - top;
-  out.getContext('2d').drawImage(canvas, left, top, out.width, out.height, 0, 0, out.width, out.height);
+  context2d(out).drawImage(canvas, left, top, out.width, out.height, 0, 0, out.width, out.height);
   const blob = await new Promise((resolve) => out.toBlob(resolve, 'image/png'));
   return { png: new Uint8Array(await blob.arrayBuffer()), aspect: out.height / out.width };
 }
@@ -28,7 +28,7 @@ export function initSign() {
   const error = byId('sign-error');
   const modes = ['draw', 'type', 'image'];
   const mode = () => query('input[name="sign-mode"]:checked').value;
-  const clear = (canvas) => canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+  const clear = (canvas) => context2d(canvas).clearRect(0, 0, canvas.width, canvas.height);
 
   function showMode() {
     for (const id of modes) byId(`sign-${id}`).hidden = id !== mode();
@@ -39,7 +39,7 @@ export function initSign() {
     clear(typed);
     const text = byId('sign-text').value.trim();
     if (!text) return;
-    const context = typed.getContext('2d');
+    const context = context2d(typed);
     let size = 130;
     context.font = `italic ${size}px ${FONTS}`;
     while (context.measureText(text).width > typed.width - 40 && size > 20) {
@@ -58,7 +58,7 @@ export function initSign() {
     const scale = Math.min(photo.width / bitmap.width, photo.height / bitmap.height, 1);
     const w = Math.round(bitmap.width * scale);
     const h = Math.round(bitmap.height * scale);
-    const context = photo.getContext('2d', { willReadFrequently: true });
+    const context = context2d(photo, { willReadFrequently: true });
     context.drawImage(bitmap, 0, 0, w, h);
     bitmap.close();
     if (byId('sign-white').checked) {
@@ -70,6 +70,7 @@ export function initSign() {
   }
 
   // Drawing on the pad with the pointer.
+  /** @type {{ x: number, y: number } | null} */
   let last = null;
   const at = (event) => {
     const box = pad.getBoundingClientRect();
@@ -78,7 +79,7 @@ export function initSign() {
   pad.addEventListener('pointerdown', (event) => {
     pad.setPointerCapture(event.pointerId);
     last = at(event);
-    const context = pad.getContext('2d');
+    const context = context2d(pad);
     context.fillStyle = INK;
     context.beginPath();
     context.arc(last.x, last.y, 2, 0, Math.PI * 2);
@@ -87,7 +88,7 @@ export function initSign() {
   pad.addEventListener('pointermove', (event) => {
     if (!last) return;
     const point = at(event);
-    const context = pad.getContext('2d');
+    const context = context2d(pad);
     context.strokeStyle = INK;
     context.lineWidth = 4;
     context.lineCap = 'round';

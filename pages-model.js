@@ -105,6 +105,27 @@ export const setAngle = (pages, ids, angle) => pages.map((page) => (ids.has(page
 
 export const toggleFlip = (pages, ids) => pages.map((page) => (ids.has(page.id) && canAdjust(page) ? { ...page, flip: !page.flip } : page));
 
+// Top to bottom is left to right and a half turn.
+export function flipVertical(pages, ids) {
+  const adjustable = new Set(pages.filter((page) => ids.has(page.id) && canAdjust(page)).map((page) => page.id));
+  return rotatePages(toggleFlip(pages, adjustable), adjustable, 180);
+}
+
+// Puts `mark` on each page of `ids`.
+export const addMarks = (pages, ids, mark) => pages.map((page) => (ids.has(page.id) ? { ...page, marks: [...page.marks, mark] } : page));
+
+// The shapes of the page `id` become `shapes`; its other marks stay.
+export const setShapes = (pages, id, shapes) => pages.map((page) => (page.id === id ? { ...page, marks: [...page.marks.filter((mark) => mark.kind !== 'shape'), ...shapes] } : page));
+
+// Takes the marks off the pages of `ids`.
+export const clearMarks = (pages, ids) => pages.map((page) => (ids.has(page.id) && page.marks.length ? { ...page, marks: [] } : page));
+
+// Adds the rectangles of `added` (page id to rectangles) to their pages.
+export const addRedactions = (pages, added) => pages.map((page) => (added.has(page.id) ? { ...page, redactions: [...page.redactions, ...added.get(page.id)] } : page));
+
+// The rectangles of the page `id` become `rectangles`.
+export const setRedactions = (pages, id, rectangles) => pages.map((page) => (page.id === id ? { ...page, redactions: rectangles } : page));
+
 // A crop is a rectangle of the displayed page ({ x, y, w, h } as fractions) and whether what is outside is destroyed (`remove`):
 // then the page becomes a picture of what is inside. null takes the crop away.
 export const setCrop = (pages, ids, crop) => pages.map((page) => (ids.has(page.id) && !page.blank ? { ...page, crop } : page));
@@ -167,8 +188,26 @@ export function place(list, ids, targetId, after) {
   return [...rest.slice(0, at), ...list.filter((entry) => ids.has(entry.id)), ...rest.slice(at)];
 }
 
+// A run is named by its first page. Moves the runs named in `keys` right before or after the run `targetKey`.
+export const runKey = (run) => run.pages[0].id;
+export function moveRuns(pages, keys, targetKey, after) {
+  const runs = runsOf(pages);
+  const moving = new Set(runs.filter((run) => keys.has(runKey(run))).flatMap((run) => run.pages.map((page) => page.id)));
+  const target = runs.find((run) => runKey(run) === targetKey);
+  return target ? place(pages, moving, (after ? target.pages.at(-1) : target.pages[0]).id, after) : pages;
+}
+
+// Moves the run `key` one run up (step -1) or down (step 1).
+export function stepRun(pages, key, step) {
+  const runs = runsOf(pages);
+  const index = runs.findIndex((run) => runKey(run) === key);
+  const neighbor = index < 0 ? undefined : runs[index + step];
+  return neighbor ? moveRuns(pages, new Set([key]), runKey(neighbor), step > 0) : pages;
+}
+
 // A cut sits after the page whose id is in `cuts`: the pages between two cuts make one part.
 export function partsOf(pages, cuts) {
+  /** @type {any[][]} */
   const parts = [[]];
   pages.forEach((page, index) => {
     parts[parts.length - 1].push(page);
@@ -191,6 +230,9 @@ export function cutBefore(pages, starts) {
   });
   return cuts;
 }
+
+// The pages that begin a chapter: `starts` gives, for each file, the indexes of its pages where its outline begins one.
+export const chapterPages = (pages, starts) => new Set(pages.filter((page) => page.file !== null && starts.get(page.file)?.has(page.source)).map((page) => page.id));
 
 // The longest parts that hold within `limit` bytes, and their sizes. `sizeOf` builds consecutive pages and gives their real
 // size, which is not the sum of the pages (they share fonts and pictures). A page over the limit alone is a part of its own.

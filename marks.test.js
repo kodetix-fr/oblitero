@@ -141,7 +141,7 @@ test('a shape turns with its page, and an arrow has its head at the second point
   assert.equal(box, null);
   assert.equal(lines.length, 3);
   assert.ok(lines.slice(1).every(([x, y, hx]) => x === 50 && y === 20 && hx < 50));
-  assert.deepEqual(shapeParts(shapeMark('rect', 0.5, 0.5, 0.1, 0.2, 'red'), 100, 200).box.map(Math.round), [10, 40, 40, 60]);
+  assert.deepEqual(shapeParts(shapeMark('rect', 0.5, 0.5, 0.1, 0.2, 'red'), 100, 200).box?.map(Math.round), [10, 40, 40, 60]);
 });
 
 test('shapes are drawn in the page content: a frame, a highlight that lets the page through, lines for an arrow', async () => {

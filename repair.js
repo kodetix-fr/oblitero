@@ -12,6 +12,7 @@ export async function rebuildPdf(bytes) {
   const whole = bytes.slice(0, end + 'endobj'.length);
   const source = await PDFDocument.load(whole, quiet);
   const pages = [];
+  /** @type {number | null} */
   let declared = null;
   let top = 0;
   for (const [ref, object] of source.context.enumerateIndirectObjects()) {

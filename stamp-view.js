@@ -1,10 +1,9 @@
-import { FORMATS, NO_STAMPS, POSITIONS, checkText } from './stamps.js';
-import { parseRange } from './pages-model.js';
-import { askDialog, byId, setI18n } from './dom.js';
+import { FORMATS, NO_STAMPS, POSITIONS, checkText, stampProblem } from './stamps.js';
+import { askDialog, byId, fillOptions } from './dom.js';
 import { clamp } from './math.js';
 import { readPhoto } from './photo.js';
 import { PDFDocument } from './vendor/pdf-lib.esm.min.js';
-import { t } from './i18n.js';
+import { failureText, t } from './i18n.js';
 
 const DEFAULTS = {
   numbers: { position: 'bottom-center', format: 'of', first: 1, size: 10, skipFirst: false },
@@ -19,18 +18,15 @@ export function initStamps() {
   const dialog = byId('stamp-dialog');
   const field = (id) => byId(id);
   for (const id of ['numbers-position', 'bates-position', 'mark-position']) {
-    field(id).replaceChildren(
-      ...POSITIONS.map((value) => {
-        const option = Object.assign(document.createElement('option'), { value });
-        setI18n(option, `position.${value}`);
-        return option;
-      }),
-    );
+    fillOptions(field(id), 'position.', POSITIONS);
   }
   field('numbers-format').replaceChildren(...FORMATS.map(([value, text]) => Object.assign(document.createElement('option'), { value, textContent: text })));
 
+  /** @type {{ bytes: Uint8Array, name: string, kind?: string } | null} */
   let image = null;
+  /** @type {{ bytes: Uint8Array, name: string, kind?: string } | null} */
   let markImage = null;
+  /** @type {{ bytes: Uint8Array, name: string } | null} */
   let sheet = null;
   let schedulePreview = () => {};
   const syncKind = () => {
@@ -227,15 +223,7 @@ export function initStamps() {
         'click',
         async () => {
           const settings = read();
-          const problem =
-            (settings.watermark?.kind === 'text' && !settings.watermark.text && 'stamp.error.text') ||
-            (settings.watermark?.kind === 'image' && !settings.watermark.image && 'sign.error-image') ||
-            (settings.header && !settings.header.text && 'stamp.error-header') ||
-            (settings.footer && !settings.footer.text && 'stamp.error-footer') ||
-            (field('letterhead-on').checked && !sheet && 'stamp.error-letterhead') ||
-            (settings.stamp?.kind === 'text' && !settings.stamp.text && 'stamp.error-mark') ||
-            (settings.stamp?.kind === 'image' && !settings.stamp.image && 'sign.error-image') ||
-            (settings.range && parseRange(settings.range, 1e6) === null && 'stamp.error-range');
+          const problem = stampProblem(settings, field('letterhead-on').checked && !sheet);
           if (problem) {
             field('stamp-error').textContent = t(problem);
             return;
@@ -245,7 +233,7 @@ export function initStamps() {
             texts.push(settings.bates?.prefix, settings.bates?.suffix, settings.stamp?.kind === 'text' ? settings.stamp.text : '');
             for (const text of texts) if (text) await checkText(text);
           } catch (error) {
-            field('stamp-error').textContent = error.message;
+            field('stamp-error').textContent = failureText(error);
             return;
           }
           finish(settings);

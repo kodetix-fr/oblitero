@@ -66,6 +66,7 @@ const leaks = async (run) => {
   for (const name of names) {
     const from = log.length;
     await run(name);
+    // A request that left the page takes a moment to reach the server, and nothing tells that none will come.
     await sleep(400);
     if (log.length > from) found.push(`${name}: ${log.slice(from).join(', ')}`);
   }

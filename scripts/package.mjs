@@ -1,6 +1,7 @@
 // Produces dist/oblitero-<version>.zip with only the runtime files of the extension.
 // Usage: npm run package   (or: node scripts/package.mjs [extension-folder])
 // Cross-platform, no dependency: the zip is written here, with node:zlib (Node >= 22.2 for zlib.crc32).
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -13,7 +14,7 @@ const root = process.argv[2] ? resolve(process.argv[2]) : join(dirname(fileURLTo
 // --- Exclusion list (not an inclusion list): stays valid when new runtime files appear ---
 
 const EXCLUDED_ROOT_DIRS = new Set(['docs', 'scripts', 'test', 'dist', 'types', 'coverage']);
-const EXCLUDED_NAMES = new Set(['readme.md', 'package.json', 'package-lock.json']);
+const EXCLUDED_NAMES = new Set(['readme.md', 'package.json', 'package-lock.json', 'sha256sums']);
 const SUFFIXES = ['.test.js', '.d.ts', '.d.mts', '.zip', '.crx', '.pem'];
 
 // rel: relative path with "/" separators. Used for files and folders (an excluded folder is not walked).
@@ -140,7 +141,7 @@ function writeZip(entries) {
 
 // --- Reading back: reads the central directory of the written zip, inflates everything and compares with the disk ---
 
-function readZip(zip) {
+export function readZip(zip) {
   // shortcut: assumes no end-of-archive comment, as it only reads the zip it just wrote; scan backwards to read any zip.
   const end = zip.length - 22;
   if (end < 0 || zip.readUInt32LE(end) !== 0x06054b50) throw new Error('end record of the zip not found');
@@ -165,6 +166,16 @@ function readZip(zip) {
 }
 
 // --- Program ---
+
+// The files of `base` that git does not know and does not ignore: a test PDF or a note left in the folder would go into a
+// package built here. Empty outside a git repository.
+function untrackedIn(base) {
+  try {
+    return execFileSync('git', ['-C', base, 'ls-files', '--others', '--exclude-standard', '-z'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).split('\0').filter(Boolean);
+  } catch {
+    return [];
+  }
+}
 
 function main() {
   // JSON.parse throws if the manifest is invalid; a possible BOM is removed
@@ -198,6 +209,8 @@ function main() {
   }
 
   const paths = listRuntimeFiles(root).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)); // code point order: identical everywhere
+  const stray = untrackedIn(root).filter((rel) => paths.includes(rel));
+  if (stray.length) throw new Error(`Files that git does not track would be packaged: ${stray.join(', ')}. Add them to git or remove them.`);
   const files = paths.map((rel) => ({ path: rel, data: readFileSync(join(root, rel)) }));
 
   // The licenses travel with the code: ours at the root, the third-party components' next to them
@@ -244,7 +257,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   try {
     main();
   } catch (e) {
-    console.error(`Error: ${e.message}`);
+    console.error(`Error: ${e instanceof Error ? e.message : e}`);
     process.exitCode = 1;
   }
 }

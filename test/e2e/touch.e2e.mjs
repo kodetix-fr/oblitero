@@ -26,11 +26,12 @@ test('a long press with a finger drags a page, with the same ghost and insertion
   };
   const labels = () => page.locator('#grid li').evaluateAll((items) => items.map((item) => item.dataset.id));
   const before = await labels();
+  const longPress = await page.evaluate(async () => (await import('/dom.js')).LONG_PRESS_MS);
 
   const [x0, y0] = await center(0);
   const [x2, y2] = await center(2);
   await touch('touchStart', x0, y0);
-  await page.waitForTimeout(600);
+  await page.locator('.drag-image.held').waitFor();
   assert.equal(await page.locator('.drag-image.held').count(), 1);
   await touch('touchMove', x0 + 20, y0);
   await touch('touchMove', x2 + 60, y2);
@@ -47,7 +48,8 @@ test('a long press with a finger drags a page, with the same ghost and insertion
   await touch('touchMove', x1 + 40, y1);
   await touch('touchMove', x2 + 60, y2);
   await touch('touchEnd');
-  await page.waitForTimeout(600);
+  // Nothing must happen: wait past the long press, which would have started a drag.
+  await page.waitForTimeout(longPress + 200);
   assert.deepEqual(await labels(), moved);
   assert.equal(await page.locator('.drag-image.held').count(), 0);
   await page.close();

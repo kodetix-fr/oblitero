@@ -1,44 +1,46 @@
 import { openInfo } from './pdf-info.js';
-import { buildPdf } from './export.js';
 import { LEVELS, formatSize } from './compress.js';
 import { createOutput, eachFile } from './page-output.js';
 import { pageCard } from './page-card.js';
-import { createThumbs } from './page-thumbs.js';
+import { ROW_BOX, createThumbs } from './page-thumbs.js';
 import { initMarquee } from './page-marquee.js';
-import { MARGINS, PAGE_SIZES, SIZES, imagesToPdf } from './images.js';
+import { MARGINS, PAGE_SIZES, SIZES, imagesToPdf, marginPoints } from './images.js';
 import { readPhoto } from './photo.js';
 import { initCompare } from './compare-view.js';
 import { initPreview } from './preview-view.js';
 import { initFiles } from './files-view.js';
 import { buildZip } from './zip.js';
-import { burnPage, closeRender, entryImage, entrySize, inkOf, openRender, outlineStarts, pageRuns, pageSize, paintEntry, renderPage, textOf } from './render.js';
-import { blankPage, createPages, cutBefore, cutEvery, canAdjust, cutToFit, duplicate, insertEntries, interleavePages, parseRange, exportParts, keepCuts, movePages, partsOf, place, rangeIds, removePages, reversePages, rotatePages, setAngle, setCrop, runsOf, showAll, toggleCuts, toggleFlip, toggleHidden, visible } from './pages-model.js';
+import { closeRender, entryImage, entrySize, inkOf, openRender, outlineStarts, pageRuns, pageSize, paintEntry, renderPage, textOf } from './render.js';
+import { addMarks, addRedactions, blankPage, chapterPages, clearMarks, createPages, cutBefore, cutEvery, canAdjust, cutToFit, duplicate, flipVertical, insertEntries, interleavePages, parseRange, exportParts, keepCuts, movePages, moveRuns, partsOf, place, rangeIds, removePages, reversePages, rotatePages, runKey, runsOf, setAngle, setCrop, setRedactions, setShapes, showAll, stepRun, toggleCuts, toggleFlip, toggleHidden, visible } from './pages-model.js';
 import { createHistory } from './history.js';
-import { pagesOf, plural, t } from './i18n.js';
+import { failureText, pagesOf, plural, t } from './i18n.js';
 import { clamp } from './math.js';
 import { openRedactor } from './redact-view.js';
 import { openDrawing } from './draw-view.js';
 import { askPassword } from './password-view.js';
 import { WrongPassword, decryptPdf, protectPdf } from './qpdf-run.js';
 import { rebuildPdf } from './repair.js';
-import { NO_STAMPS, applyStamps } from './stamps.js';
+import { NO_STAMPS, previewIndex } from './stamps.js';
 import { initFind } from './find-view.js';
 import { initSign } from './sign-view.js';
 import { initProperties } from './properties-view.js';
 import { initForm } from './form-view.js';
 import { initBlank } from './blank-view.js';
-import { fillForm } from './forms.js';
+import { changedValues, fillForm } from './forms.js';
 import { DEFAULT_PROPERTIES } from './properties.js';
 import { placeMark } from './place-view.js';
 import { imageMark, textMark } from './marks.js';
 import { initStamps } from './stamp-view.js';
-import { byId, copyCanvas, nearestEntry, setI18n, sortable } from './dom.js';
+import { byId, copyCanvas, fillOptions, nearestEntry, setI18n, sortable } from './dom.js';
 import { download } from './download.js';
+import { noteDownload } from './about-view.js';
 
 const A4 = { width: 595.28, height: 841.89 };
 // The smaller of the two meanings of a megabyte, so that a part fits under either.
 const MEGABYTE = 1_000_000;
 const NO_PASSWORD = new Error('no password');
+const withoutExtension = (name) => name.replace(/\.[^.]+$/, '');
+const save = (blob, filename) => download(blob, filename, noteDownload);
 
 export function initPages() {
   const panel = byId('panel-pages');
@@ -124,18 +126,10 @@ export function initPages() {
   const paperMargin = /** @type {HTMLSelectElement} */ (byId('paper-margin'));
   const comparer = initCompare();
   const previewer = initPreview();
-  const choices = (select, prefix, ids) =>
-    select.replaceChildren(
-      ...ids.map((value) => {
-        const option = Object.assign(document.createElement('option'), { value });
-        setI18n(option, `${prefix}${value}`);
-        return option;
-      }),
-    );
-  choices(sizeSelect, 'photo.size.', PAGE_SIZES);
-  choices(marginSelect, 'photo.margin.', MARGINS.map(([id]) => id));
+  fillOptions(sizeSelect, 'photo.size.', PAGE_SIZES);
+  fillOptions(marginSelect, 'photo.margin.', MARGINS.map(([id]) => id));
   marginSelect.value = 'none';
-  choices(paperMargin, 'photo.margin.', MARGINS.map(([id]) => id));
+  fillOptions(paperMargin, 'photo.margin.', MARGINS.map(([id]) => id));
   paperMargin.value = 'small';
   const stampDialog = initStamps();
   const finder = initFind();
@@ -358,7 +352,9 @@ export function initPages() {
 
   // A file nothing can bring back anymore, not even an undo, leaves the memory.
   function release() {
-    const held = new Set([pages, ...history.states.map((state) => state.pages)].flat().map((page) => page.file));
+    const reachable = [pages, ...history.states.map((state) => state.pages)].flat();
+    thumbnails.keep(reachable);
+    const held = new Set(reachable.map((page) => page.file));
     documents.forEach((document, file) => {
       if (!document.doc || held.has(file)) return;
       closeRender(document.doc);
@@ -397,7 +393,7 @@ export function initPages() {
     refresh();
   }
 
-  const photoLayout = () => ({ size: sizeSelect.value, margin: MARGINS.find(([value]) => value === marginSelect.value)[1] });
+  const photoLayout = () => ({ size: sizeSelect.value, margin: marginPoints(marginSelect.value) });
   const isPdf = (bytes) => new TextDecoder('latin1').decode(bytes.subarray(0, 1024)).includes('%PDF-');
 
   // A PDF is a file of its own; a photo becomes a file of one page, laid out as the Photos settings say.
@@ -442,57 +438,75 @@ export function initPages() {
 
   // The pages of PDF files and photos go into the document, before or after the page `targetId` (at the end without one).
   async function insert(files, targetId = null, after = true) {
-    const added = [];
+    const loaded = [];
     const unreadable = [];
     const locked = [];
+    const empty = [];
     const repaired = [];
     for (const file of files) {
       try {
         const document = await load(file);
+        if (document.count === 0) {
+          closeRender(document.doc);
+          empty.push(file.name);
+          continue;
+        }
         const lost = document.repaired;
         if (lost) {
           repaired.push(() =>
             lost.declared ? t('repair.done', { name: file.name, kept: pagesOf(lost.pages), total: pagesOf(lost.declared) }) : t('repair.done-unknown', { name: file.name, kept: pagesOf(lost.pages) }),
           );
         }
-        documents.push(document);
-        added.push(...createPages(document.count, { file: documents.length - 1, firstId: nextId }));
-        nextId += document.count;
+        loaded.push(document);
       } catch (error) {
         (error === NO_PASSWORD ? locked : unreadable).push(file.name);
       }
     }
+    // Nothing holds a loaded file until its pages are committed, so they all go in without an await in between.
+    const added = [];
+    for (const document of loaded) {
+      documents.push(document);
+      added.push(...createPages(document.count, { file: documents.length - 1, firstId: nextId }));
+      nextId += document.count;
+    }
     if (locked.length) repaired.push(() => t('password.cancelled', { names: locked.join(', ') }));
     if (unreadable.length) repaired.push(() => t('status.cannot-read', { names: unreadable.join(', ') }));
-    setStatus(() => repaired.map((note) => note()).join(' '), locked.length + unreadable.length > 0);
+    if (empty.length) repaired.push(() => t('status.no-pages', { names: empty.join(', ') }));
+    setStatus(() => repaired.map((note) => note()).join(' '), locked.length + unreadable.length + empty.length > 0);
     if (added.length === 0) return;
     const first = pages.length === 0;
     selected = first ? new Set() : new Set(added.map((page) => page.id));
     commit({ pages: insertEntries(pages, added, targetId, after) });
   }
 
-  // Photos are laid out again when the settings change; their redactions and marks would no longer fit the new page.
+  // The document reads its pages from `bytes` from now on.
+  async function reopen(document, bytes) {
+    const old = document.doc;
+    document.bytes = bytes;
+    document.doc = await openRender(bytes);
+    closeRender(old);
+  }
+
+  // Photos are laid out again when the settings change; their redactions and marks would no longer fit the new page, so a history
+  // that holds some is cleared.
+  const marked = (page) => documents[page.file]?.photo && (page.redactions.length || page.marks.length);
   const layoutPhotos = () =>
     run('status.laying-out', async () => {
       const photos = documents.filter((document) => document.photo);
       if (photos.length === 0) return '';
-      if (pages.some((page) => documents[page.file]?.photo && (page.redactions.length || page.marks.length))) {
+      if (pages.some(marked)) {
         sizeSelect.value = applied.size;
         marginSelect.value = applied.margin;
         return () => t('status.photos-locked');
       }
       applied = { size: sizeSelect.value, margin: marginSelect.value };
-      for (const document of photos) {
-        const old = document.doc;
-        document.bytes = await imagesToPdf([document.photo], photoLayout());
-        document.doc = await openRender(document.bytes);
-        closeRender(old);
-      }
+      for (const document of photos) await reopen(document, await imagesToPdf([document.photo], photoLayout()));
       thumbnails.reset();
-      history.clear();
+      const stale = history.states.some((state) => state.pages.some(marked));
+      if (stale) history.clear();
       render();
       release();
-      return '';
+      return stale ? () => t('status.history-cleared') : '';
     });
 
   const lastSelected = () => pages.findLast((page) => selected.has(page.id));
@@ -563,8 +577,8 @@ export function initPages() {
         const blob = await entryImage(docOf(page), page, dpi, type);
         files.push({ name: `${stem()}-page-${String(pages.indexOf(page) + 1).padStart(3, '0')}.${extension}`, blob });
       }
-      if (files.length === 1) download(files[0].blob, files[0].name);
-      else download(await buildZip(files), `${stem()}-images.zip`);
+      if (files.length === 1) save(files[0].blob, files[0].name);
+      else save(await buildZip(files), `${stem()}-images.zip`);
     });
   }
 
@@ -579,7 +593,7 @@ export function initPages() {
         else if (!page.blank) text = (await textOf(documents[page.file].doc, page.source)) || t('text.none');
         parts.push(`${t('text.page', { n: number })}\n${text}`);
       }
-      download(new Blob([`${parts.join('\n\n')}\n`], { type: 'text/plain;charset=utf-8' }), `${stem()}.txt`);
+      save(new Blob([`${parts.join('\n\n')}\n`], { type: 'text/plain;charset=utf-8' }), `${stem()}.txt`);
     });
   }
 
@@ -704,9 +718,9 @@ export function initPages() {
 
   const stem = () => {
     const lead = pages.find((page) => page.file !== null && !page.hidden) ?? pages.find((page) => page.file !== null);
-    return (lead ? documents[lead.file].name : 'document').replace(/\.[^.]+$/, '');
+    return withoutExtension(lead ? documents[lead.file].name : 'document');
   };
-  const paper = () => (paperSize.value === 'as-is' ? null : { size: SIZES[paperSize.value], margin: MARGINS.find(([id]) => id === paperMargin.value)[1] });
+  const paper = () => (paperSize.value === 'as-is' ? null : { size: SIZES[paperSize.value], margin: marginPoints(paperMargin.value) });
   paperSize.addEventListener('change', () => {
     byId('paper-margin-field').hidden = paperSize.value === 'as-is';
   });
@@ -729,7 +743,7 @@ export function initPages() {
     try {
       setStatus((await work()) ?? '');
     } catch (error) {
-      say('status.failed', { message: error.message });
+      say('status.failed', { message: failureText(error) });
     } finally {
       busy = false;
       panel.toggleAttribute('data-busy', false);
@@ -741,7 +755,7 @@ export function initPages() {
     try {
       await work(...args);
     } catch (error) {
-      say('status.failed', { message: error.message });
+      say('status.failed', { message: failureText(error) });
     }
   };
 
@@ -780,13 +794,13 @@ export function initPages() {
     const reach = placed.scope === 'all' ? new Set(visible(pages).map((page) => page.id)) : placed.scope === 'selection' ? new Set(selected) : new Set([target.id]);
     const { mark } = placed;
     const made = mark.kind === 'image' ? imageMark(mark.png, mark.x, mark.y, mark.w, mark.h) : textMark(mark.text.trim(), mark.x, mark.y, mark.size);
-    commit({ pages: pages.map((page) => (reach.has(page.id) ? { ...page, marks: [...page.marks, made] } : page)) });
+    commit({ pages: addMarks(pages, reach, made) });
     setStatus(() => t(noticeKey, { pages: pagesOf(reach.size) }));
   }
   controls.draw.addEventListener('click', guarded(async () => {
     const target = lastSelected() ?? visible(pages)[0];
     const shapes = await openDrawing(docOf(target), target);
-    if (shapes) commit({ pages: pages.map((page) => (page.id === target.id ? { ...page, marks: [...page.marks.filter((mark) => mark.kind !== 'shape'), ...shapes] } : page)) });
+    if (shapes) commit({ pages: setShapes(pages, target.id, shapes) });
   }));
   controls.properties.addEventListener('click', guarded(async () => {
     const result = await propertiesDialog.open(used().map((document) => ({ name: document.name, bytes: document.original ?? document.bytes })), properties);
@@ -798,15 +812,11 @@ export function initPages() {
       let changedAny = false;
       for (const [index, values] of result) {
         const document = documents[index];
-        const changed = Object.fromEntries(document.fields.filter((field) => Object.hasOwn(values, field.name) && values[field.name] !== field.value).map((field) => [field.name, values[field.name]]));
+        const changed = changedValues(document.fields, values);
         if (JSON.stringify(changed) === JSON.stringify(document.values)) continue;
         document.values = changed;
         document.original ??= document.bytes;
-        const bytes = Object.keys(changed).length ? await fillForm(document.original, changed) : document.original;
-        const old = document.doc;
-        document.bytes = bytes;
-        document.doc = await openRender(bytes);
-        closeRender(old);
+        await reopen(document, Object.keys(changed).length ? await fillForm(document.original, changed) : document.original);
         changedAny = true;
       }
       if (changedAny) {
@@ -829,28 +839,22 @@ export function initPages() {
   controls.addText.addEventListener('click', guarded(() => putMark({ kind: 'text', text: t('place.default-text'), size: 0.025 }, 'status.text-placed')));
   controls.clearMarks.addEventListener('click', () => {
     const reach = selected.size ? selected : new Set(pages.map((page) => page.id));
-    commit({ pages: pages.map((page) => (reach.has(page.id) && page.marks.length ? { ...page, marks: [] } : page)) });
+    commit({ pages: clearMarks(pages, reach) });
   });
   controls.find.addEventListener('click', guarded(async () => {
     const candidates = visible(pages).filter((page) => !page.blank).map((page) => ({ page, number: pages.indexOf(page) + 1 }));
     const added = await finder.open(candidates, (page) => pageRuns(documents[page.file].doc, page));
     if (!added) return;
     const count = [...added.values()].reduce((sum, boxes) => sum + boxes.length, 0);
-    commit({ pages: pages.map((page) => (added.has(page.id) ? { ...page, redactions: [...page.redactions, ...added.get(page.id)] } : page)) });
+    commit({ pages: addRedactions(pages, added) });
     setStatus(() => t('status.found-added', { rectangles: plural(count, 'count.rectangle.one', 'count.rectangle.other'), pages: pagesOf(added.size) }));
   }));
-  // The page the settings reach first, built and stamped the way the download is, so the preview cannot disagree with it.
+  // The page the settings reach first, built the way the download is, so the preview cannot disagree with it.
   async function previewStamps(settings) {
     const shownPages = visible(pages);
-    const reached = settings.range ? (parseRange(settings.range, shownPages.length) ?? []) : shownPages.map((_, index) => index);
-    const index = reached.find((position) => !(settings.numbers?.skipFirst && position === 0)) ?? reached[0] ?? 0;
+    const index = previewIndex(settings, shownPages.length);
     const marked = settings.watermark?.kind === 'image' && !settings.watermark.image ? { ...settings, watermark: null } : settings;
-    const bytes = await buildPdf(
-      documents.map((document) => document.bytes),
-      [shownPages[index]],
-      (entry) => burnPage(documents[entry.file].doc, entry),
-      (output) => applyStamps(output, { ...marked, range: '' }, { index, total: shownPages.length }),
-    );
+    const bytes = await build([shownPages[index]], new Map(), 0, { stamps: { ...marked, range: '' }, place: { index, total: shownPages.length } });
     const doc = await openRender(bytes);
     try {
       const { width } = await pageSize(doc, 0, 0);
@@ -894,11 +898,7 @@ export function initPages() {
     commit({ pages: setAngle(pages, selected, angle) });
   });
   controls.flipH.addEventListener('click', () => commit({ pages: toggleFlip(pages, selected) }));
-  // Top to bottom is left to right and a half turn.
-  controls.flipV.addEventListener('click', () => {
-    const ids = new Set(pages.filter((page) => selected.has(page.id) && canAdjust(page)).map((page) => page.id));
-    commit({ pages: rotatePages(toggleFlip(pages, ids), ids, 180) });
-  });
+  controls.flipV.addEventListener('click', () => commit({ pages: flipVertical(pages, selected) }));
   controls.earlier.addEventListener('click', () => moveSelected(-1));
   controls.later.addEventListener('click', () => moveSelected(1));
   controls.hide.addEventListener('click', hideSelected);
@@ -907,13 +907,10 @@ export function initPages() {
   controls.cutEvery.addEventListener('click', () => commit({ cuts: cutEvery(pages, Math.max(1, Math.floor(Number(splitSize.value)) || 1)) }));
   controls.cutChapters.addEventListener('click', guarded(async () => {
     const outlines = new Map();
-    const starts = new Set();
-    for (const page of pages) {
-      if (page.file === null) continue;
-      if (!outlines.has(page.file)) outlines.set(page.file, await outlineStarts(documents[page.file].doc));
-      if (outlines.get(page.file).has(page.source)) starts.add(page.id);
+    for (const file of new Set(pages.map((page) => page.file))) {
+      if (file !== null) outlines.set(file, await outlineStarts(documents[file].doc));
     }
-    const next = cutBefore(pages, starts);
+    const next = cutBefore(pages, chapterPages(pages, outlines));
     if (next.size === 0) return say('status.no-chapters');
     setStatus('');
     commit({ cuts: next });
@@ -937,9 +934,9 @@ export function initPages() {
     try {
       const page = pages.find((entry) => entry.id === id);
       const rectangles = await openRedactor(documents[page.file].doc, page);
-      if (rectangles) commit({ pages: pages.map((page) => (page.id === id ? { ...page, redactions: rectangles } : page)) });
+      if (rectangles) commit({ pages: setRedactions(pages, id, rectangles) });
     } catch (error) {
-      say('status.cannot-open-page', { message: error.message });
+      say('status.cannot-open-page', { message: failureText(error) });
     }
   });
   controls.crop.addEventListener('click', async () => {
@@ -948,7 +945,7 @@ export function initPages() {
       const result = await openRedactor(documents[page.file].doc, page, { crop: true });
       if (result) commit({ pages: setCrop(pages, selected, result.rect && { ...result.rect, remove: result.remove }) });
     } catch (error) {
-      say('status.cannot-open-page', { message: error.message });
+      say('status.cannot-open-page', { message: failureText(error) });
     }
   });
   controls.preview.addEventListener('click', () =>
@@ -962,13 +959,13 @@ export function initPages() {
   );
   controls.downloadAll.addEventListener('click', () =>
     run('status.preparing', async () => {
-      download(await asPdf(visible(pages)), `${stem()}-edited.pdf`);
+      save(await asPdf(visible(pages)), `${stem()}-edited.pdf`);
       return savedText();
     }),
   );
   controls.downloadSelected.addEventListener('click', () =>
     run('status.preparing', async () => {
-      download(await asPdf(shownSelected()), `${stem()}-pages.pdf`);
+      save(await asPdf(shownSelected()), `${stem()}-pages.pdf`);
       return savedText();
     }),
   );
@@ -982,7 +979,7 @@ export function initPages() {
         files.push({ name: `${stem()}-${String(files.length + 1).padStart(3, '0')}.pdf`, blob: await asPdf(part, { offset }) });
         offset += part.length;
       }
-      download(await buildZip(files), `${stem()}-split.zip`);
+      save(await buildZip(files), `${stem()}-split.zip`);
       return savedText();
     }),
   );
@@ -991,14 +988,14 @@ export function initPages() {
     run('status.batch', async () => {
       const shown = visible(pages);
       const files = [...new Set(shown.map((page) => page.file).filter((file) => file !== null))];
-      const groups = files.map((file) => ({ name: `${documents[file].name.replace(/\.[^.]+$/, '')}.pdf`, entries: shown.filter((page) => page.file === file) }));
+      const groups = files.map((file) => ({ name: `${withoutExtension(documents[file].name)}.pdf`, entries: shown.filter((page) => page.file === file) }));
       let done = 0;
       const result = await eachFile(groups, (entries) => {
         say('status.batch-at', { n: ++done, total: groups.length });
         return asPdf(entries);
       });
       const report = new Blob([`${result.report.join('\n')}\n`], { type: 'text/plain' });
-      download(await buildZip([...result.files, { name: t('batch.report-name'), blob: report }]), `${stem()}-each.zip`);
+      save(await buildZip([...result.files, { name: t('batch.report-name'), blob: report }]), `${stem()}-each.zip`);
       return result.failed ? () => t('status.batch-failed', { n: result.failed, total: groups.length }) : savedText();
     }),
   );
@@ -1029,17 +1026,6 @@ export function initPages() {
 
   // ---------- files: one row for each run of pages that come from the same file ----------
 
-  const runKey = (run) => run.pages[0].id;
-  function runThumb(page) {
-    const canvas = document.createElement('canvas');
-    if (page.blank) {
-      canvas.width = 40;
-      canvas.height = 52;
-    } else {
-      renderPage(documents[page.file].doc, page.source, page.rotation, canvas, 0.35 * devicePixelRatio, page).catch(() => {});
-    }
-    return canvas;
-  }
   const runInfo = (run) => {
     const hiddenCount = run.pages.filter((page) => page.hidden).length;
     return {
@@ -1047,24 +1033,15 @@ export function initPages() {
       name: run.file === null ? t('page.blank') : documents[run.file].name,
       detail: [pagesOf(run.pages.length), run.file !== null && documents[run.file].photo ? t('files.photo') : '', hiddenCount ? t('summary.hidden', { n: hiddenCount }) : ''].filter(Boolean).join(t('list-gap')),
       hidden: hiddenCount === run.pages.length,
-      thumb: () => runThumb(run.pages[0]),
+      thumb: () => thumbnails.canvasOf(run.pages[0], ROW_BOX),
       tone: toned && run.file !== null ? toneOf(run.file) : null,
     };
   };
   const idsOf = (key) => new Set((runsOf(pages).find((run) => runKey(run) === key)?.pages ?? []).map((page) => page.id));
 
   const files = initFiles({
-    onMove: (keys, targetKey, after) => {
-      const runs = runsOf(pages);
-      const moving = new Set(runs.filter((run) => keys.has(runKey(run))).flatMap((run) => run.pages.map((page) => page.id)));
-      const target = runs.find((run) => runKey(run) === targetKey);
-      if (target) commit({ pages: place(pages, moving, (after ? target.pages.at(-1) : target.pages[0]).id, after) });
-    },
-    onStep: (key, step) => {
-      const runs = runsOf(pages);
-      const neighbor = runs[runs.findIndex((run) => runKey(run) === key) + step];
-      if (neighbor) commit({ pages: place(pages, idsOf(key), (step < 0 ? neighbor.pages[0] : neighbor.pages.at(-1)).id, step > 0) });
-    },
+    onMove: (keys, targetKey, after) => commit({ pages: moveRuns(pages, keys, targetKey, after) }),
+    onStep: (key, step) => commit({ pages: stepRun(pages, key, step) }),
     onToggle: (key) => commit({ pages: toggleHidden(pages, idsOf(key)) }),
     onRemove: (key) => commit({ pages: removePages(pages, idsOf(key)) }),
     onOpen: (key) => {

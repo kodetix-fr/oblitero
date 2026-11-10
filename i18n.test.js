@@ -1,7 +1,7 @@
-import test from 'node:test';
+import test, { mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
-import { LANGUAGES, formatFixed, formatNumber, getLanguage, hasLanguage, loadLanguage, plural, pluralForm, resolveLanguage, setLanguage, t } from './i18n.js';
+import { Failure, LANGUAGES, failureText, formatFixed, formatNumber, getLanguage, hasLanguage, loadLanguage, plural, pluralForm, resolveLanguage, setLanguage, t } from './i18n.js';
 import { formatSize } from './compress.js';
 
 const CODES = Object.keys(LANGUAGES);
@@ -49,6 +49,16 @@ test('t: variables, then English when a key is missing, then the key itself', ()
   setLanguage('fr');
   assert.equal(t('no.such.key'), 'no.such.key');
   setLanguage('en');
+});
+
+test('failureText: an error of ours speaks the language, a library error gets a sentence and goes to the console', () => {
+  const logged = mock.method(console, 'error', () => {});
+  setLanguage('fr');
+  assert.equal(failureText(new Failure('error.page-large')), dictionaries.fr['error.page-large']);
+  assert.equal(failureText(new Error('pdf-lib: bad xref')), dictionaries.fr['error.unknown']);
+  assert.equal(logged.mock.callCount(), 1);
+  setLanguage('en');
+  logged.mock.restore();
 });
 
 test('plural: 0 and 1 are singular in French, every count above 1 is plural everywhere', () => {
@@ -108,7 +118,7 @@ const sources = () =>
     .concat(readFileSync('app.html', 'utf8'))
     .join('\n');
 // Keys the code builds from a prefix: the prefix and where it is written.
-const DYNAMIC = [['position.', '`position.'], ['preset.', '`preset.'], ['level.', '`level.'], ['photo.size.', "'photo.size.'"], ['photo.margin.', "'photo.margin.'"], ['sign.error-', '`sign.error-']];
+const DYNAMIC = [['position.', "'position.'"], ['preset.', '`preset.'], ['level.', '`level.'], ['photo.size.', "'photo.size.'"], ['photo.margin.', "'photo.margin.'"], ['sign.error-', '`sign.error-']];
 
 test('the code only asks for keys that exist, and every key is used', () => {
   const code = sources();

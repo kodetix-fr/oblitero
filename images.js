@@ -6,6 +6,8 @@ export const MARGINS = [
   ['small', 18],
   ['large', 36],
 ];
+// The margin, in points, that the option `id` stands for.
+export const marginPoints = (id) => /** @type {[string, number]} */ (MARGINS.find(([value]) => value === id))[1];
 export const SIZES = { a4: [595.28, 841.89], letter: [612, 792] };
 const PX_TO_PT = 0.75;
 

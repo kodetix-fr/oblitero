@@ -145,7 +145,7 @@
           <button type="button" class="btn sm icon-only" id="interleave" aria-label="Interleave" title="Interleave the selected pages: one page of each file in turn, as the fronts and backs of a scan" data-i18n-title="app.interleave.title" data-i18n-aria="app.interleave.aria"><svg class="ic" aria-hidden="true"><use href="#i-interleave"/></svg></button>
           <button type="button" class="btn sm icon-only" id="crop" aria-label="Crop" title="Crop the selected pages to a rectangle" data-i18n-title="app.crop.title" data-i18n-aria="app.crop.aria"><svg class="ic" aria-hidden="true"><use href="#i-crop"/></svg></button>
           <span class="vsep"></span>
-          <button type="button" class="btn sm" id="hide" title="Hide the selected pages from the result (Del)" data-i18n-title="app.hide.title"><svg class="ic" aria-hidden="true"><use id="hide-icon" href="#i-eye-off"/></svg><span id="hide-label">Hide</span></button>
+          <button type="button" class="btn sm" id="hide" title="Hide the selected pages from the result (Del)" data-i18n-title="app.hide.title"><svg class="ic" aria-hidden="true"><use id="hide-icon" href="#i-eye-off"/></svg><span id="hide-label"></span></button>
           <button type="button" class="btn sm" id="cut" title="Cut after the selected pages (C)" data-i18n-title="app.cut.title"><svg class="ic" aria-hidden="true"><use href="#i-cut"/></svg><span data-i18n="app.cut">Cut</span></button>
           <button type="button" class="btn sm ink" id="redact" title="Hide an area: black it out, and destroy what is under it in the downloaded PDF" data-i18n-title="app.redact.title"><svg class="ic" aria-hidden="true"><use href="#i-redact"/></svg><span data-i18n="app.redact">Redact</span></button>
         </div>
@@ -228,7 +228,7 @@
             <button type="button" class="btn primary" id="download-all"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg><span data-i18n="app.download-all">Download PDF</span></button>
             <button type="button" class="btn page-only sel-only" id="download-selected" title="Download the selected pages as one PDF" data-i18n-title="app.download-selected.title"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg><span data-i18n="app.download-selected">Download selection</span></button>
             <button type="button" class="btn" id="download-each" hidden title="Download one PDF for each file, with the same changes and settings, in a ZIP" data-i18n-title="app.download-each.title"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg><span data-i18n="app.download-each">One PDF per file (ZIP)</span></button>
-            <button type="button" class="btn" id="download-parts" disabled><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg><span id="parts-label">Download ZIP</span></button>
+            <button type="button" class="btn" id="download-parts" disabled><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg><span id="parts-label"></span></button>
           </section>
         </aside>
       </div>
@@ -238,7 +238,7 @@
         <span id="pages-status" role="status"></span>
         <label class="field page-only"><span data-i18n="app.size">Size</span> <input type="range" id="zoom" min="90" max="260" value="150" aria-label="Size of the thumbnails" data-i18n-aria="app.zoom.aria"></label>
         <span class="sep"></span>
-        <button type="button" class="btn sm ghost" id="show-hidden" hidden><svg class="ic" aria-hidden="true"><use href="#i-eye"/></svg><span id="show-hidden-label">Show hidden</span></button>
+        <button type="button" class="btn sm ghost" id="show-hidden" hidden><svg class="ic" aria-hidden="true"><use href="#i-eye"/></svg><span id="show-hidden-label"></span></button>
       </div>
       <input type="file" id="pages-file" accept="application/pdf,image/*" multiple hidden>
     </section>

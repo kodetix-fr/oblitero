@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { MSG_REF, listRuntimeFiles, localize, readLocales } from './scripts/package.mjs';
 import { LANGUAGES } from './languages.js';
@@ -47,18 +47,28 @@ test('no network API, resource hint, frame or remote address in the code of the 
 });
 
 test('the package holds the code and the licenses, and no test, document or tool', () => {
-  for (const file of ['manifest.json', 'app.html', 'sw.js', 'LICENSE', 'vendor/pdf-lib.LICENSE', 'vendor/pdfjs/LICENSE', 'vendor/pdfjs/pdf.min.mjs', 'locales/ja.js', '_locales/ja/messages.json', 'icons/icon128.png']) {
+  for (const file of ['manifest.json', 'app.html', 'sw.js', 'LICENSE', 'vendor/pdf-lib.LICENSE', 'vendor/pdfjs/LICENSE', 'vendor/pdfjs/pdf.min.mjs', 'vendor/qpdf/LICENSE_QPDF', 'vendor/qpdf/NOTICE_QPDF.txt', 'locales/ja.js', '_locales/ja/messages.json', 'icons/icon128.png']) {
     assert.ok(runtime.includes(file), file);
   }
   assert.deepEqual(runtime.filter((file) => /\.test\.js$|\.md$|\.d\.m?ts$|^(docs|scripts|test|dist|node_modules|\.github)\/|^package|^tsconfig|^eslint/.test(file)), []);
+});
+
+test('everything vendored is named in the third-party notices', () => {
+  const notices = read('./THIRD_PARTY_NOTICES.md');
+  for (const name of readdirSync(new URL('./vendor/', import.meta.url)).filter((name) => !['README.md', 'SHA256SUMS'].includes(name) && !/\.d\.m?ts$/.test(name))) {
+    assert.ok(notices.includes(`vendor/${name}`), `vendor/${name} is not in THIRD_PARTY_NOTICES.md`);
+  }
 });
 
 test('third-party code stays in vendor/', () => {
   assert.deepEqual(runtime.filter((file) => !file.startsWith('vendor/') && (/\.(mjs|wasm|map)$|\.min\./.test(file) || /@license|SPDX-License-Identifier|Copyright \d{4} /.test(/\.(js|html)$/.test(file) ? read(`./${file}`) : ''))), []);
 });
 
-test('the version of the manifest is the one of package.json, and a version Chrome accepts', () => {
+test('the version of the manifest is the one of package.json and of its lock file, and a version Chrome accepts', () => {
   assert.equal(manifest.version, JSON.parse(read('./package.json')).version);
+  const lock = JSON.parse(read('./package-lock.json'));
+  assert.equal(lock.version, manifest.version);
+  assert.equal(lock.packages[''].version, manifest.version);
   assert.match(manifest.version, /^\d+\.\d+\.\d+$/);
 });
 

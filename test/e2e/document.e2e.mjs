@@ -393,6 +393,27 @@ test('Find and redact covers what it finds on every page, keeps what the user sw
   await page.close();
 });
 
+test('Find goes on past a page it cannot read, and says which pages were not read', async () => {
+  page = await app.openApp();
+  await page.evaluate(async () => {
+    const { initFind } = await import('./find-view.js');
+    document.getElementById('find-presets').replaceChildren();
+    const read = async ({ id }) => {
+      if (id === 2) throw new Error('damaged');
+      return { text: `write to person${id}@example.org`, runs: [{ start: 0, end: 30, box: { x: 0, y: 0, w: 1, h: 0.1 } }] };
+    };
+    window.finding = initFind().open([1, 2, 3].map((id) => ({ page: { id }, number: id })), read);
+  });
+  await page.locator('#find-dialog').waitFor({ state: 'visible' });
+  await page.locator('#find-run').click();
+  await page.locator('#find-results li').nth(1).waitFor();
+  assert.deepEqual(await page.locator('#find-results .page').allInnerTexts(), ['Page 1', 'Page 3']);
+  await page.waitForFunction(() => /could not be read/.test(document.getElementById('find-note').textContent));
+  assert.match(await page.locator('#find-note').innerText(), /1 page could not be read \(2\): check them by eye\./);
+  await page.locator('#find-cancel').click();
+  await page.close();
+});
+
 test('a duplex scan in two files: reverse the backs, then interleave', async () => {
   const fronts = await writePdf(app.dir, 'fronts.pdf', [100, 101, 102].map((size) => ({ size, text: '' })));
   const backs = await writePdf(app.dir, 'backs.pdf', [202, 201, 200].map((size) => ({ size, text: '' })));

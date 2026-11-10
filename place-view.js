@@ -1,8 +1,8 @@
 import { checkText } from './stamps.js';
 import { entrySize, paintEntry } from './render.js';
-import { ARROWS, askDialog, byId, fitScale, query } from './dom.js';
+import { ARROWS, askDialog, byId, context2d, fitScale, query } from './dom.js';
 import { clamp } from './math.js';
-import { t } from './i18n.js';
+import { failureText, t } from './i18n.js';
 
 const STEP = 0.01;
 
@@ -28,7 +28,7 @@ export async function placeMark({ doc, entry, draft, number, selectedCount }) {
   const painted = await paintEntry(doc, whole, scale * devicePixelRatio, true);
   canvas.width = painted.width;
   canvas.height = painted.height;
-  canvas.getContext('2d').drawImage(painted, 0, 0);
+  context2d(canvas).drawImage(painted, 0, 0);
   byId('place-where').textContent = t('page.n', { n: number });
   byId('scope-selection').hidden = selectedCount < 2;
   query('input[name="place-scope"][value="page"]').checked = true;
@@ -39,12 +39,13 @@ export async function placeMark({ doc, entry, draft, number, selectedCount }) {
   error.textContent = '';
 
   const measure = (text, size) => {
-    const context = document.createElement('canvas').getContext('2d');
+    const context = context2d(document.createElement('canvas'));
     context.font = `${size * stageWidth}px Helvetica, Arial, sans-serif`;
     return context.measureText(text || ' ').width / stageWidth;
   };
 
-  const mark = isText ? { kind: 'text', text: draft.text, size: draft.size, x: 0.1, y: 0.1 } : { kind: 'image', png: draft.png, x: 0.5, y: 0.78, w: 0.3 };
+  /** @type {{ kind: string, text: string, size: number, png?: Uint8Array, x: number, y: number, w: number }} */
+  const mark = isText ? { kind: 'text', text: draft.text, size: draft.size, x: 0.1, y: 0.1, w: 0 } : { kind: 'image', png: draft.png, text: '', size: 0, x: 0.5, y: 0.78, w: 0.3 };
   const ratio = stageWidth / stageHeight;
   const heightOf = () => (isText ? (mark.size * 1.15) * ratio : mark.w * draft.aspect * ratio);
   const widthOf = () => (isText ? measure(mark.text, mark.size) : mark.w);
@@ -58,6 +59,7 @@ export async function placeMark({ doc, entry, draft, number, selectedCount }) {
   element.tabIndex = 0;
   element.setAttribute('role', 'button');
   element.setAttribute('aria-label', t(isText ? 'place.text-aria' : 'place.signature-aria'));
+  /** @type {string | null} */
   let url = null;
   if (!isText) {
     url = URL.createObjectURL(new Blob([draft.png], { type: 'image/png' }));
@@ -158,7 +160,7 @@ export async function placeMark({ doc, entry, draft, number, selectedCount }) {
           try {
             await checkText(mark.text);
           } catch (problem) {
-            error.textContent = problem.message;
+            error.textContent = failureText(problem);
             return;
           }
         }

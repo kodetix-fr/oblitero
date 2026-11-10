@@ -3,9 +3,14 @@ import { plural, t } from './i18n.js';
 
 const TONES = 7;
 const urls = new WeakMap();
+const revoker = new FinalizationRegistry((url) => URL.revokeObjectURL(url));
 
 function markUrl(png) {
-  if (!urls.has(png)) urls.set(png, URL.createObjectURL(new Blob([png], { type: 'image/png' })));
+  if (!urls.has(png)) {
+    const url = URL.createObjectURL(new Blob([png], { type: 'image/png' }));
+    urls.set(png, url);
+    revoker.register(png, url);
+  }
   return urls.get(png);
 }
 

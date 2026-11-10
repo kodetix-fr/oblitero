@@ -37,10 +37,11 @@ In scope, and worth reporting:
   that is downloaded
 - a permission, a network access or remote code added by mistake
 - the supply chain of the repository: development dependencies, the workflows,
-  `vendor/` (pdf-lib and PDF.js) and the packaging script
+  `vendor/` (pdf-lib, PDF.js and qpdf with its WebAssembly wrapper) and the
+  packaging script
 
-Out of scope: flaws in Chrome itself, or in pdf-lib or PDF.js upstream (report
-them to those projects, and tell us if Oblitero is affected, the bundled
+Out of scope: flaws in Chrome itself, or in pdf-lib, PDF.js or qpdf upstream
+(report them to those projects, and tell us if Oblitero is affected, the bundled
 version will be updated), access to the files by someone who already controls
 the machine or the browser profile, the content of the PDFs you open and what
 you do with the files you download, findings from a scanner with no
